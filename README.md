@@ -1,8 +1,8 @@
 # Hippocampus
 
 A small self-hosted memory service: it stores documents (web pages you crawl, Markdown you push, repositories) as
-searchable chunks in PostgreSQL with pgvector and answers **semantic searches** ("what did we decide about the
-fence?") instead of keyword matches. It has a REST API, an MCP server for AI assistants, and a web dashboard.
+searchable chunks in PostgreSQL with pgvector and answers **semantic searches** ("how do we handle database
+backups?") instead of keyword matches. It has a REST API, an MCP server for AI assistants, and a web dashboard.
 Everything runs on your own machine; nothing is sent to a cloud service.
 
 - **Local embeddings:** `BAAI/bge-small-en-v1.5` (384 dimensions) runs on your CPU, baked into the image.
@@ -85,8 +85,9 @@ scripts/smoke_live.py       # end-to-end check of a running instance (asks for a
 
 ## Contributing
 
-Issues and pull requests are welcome. This repository is generated from a private upstream, so a change is applied there and
-comes back here with the next update; your contribution stays credited to you in the history of the pull request.
+Issues and pull requests are welcome: see `CONTRIBUTING.md` (set-up, the checks to run, how review works). This repository is
+generated from the maintainer's private upstream; a merged pull request is imported there with your authorship kept, so the
+next sync carries it forward.
 
 ## License
 
