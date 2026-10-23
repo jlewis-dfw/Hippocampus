@@ -60,5 +60,5 @@ every job and its log. The data a job already stored is durable, and re-running 
 
 ## Tests
 
-`tests/test_api.py` runs a crawl job to completion, reads its status and the event stream, and checks a failing job reports its error;
-`tests/test_access.py` covers the ownership rules.
+`tests/unit/test_api.py` runs a crawl job to completion, reads its status and the event stream, and checks a failing job reports its error;
+`tests/unit/test_access.py` covers the ownership rules.

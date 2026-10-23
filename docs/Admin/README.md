@@ -80,5 +80,5 @@ secret store. Anyone who can run it with the database connection string can crea
 
 ## Tests
 
-`tests/test_admin_cli.py` runs the tool against a real database: it creates an account (and checks that only the hash is stored), refuses a duplicate and a bare
+`tests/integration/test_admin_cli.py` runs the tool against a real database: it creates an account (and checks that only the hash is stored), refuses a duplicate and a bare
 wildcard, rotates, changes visibility, refuses to share a reserved name, lists and revokes. It needs `HIPPO_TEST_DSN` and is skipped without it.

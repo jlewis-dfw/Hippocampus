@@ -30,7 +30,7 @@ for the local stack and, with Podman, for the development database.
 | `src/hippocampus/` | The package (below) |
 | `src/hippocampus/ui/` | The dashboard: `index.html`, `app.js`, `app.css` ([../Dashboard/README.md](../Dashboard/README.md)) |
 | `db/migrations/` | Numbered SQL files, applied in order ([../Database/migrations.md](../Database/migrations.md)) |
-| `tests/` | The test suite ([../Testing/README.md](../Testing/README.md)) |
+| `tests/` | The test suite, in `unit/`, `integration/` and `e2e/` ([../Testing/README.md](../Testing/README.md)) |
 | `scripts/` | Checks, linters, the prerequisite scripts, the docs indexer, the smoke test, deploy and export helpers |
 | `deploy/` | `api.Dockerfile`, `ci.Dockerfile`, the development database compose file |
 | `compose.yaml`, `hippocampus`, `hippocampus.env.example` | The local stack ([../Local/README.md](../Local/README.md)) |
@@ -73,8 +73,8 @@ Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes st
 ### Add an endpoint
 
 1. Add the route in `api.py`. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
-2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/test_api.py`, so the unit tests can exercise it.
-3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/test_access.py` or `tests/test_api.py`.
+2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/unit/test_api.py`, so the unit tests can exercise it.
+3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/unit/test_access.py` or `tests/unit/test_api.py`.
 4. Add the route to [../Api/endpoints.md](../Api/endpoints.md), and to [../Api/authorization.md](../Api/authorization.md) if it changes who may do what.
 
 ### Add a migration

@@ -122,6 +122,6 @@ Because it never prunes, pages that vanished from the site remain in the collect
 
 ## Tests
 
-`tests/test_crawler.py` covers the HTML extractor, URL normalisation, the crawl loop with a fake fetcher (depth, host, pattern, robots,
+`tests/unit/test_crawler.py` covers the HTML extractor, URL normalisation, the crawl loop with a fake fetcher (depth, host, pattern, robots,
 cap, errors), the address guard (private, loopback, link-local, VPN and metadata addresses, redirects), the browser fetcher with a fake
 browser, and the API integration. The test that needs a real Chromium is skipped when Playwright's browser is not installed.

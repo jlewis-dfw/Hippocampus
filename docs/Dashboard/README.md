@@ -80,6 +80,6 @@ this page.
 
 ## Tests
 
-`tests/test_api.py::test_ui_is_served_with_strict_headers` checks the redirect from `/`, the page title, the CSP, `no-cache`, that the JavaScript and CSS
+`tests/unit/test_api.py::test_ui_is_served_with_strict_headers` checks the redirect from `/`, the page title, the CSP, `no-cache`, that the JavaScript and CSS
 are served, and that none of the three files contains an `http://` or `https://` address (apart from example text in a placeholder). There is no
 browser test in the suite; `scripts/smoke_live.py` and a manual run cover the behaviour of the page against a real instance.

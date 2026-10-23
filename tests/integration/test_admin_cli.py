@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not os.environ.get("HIPPO_TEST_DSN"), reason="set HIPPO_TEST_DSN")
+pytestmark = pytest.mark.usefixtures("database")  # a throwaway database unless HIPPO_TEST_DSN names one (see conftest.py)
 
 
 def test_cli_roundtrip(monkeypatch, capsys):

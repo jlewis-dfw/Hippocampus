@@ -73,5 +73,5 @@ Adding a lexical component would need a text-search column and index, and a rule
 
 ## Tests
 
-`tests/test_api.py` (ranking, scoped and unscoped search, `min_score`, `top_k`), `tests/test_access.py` (hidden collections never appear,
-named hidden collections are 404), and `tests/test_store_integration.py` (the filter runs before the limit, against real pgvector).
+`tests/unit/test_api.py` (ranking, scoped and unscoped search, `min_score`, `top_k`), `tests/unit/test_access.py` (hidden collections never appear,
+named hidden collections are 404), and `tests/integration/test_store_integration.py` (the filter runs before the limit, against real pgvector).

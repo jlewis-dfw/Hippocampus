@@ -116,7 +116,7 @@ After editing, run `./hippocampus up` again.
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e ".[db,api,mcp,dev]"
-scripts/check.sh            # migrations from zero, the test suite, the dashboard JavaScript (starts a dev database via podman)
+scripts/check.sh            # migrations from zero, the test suite, the dashboard JavaScript (starts a throwaway test database in a container)
 scripts/check.sh --no-db    # unit tests only
 scripts/smoke_live.py       # end-to-end check of a running instance (asks for an admin token, leaves nothing behind)
 ```

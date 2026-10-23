@@ -77,5 +77,5 @@ Each chunk stores its `token_count` (the estimate). It is informational (it is r
 
 ## Tests
 
-`tests/test_chunker.py` covers heading paths, fences, oversized prose and code, overlap, empty input and unterminated fences.
-`tests/test_embedder_model.py` runs the real model and is skipped unless `HIPPO_RUN_MODEL_TESTS=1`.
+`tests/unit/test_chunker.py` covers heading paths, fences, oversized prose and code, overlap, empty input and unterminated fences.
+`tests/integration/test_embedder_model.py` runs the real model and is skipped unless `HIPPO_RUN_MODEL_TESTS=1`.

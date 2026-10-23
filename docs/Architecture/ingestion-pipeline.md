@@ -142,5 +142,5 @@ are kept in sync by hand; the tests assert each one.
 
 ## Tests
 
-`tests/test_diff.py` (added, changed, unchanged, prune, embed-before-write), `tests/test_repo_ingest.py` (formats, rejections, the endpoint),
-`tests/test_docs_sync.py` (signature, plans, apply, full resync, the guards on both routes).
+`tests/unit/test_diff.py` (added, changed, unchanged, prune, embed-before-write), `tests/unit/test_repo_ingest.py` (formats, rejections, the endpoint),
+`tests/unit/test_docs_sync.py` (signature, plans, apply, full resync, the guards on both routes).
