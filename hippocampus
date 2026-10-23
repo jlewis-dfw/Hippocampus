@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Hippocampus on your own machine with Docker or Podman. Config lives in hippocampus.env (created for you).
+#
+#   ./hippocampus up          first run: creates hippocampus.env, builds the image (a few minutes), starts everything, applies
+#                             the database migrations, and creates the first admin account (its token is shown ONCE)
+#   ./hippocampus up --build  rebuild the image after you change the code or HIPPO_INSTALL_BROWSER
+#   ./hippocampus status      show the containers and the service status
+#   ./hippocampus logs [svc]  follow the logs (api, postgres, migrate)
+#   ./hippocampus admin ARGS  run the admin tool: list-clients | create-client --name N [--admin] [--read G] [--write G]
+#                             | rotate-client N | revoke-client N | set-visibility SLUG shared|restricted
+#   ./hippocampus down        stop everything (your data stays)
+#   ./hippocampus reset       stop and DELETE all data (asks you to type DELETE)
+#
+# Needs: Docker (with the compose plugin) or Podman (with podman compose), and bash. CONTAINER_ENGINE=docker|podman overrides detection.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
+ENVFILE=hippocampus.env
+
+die() { echo "ERROR: $*" >&2; exit 1; }
+say() { echo "==> $*"; }
+
+detect_engine() {
+  if [[ -n ${CONTAINER_ENGINE:-} ]]; then echo "$CONTAINER_ENGINE"; return; fi
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then echo docker; return; fi
+  if command -v podman >/dev/null 2>&1 && podman compose version >/dev/null 2>&1; then echo podman; return; fi
+  die "neither 'docker compose' nor 'podman compose' was found. Install Docker (https://docs.docker.com/get-docker/) or Podman."
+}
+ENGINE=$(detect_engine)
+compose() { "$ENGINE" compose --env-file "$ENVFILE" "$@"; }
+
+ensure_env() {
+  if [[ -f $ENVFILE ]]; then return; fi
+  [[ -f hippocampus.env.example ]] || die "hippocampus.env.example is missing"
+  local pw
+  # letters and digits only: safe inside a connection URL. `head` closes the pipe early, so tolerate tr's SIGPIPE (pipefail).
+  pw=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32 || true)
+  [[ ${#pw} -eq 32 ]] || die "could not generate a password (is /dev/urandom readable?)"
+  umask 077
+  sed "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=${pw}/" hippocampus.env.example >"$ENVFILE"
+  say "created $ENVFILE with a generated database password (edit it to change ports or options)"
+}
+
+port() { grep -E '^HIPPO_PORT=' "$ENVFILE" | tail -1 | cut -d= -f2 | tr -d ' ' ; }
+
+wait_healthy() {
+  local url="http://127.0.0.1:$(port)/v1/status"
+  say "waiting for the service (the first start loads the embedding model, up to a few minutes)"
+  for _ in $(seq 1 120); do
+    if command -v curl >/dev/null 2>&1; then curl -fsS -m 3 "$url" >/dev/null 2>&1 && return 0
+    else python3 -c "import urllib.request,sys; urllib.request.urlopen('$url', timeout=3)" >/dev/null 2>&1 && return 0; fi
+    sleep 3
+  done
+  compose logs --tail 40 api >&2 || true
+  die "the service did not become healthy in time (see the log above)"
+}
+
+admin() { compose run --rm --no-deps -T api python -m hippocampus.admin "$@"; }
+
+has_admin() { admin list-clients 2>/dev/null | grep -q "active .*admin=True"; }
+
+cmd=${1:-help}; shift || true
+case "$cmd" in
+  up)
+    ensure_env
+    say "starting with $ENGINE compose"
+    compose up -d --build "$@" || die "compose up failed (see above)"
+    wait_healthy
+    if has_admin; then
+      say "an admin account already exists. To make another: ./hippocampus admin create-client --name NAME --admin"
+    else
+      say "creating the first admin account (its token is shown once: copy it now)"
+      admin create-client --name admin --admin --note "first admin"
+    fi
+    echo
+    say "Hippocampus is running: http://127.0.0.1:$(port)/ui/   (paste the admin token in the dashboard's Access panel)"
+    ;;
+  down) ensure_env; compose down ;;
+  status)
+    ensure_env; compose ps
+    curl -fsS -m 5 "http://127.0.0.1:$(port)/v1/status" 2>/dev/null && echo || echo "(the service is not answering)"
+    ;;
+  logs) ensure_env; compose logs -f "$@" ;;
+  admin) ensure_env; [[ $# -ge 1 ]] || die "usage: ./hippocampus admin list-clients | create-client ... (see --help)"; admin "$@" ;;
+  reset)
+    ensure_env
+    echo "This deletes the database volume: every collection, page and account."
+    read -r -p "Type DELETE to continue: " a
+    [[ $a == DELETE ]] || { echo "aborted"; exit 1; }
+    compose down -v
+    ;;
+  help|-h|--help) sed -n '2,15p' "${BASH_SOURCE[0]}" ;;
+  *) die "unknown command '$cmd' (try ./hippocampus help)" ;;
+esac

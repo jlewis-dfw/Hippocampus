@@ -1,0 +1,64 @@
+# Runs Hippocampus on one machine with Docker or Podman, nothing else needed:  ./hippocampus up
+# Settings come from hippocampus.env (created from hippocampus.env.example on the first `./hippocampus up`).
+name: hippocampus
+
+services:
+  postgres:
+    image: docker.io/pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hippocampus
+      POSTGRES_USER: hippocampus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run ./hippocampus up, which creates hippocampus.env with a password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hippocampus -d hippocampus"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # no published port: only the other containers in this project reach the database
+
+  # Applies db/migrations once at every start, then exits. The API waits for it.
+  migrate:
+    build:
+      context: .
+      dockerfile: deploy/api.Dockerfile
+      args:
+        INSTALL_BROWSER: ${HIPPO_INSTALL_BROWSER:-0}
+    image: hippocampus-api:local
+    command: ["python", "-m", "hippocampus.migrate"]
+    environment:
+      HIPPO_DSN: postgresql://hippocampus:${POSTGRES_PASSWORD}@postgres:5432/hippocampus
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: hippocampus-api:local
+    pull_policy: never   # built by the migrate service above
+    restart: unless-stopped
+    environment:
+      HIPPO_DSN: postgresql://hippocampus:${POSTGRES_PASSWORD}@postgres:5432/hippocampus
+      # With a published port the app sees the Docker network's address, so the private ranges must be allowed.
+      HIPPO_ALLOWED_CIDRS: ${HIPPO_ALLOWED_CIDRS:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      HIPPO_REQUIRE_AUTH: ${HIPPO_REQUIRE_AUTH:-true}
+      HIPPO_CRAWL_MAX_PAGES: ${HIPPO_CRAWL_MAX_PAGES:-200}
+      HIPPO_CRAWL_DELAY: ${HIPPO_CRAWL_DELAY:-0.5}
+    ports:
+      - "${HIPPO_BIND:-127.0.0.1}:${HIPPO_PORT:-8090}:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "hippocampus.healthcheck"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  pgdata:

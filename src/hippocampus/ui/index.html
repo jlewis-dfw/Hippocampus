@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hippocampus</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header>
+    <div class="brand">Hippocampus <span class="muted">DocuSync</span></div>
+    <div class="pills" id="pills"></div>
+    <button id="openAccess" title="Access token and clients"><span id="who">anonymous</span></button>
+    <button id="openSearch" class="primary">Search sandbox</button>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <main>
+    <section id="accessSection" hidden>
+      <div class="row">
+        <h2>Access</h2>
+        <div class="spacer"></div>
+        <button id="closeAccess">Close</button>
+      </div>
+      <p class="muted">Without a token you see shared collections only. Paste a token to see and manage the collections it
+        is granted. It is kept in this tab's session storage and cleared when the tab closes.</p>
+      <form id="tokenForm" autocomplete="off">
+        <label class="wide">Bearer token
+          <input id="token" type="password" placeholder="hip_..." autocomplete="off" spellcheck="false">
+        </label>
+        <div class="actions">
+          <button type="submit" class="primary">Use token</button>
+          <button type="button" id="clearToken">Forget token</button>
+        </div>
+      </form>
+      <p class="mono" id="whoDetail"></p>
+
+      <div id="clientsBox" hidden>
+        <h2>Clients</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Admin</th><th>Read</th><th>Write</th><th>Last used</th><th class="right">Actions</th></tr></thead>
+            <tbody id="clients"></tbody>
+          </table>
+        </div>
+        <h2>New client</h2>
+        <form id="clientForm" autocomplete="off">
+          <label>Name
+            <input id="clientName" type="text" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" placeholder="jstories-kobold">
+          </label>
+          <label>Read grants (comma separated slugs or globs)
+            <input id="clientRead" type="text" placeholder="jstories-*">
+          </label>
+          <label>Write grants
+            <input id="clientWrite" type="text" placeholder="jstories-*">
+          </label>
+          <label>Note
+            <input id="clientNote" type="text" maxlength="500">
+          </label>
+          <label><input id="clientAdmin" type="checkbox"> Admin (sees and manages everything)</label>
+          <div class="actions"><button type="submit" class="primary">Create client</button></div>
+        </form>
+        <div id="tokenOnce" class="tokenbox" hidden>
+          <p><strong>Token for <span id="tokenOnceName" class="mono"></span></strong>. It is shown once and only its hash is stored.</p>
+          <pre id="tokenOnceValue" class="mono"></pre>
+          <p id="tokenOnceNote" class="muted"></p>
+          <button id="dismissToken">I have stored it</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Crawl a site</h2>
+      <form id="crawlForm" autocomplete="off">
+        <label class="wide">Start URL
+          <input id="url" type="url" required placeholder="https://docs.example.com/">
+        </label>
+        <label>Collection
+          <select id="collection"></select>
+        </label>
+        <label>Depth
+          <select id="depth">
+            <option value="1">1 (start page only)</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+        <label>Engine
+          <select id="engine">
+            <option value="static" selected>static (httpx)</option>
+            <option value="browser">browser (Chromium, JS sites)</option>
+          </select>
+        </label>
+        <label class="wide">URL match pattern (regex, optional)
+          <input id="pattern" type="text" placeholder="/docs/">
+        </label>
+        <fieldset id="newCollection" hidden>
+          <label>New collection slug
+            <input id="newSlug" type="text" pattern="[a-z0-9][a-z0-9\-]{0,63}" placeholder="my-docs">
+          </label>
+          <label>Name
+            <input id="newName" type="text" maxlength="255" placeholder="My docs">
+          </label>
+          <label>Visibility
+            <select id="newVisibility">
+              <option value="shared" selected>shared (every client can read it)</option>
+              <option value="restricted">restricted (needs a grant; admin token)</option>
+            </select>
+          </label>
+        </fieldset>
+        <div class="actions"><button type="submit" class="primary" id="crawlBtn">Start crawl</button></div>
+      </form>
+    </section>
+
+    <section id="jobSection" hidden>
+      <h2>Job <span id="jobStatus" class="badge"></span></h2>
+      <p class="muted mono" id="jobMeta"></p>
+      <pre id="log" class="log" aria-live="polite"></pre>
+    </section>
+
+    <section>
+      <div class="row">
+        <h2>Collections</h2>
+        <div class="spacer"></div>
+        <button id="resyncDocs">Resync docs repo</button>
+        <button id="refresh">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
+          <tbody id="collections"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sourcesSection" hidden>
+      <div class="row">
+        <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
+        <div class="spacer"></div>
+        <button id="closeSources">Close</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
+          <tbody id="sources"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <aside id="drawer" hidden>
+    <div class="row">
+      <h2>Search sandbox</h2>
+      <div class="spacer"></div>
+      <button id="closeSearch">Close</button>
+    </div>
+    <form id="searchForm" autocomplete="off">
+      <label>Scope <select id="searchScope"></select></label>
+      <label>Query <textarea id="query" rows="3" required maxlength="4000" placeholder="How do I ...?"></textarea></label>
+      <label>Top-k <input id="topK" type="number" min="1" max="50" value="5"></label>
+      <div class="actions"><button type="submit" class="primary">Run search</button></div>
+    </form>
+    <p class="muted mono" id="searchStats"></p>
+    <div id="results"></div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>

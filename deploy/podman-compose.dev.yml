@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: docker.io/pgvector/pgvector:pg16
+    container_name: hippocampus-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hippocampus_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-hippocampus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hippocampus_dev_password}
+    ports:
+      - "127.0.0.1:${HIPPO_DB_PORT:-5442}:5432"
+    volumes:
+      - hippocampus_pgdata:/var/lib/postgresql/data
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hippocampus} -d ${POSTGRES_DB:-hippocampus_dev}"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  hippocampus_pgdata:
+    name: hippocampus_pgdata
