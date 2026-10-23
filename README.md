@@ -5,6 +5,11 @@ searchable chunks in PostgreSQL with pgvector and answers **semantic searches** 
 backups?") instead of keyword matches. It has a REST API, an MCP server for AI assistants, and a web dashboard.
 Everything runs on your own machine; nothing is sent to a cloud service.
 
+> [!NOTE]
+> This application is still under development and currently in beta. Expect rough edges and changes between releases.
+
+![The Hippocampus dashboard](docs/images/walkthrough-01-dashboard.png)
+
 > [!IMPORTANT]
 > **Crawling copies other people's content.** Before you point the crawler at a site, read
 > [Legal and ethical use of the crawler](docs/User_Guide/legal-and-ethics.md): what it honours (`robots.txt`), what it does **not** (`Crawl-delay`, meta robots,
@@ -67,12 +72,6 @@ Step-by-step setup for Claude Code, OpenCode and Antigravity (`agy`) is in [docs
 
 The full guide and reference are in [`docs/`](docs/Index.md): a user guide (install, dashboard, access control, ingesting,
 searching, configuration, operations, troubleshooting) and a technical reference (architecture, HTTP API, database, MCP).
-
-### Crawl responsibly
-
-The crawler copies other people's content. Read [`docs/User_Guide/legal-and-ethics.md`](docs/User_Guide/legal-and-ethics.md) before you point it at a site: it lists what the
-crawler honours (`robots.txt`, a politeness delay, same-host only, no logins) and what it does not (`Crawl-delay`, `noindex`, `X-Robots-Tag`), and the legal and
-ethical questions to ask first. This is general guidance, not legal advice.
 
 ### Search the docs with Hippocampus itself
 
