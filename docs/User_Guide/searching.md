@@ -1,7 +1,7 @@
 # Searching
 
 Hippocampus searches by **meaning**. Your question is turned into a 384-number vector by the same model that embedded the
-documents, and the chunks whose vectors are closest are returned, best first.
+documents, and the chunks whose vectors are closest are returned, best first. [walkthrough.md](walkthrough.md) shows real questions and results in the dashboard.
 
 ## The search call
 

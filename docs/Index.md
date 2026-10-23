@@ -23,6 +23,7 @@ For people who run and use Hippocampus.
 | [configuration.md](User_Guide/configuration.md) | Every environment variable and the network gate |
 | [operations.md](User_Guide/operations.md) | Health, logs, backups, upgrades, resource use, security checklist |
 | [troubleshooting.md](User_Guide/troubleshooting.md) | Symptoms, causes and fixes |
+| [walkthrough.md](User_Guide/walkthrough.md) | A worked example with screenshots: index the docs, crawl a site, search both |
 | [legal-and-ethics.md](User_Guide/legal-and-ethics.md) | Responsible web crawling: what the crawler does and does not honour, a checklist, removal requests |
 
 ### [Api](Api/README.md)
@@ -66,7 +67,7 @@ The stdio server that gives AI assistants `hippocampus_search` and `hippocampus_
 | Doc | Covers |
 |---|---|
 | [README](Mcp/README.md) | The tools, configuration, read-only mode, safety notes, troubleshooting |
-| [connecting-assistants.md](Mcp/connecting-assistants.md) | Registering the server with Claude Code, OpenCode and Antigravity (`agy`); accounts, tokens and checking it works |
+| [connecting-assistants.md](Mcp/connecting-assistants.md) | Registering the server with Claude Code, OpenCode, Antigravity (`agy`) and Devin; accounts, tokens and checking it works |
 
 ### [Dashboard](Dashboard/README.md)
 

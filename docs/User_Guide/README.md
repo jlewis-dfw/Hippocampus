@@ -13,6 +13,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 ## Contents
 
 - [getting-started.md](getting-started.md) — install, first run, the first admin account, stopping and resetting.
+- [walkthrough.md](walkthrough.md) — a worked example with screenshots: index the docs, crawl a site, search both.
 - [dashboard.md](dashboard.md) — every panel of the web dashboard and the common tasks.
 - [collections-and-access.md](collections-and-access.md) — shared and restricted collections, accounts, grants and tokens.
 - [ingesting.md](ingesting.md) — crawling sites, pushing Markdown, indexing repositories, keeping a docs repository in sync.

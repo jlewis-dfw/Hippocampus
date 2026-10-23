@@ -1,8 +1,8 @@
 # Connecting assistants
 
 How to give an AI coding assistant access to Hippocampus search. The server is the same for all of them (see [README.md](README.md)); only the registration
-differs. Commands below were checked against the command-line help of Claude Code, OpenCode and the Antigravity CLI (`agy`); menus and file locations can change
-between versions, so prefer each tool's own `mcp list` command to confirm the result.
+differs. The Claude Code, OpenCode and Antigravity (`agy`) commands were checked against each tool's command-line help; the Devin section comes from Devin's
+published documentation (read October 2026) and has not been run. Menus and file locations change between versions, so prefer each tool's own `mcp list` command to confirm the result.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
 
@@ -64,6 +64,67 @@ agy mcp list
 
 Flags must come **before** the server name; `agy` rejects a flag placed after it. Use `--` before the command if any argument starts with a dash.
 `agy mcp disable hippocampus` and `enable` switch it off and on without removing it.
+
+## Devin
+
+Devin comes in two forms, and they behave very differently for Hippocampus. The Hippocampus server is **stdio only**, so what matters is *where Devin
+runs the command* and whether that place can reach `HIPPO_URL`.
+
+### Devin CLI (Devin for Terminal): runs on your machine
+
+This works like the other command-line assistants. Register the server for yourself only. The `devin mcp add` command has no option for environment variables,
+so write the entry in a config file (this is the schema in Devin's documentation):
+
+```json
+{
+  "mcpServers": {
+    "hippocampus": {
+      "command": "/path/to/hippocampus/.venv/bin/python",
+      "args": ["-m", "hippocampus.mcp_server"],
+      "env": {
+        "HIPPO_URL": "http://127.0.0.1:8090",
+        "HIPPO_TOKEN": "hip_...",
+        "HIPPO_MCP_READONLY": "1"
+      }
+    }
+  }
+}
+```
+
+| Scope | File | Use for Hippocampus |
+|---|---|---|
+| user | `~/.config/devin/mcp_config.json` (Windows: `%APPDATA%\devin\mcp_config.json`) | **This one.** Private to you; `chmod 600` it |
+| local | `.devin/mcp_config.local.json` in the project | Acceptable: it is git-ignored, but check that your `.gitignore` really covers it |
+| project | `.devin/mcp_config.json` in the project | **Never with a token**: it is committed and shared |
+
+Older Devin CLI versions (before v3000.3) kept `mcpServers` in `config.json`; they are migrated on start. Check with `devin mcp list` and `devin mcp get hippocampus`,
+and start the command by hand if the tools do not appear. Devin's documentation does not say whether `${env:VAR}` expansion works in the `env` block (it is
+documented for the OAuth fields only), so assume the token must be written literally.
+
+Devin asks for approval before using an MCP tool. Tool names have the form `mcp__<server>__<tool>`, so to allow searching without prompts and keep a prompt
+for indexing:
+
+```json
+{ "permissions": { "allow": ["mcp__hippocampus__hippocampus_search"], "ask": ["mcp__hippocampus__hippocampus_index_doc"] } }
+```
+
+(`permissions` goes in Devin's settings file, not the MCP file. Skip the second line if you registered the server read-only.)
+
+### Devin in the cloud (the web app): usually not a good fit
+
+Cloud Devin lets an organisation admin (the "Manage MCP Servers" permission) add a custom server under **Customize, MCPs, Add MCP, Add custom MCP**, with
+STDIO, SSE or Streamable HTTP transports. Three things make it a poor match for a self-hosted Hippocampus:
+
+1. A stdio server runs inside **Devin's own environment**, so the Python package must be installable there, and
+2. that environment must be able to reach `HIPPO_URL`; a service bound to `127.0.0.1` or a home network is not reachable from a cloud service, and
+3. you would be handing a cloud service a token that can read your collections.
+
+Hippocampus does not offer an HTTP (SSE or Streamable HTTP) MCP endpoint, which is the transport cloud Devin handles best. If you do use it, publish the
+service only behind TLS and authentication, give Devin its own **read-only account limited to non-sensitive shared collections**, set `HIPPO_MCP_READONLY=1`,
+enter the token through Devin's secrets rather than in arguments, and rotate it when you stop. Never give it a token that can read restricted collections.
+Stdio servers also must not print anything to standard output except protocol messages (the Hippocampus server does not).
+
+Sources: [Devin MCP overview](https://docs.devin.ai/work-with-devin/mcp) and [Devin CLI MCP configuration](https://docs.devin.ai/cli/extensibility/mcp/configuration).
 
 ## Other clients
 

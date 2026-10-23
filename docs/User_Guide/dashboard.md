@@ -2,7 +2,10 @@
 
 The dashboard is a single web page served by the API itself at `/ui/` (the root address `/` redirects there). There is
 nothing to install and it makes no requests to any other site: scripts, styles and fonts all come from the service.
-For how it is built, see [../Dashboard/README.md](../Dashboard/README.md).
+For how it is built, see [../Dashboard/README.md](../Dashboard/README.md). For screenshots of a complete run (crawl, then search), see
+[walkthrough.md](walkthrough.md).
+
+![The dashboard: status pills, the crawl form and the collections table](../images/walkthrough-01-dashboard.png)
 
 ## Layout
 
