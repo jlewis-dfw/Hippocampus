@@ -1,7 +1,8 @@
 """bge-small-en-v1.5 embedder (HIPPO-E02-F2-S01): FastEmbed/ONNX, CPU only."""
 from __future__ import annotations
 
-from typing import Protocol, Sequence
+from collections.abc import Sequence
+from typing import Protocol
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
 DIMENSIONS = 384

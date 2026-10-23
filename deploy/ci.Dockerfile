@@ -9,5 +9,8 @@ RUN pip install -e ".[db,api,mcp,dev]"
 COPY db ./db
 COPY scripts ./scripts
 COPY tests ./tests
-# node is not in this image: CI checks the dashboard JavaScript in its own step, so skip it here (see ci.yml)
-ENTRYPOINT ["scripts/check.sh", "--ci", "--skip-js"]
+# what the linters read: the launcher script, the compose files and the YAML rules
+COPY hippocampus compose.yaml .yamllint.yml ./
+COPY deploy/podman-compose.dev.yml ./deploy/podman-compose.dev.yml
+# node is not in this image: CI checks the dashboard JavaScript and lints Markdown in their own steps (see ci.yml), so skip them here
+ENTRYPOINT ["scripts/check.sh", "--ci", "--skip-js", "--skip-md"]

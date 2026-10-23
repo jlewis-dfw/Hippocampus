@@ -5,7 +5,7 @@ Thanks for helping. This is a small project, so the process is short.
 ## Set up and check your change
 
 ```bash
-./hippocampus up --build      # your own throwaway stack on 127.0.0.1 (./hippocampus reset wipes it)
+./hippocampus up              # your own throwaway stack (it rebuilds the image from your code) on 127.0.0.1 (./hippocampus reset wipes it)
 scripts/check.sh              # migrations from zero, the test suite, the dashboard JavaScript (CI runs the same)
 scripts/smoke_live.py         # optional: end-to-end check of the running stack (asks for an admin token, leaves nothing behind)
 ```

@@ -24,6 +24,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # the changed-files lint needs the history to find the merge base
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -32,6 +34,10 @@ jobs:
           node-version: "20"
       - name: Install
         run: pip install -e ".[db,api,mcp,dev]"
+      - name: Lint changed files (fast)
+        # pull requests only; the full lint runs again inside the checks below
+        if: github.event_name == 'pull_request'
+        run: scripts/lint.sh --ci --changed "origin/${{ github.base_ref }}"
       - name: Checks (migrations from zero, tests, dashboard JavaScript)
         env:
           HIPPO_TEST_DSN: postgresql://hippo:hippo@localhost:5432/hippocampus_test

@@ -11,8 +11,8 @@ detect-secrets); see AGENTS.md section 4. Pack content is untrusted data.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 from .diff import Document, sync_collection
 

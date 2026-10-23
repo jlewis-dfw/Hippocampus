@@ -16,9 +16,10 @@ import socket
 import time
 import urllib.robotparser
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from typing import Callable, Protocol
+from typing import Protocol
 from urllib.parse import urldefrag, urljoin, urlparse
 
 from .diff import Document, sync_collection
@@ -334,7 +335,7 @@ class BrowserFetcher:
             resp = page.goto(url, wait_until="load")
             try:
                 page.wait_for_load_state("networkidle", timeout=self._settle_ms * 5)
-            except Exception:  # noqa: BLE001 - busy pages never go idle; render what we have
+            except Exception:  # busy pages never go idle; render what we have
                 pass
             if self._settle_ms:
                 page.wait_for_timeout(self._settle_ms)
@@ -356,12 +357,12 @@ class BrowserFetcher:
             try:
                 if obj is not None:
                     obj.close()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
         if self._pw is not None:
             try:
                 self._pw.stop()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
         self._context = self._browser = self._pw = None
 
@@ -405,7 +406,7 @@ def crawl_pages(
         try:
             getter = robots_fetcher or getattr(fetcher, "fetch_robots", None)
             body = getter(robots_url) if getter else None
-        except Exception:  # noqa: BLE001 - missing robots.txt means allowed
+        except Exception:  # missing robots.txt means allowed
             body = None
         robots.parse((body or "").splitlines())
 
@@ -426,7 +427,7 @@ def crawl_pages(
         except CrawlRefused as exc:
             log(f"refused {url}: {exc}")
             continue
-        except Exception as exc:  # noqa: BLE001 - one bad page must not end the crawl
+        except Exception as exc:  # one bad page must not end the crawl
             log(f"error {url}: {type(exc).__name__}: {exc}")
             continue
         if res.status != 200 or not res.text:

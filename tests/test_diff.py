@@ -1,4 +1,4 @@
-from hippocampus.diff import Document, EmbeddedChunk, sync_collection
+from hippocampus.diff import Document, sync_collection
 
 
 class FakeEmbedder:

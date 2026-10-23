@@ -10,7 +10,6 @@ MIGRATIONS_DIR="${REPO_ROOT}/db/migrations"
 CONTAINER_NAME="hippocampus-postgres-dev"
 DB_NAME="${POSTGRES_DB:-hippocampus_dev}"
 DB_USER="${POSTGRES_USER:-hippocampus}"
-DB_PASS="${POSTGRES_PASSWORD:-hippocampus_dev_password}"
 DB_PORT="${HIPPO_DB_PORT:-5442}"
 
 usage() {

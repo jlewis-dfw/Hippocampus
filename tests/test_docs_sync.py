@@ -5,12 +5,11 @@ from contextlib import contextmanager
 
 import pytest
 from fastapi.testclient import TestClient
+from test_api import KeywordEmbedder, MemStore
 
 from hippocampus.api import create_app
 from hippocampus.docs_sync import DocsSyncConfig, is_indexable, plan_push
 from hippocampus.jobs import JobRegistry
-
-from test_api import KeywordEmbedder, MemStore
 
 SECRET = "hook-secret"
 FAKE_AWS = "AKIA" + "IOSFODNN7EXAMPLE"

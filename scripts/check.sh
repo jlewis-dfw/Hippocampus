@@ -7,6 +7,8 @@
 #                               2. the whole test suite, including the database tests
 #                               3. the dashboard JavaScript parses (if node is installed)
 #   --skip-js                   leave out the JavaScript check (used by the CI image, which has no node)
+#   --skip-md                   leave out the Markdown linter (same reason; CI lints Markdown in its own step)
+#   --no-lint                   leave out the linters (ruff, shellcheck, yamllint, markdownlint); see scripts/lint.sh
 #   scripts/check.sh --no-db    unit tests only (no database): quick, but the database tests and migration check are SKIPPED
 #                               and the summary says so
 #   scripts/check.sh --ci       for CI: HIPPO_TEST_DSN must point at an empty pgvector database, and node must exist; the database,
@@ -15,15 +17,17 @@
 #
 # Env: PY (python to use; default .venv/bin/python, else python3), HIPPO_TEST_DSN (use your own database instead of the dev one).
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
 
 MODE=full
-SKIPJS=
+SKIPJS=; SKIPMD=; NOLINT=
 for a in "$@"; do
   case "$a" in
     --no-db) MODE=nodb ;;
     --ci) MODE=ci ;;
     --skip-js) SKIPJS=1 ;;
+    --skip-md) SKIPMD=1 ;;
+    --no-lint) NOLINT=1 ;;
     -h|--help) sed -n '2,15p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "unknown option $a (see --help)" >&2; exit 2 ;;
   esac
@@ -62,6 +66,13 @@ if [[ -n ${HIPPO_TEST_DSN:-} ]]; then
   step "migrations apply from zero and the schema is as expected" "$PY" scripts/migrate_check.py scratch
 else
   SKIP+=("migrations from zero (no database)" "database tests (no database)")
+fi
+
+if [[ -n $NOLINT ]]; then
+  SKIP+=("linters (--no-lint)")
+else
+  LINT_ARGS=(); [[ $MODE == ci ]] && LINT_ARGS+=(--ci); [[ -n $SKIPMD ]] && LINT_ARGS+=(--skip-md)
+  PY="$PY" step "lint (ruff, shellcheck, yamllint, markdownlint)" scripts/lint.sh "${LINT_ARGS[@]}"
 fi
 
 step "test suite" "$PY" -m pytest -q

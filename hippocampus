@@ -3,7 +3,8 @@
 #
 #   ./hippocampus up          first run: creates hippocampus.env, builds the image (a few minutes), starts everything, applies
 #                             the database migrations, and creates the first admin account (its token is shown ONCE)
-#   ./hippocampus up --build  rebuild the image after you change the code or HIPPO_INSTALL_BROWSER
+#   (up always rebuilds the image first; cached layers make a repeat fast, so code and HIPPO_INSTALL_BROWSER changes take effect.
+#    Extra arguments go to "compose up", for example: ./hippocampus up --force-recreate)
 #   ./hippocampus status      show the containers and the service status
 #   ./hippocampus logs [svc]  follow the logs (api, postgres, migrate)
 #   ./hippocampus admin ARGS  run the admin tool: list-clients | create-client --name N [--admin] [--read G] [--write G]
@@ -43,7 +44,8 @@ ensure_env() {
 port() { grep -E '^HIPPO_PORT=' "$ENVFILE" | tail -1 | cut -d= -f2 | tr -d ' ' ; }
 
 wait_healthy() {
-  local url="http://127.0.0.1:$(port)/v1/status"
+  local url
+  url="http://127.0.0.1:$(port)/v1/status"
   say "waiting for the service (the first start loads the embedding model, up to a few minutes)"
   for _ in $(seq 1 120); do
     if command -v curl >/dev/null 2>&1; then curl -fsS -m 3 "$url" >/dev/null 2>&1 && return 0

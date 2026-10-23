@@ -122,7 +122,7 @@ class MemStore:
     def search(self, embedding, collections, top_k, min_score):
         def cos(a, b):
             d = math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(x * x for x in b))
-            return sum(x * y for x, y in zip(a, b)) / d
+            return sum(x * y for x, y in zip(a, b, strict=True)) / d
 
         hits = []
         for slug, docs in self.collections.items():

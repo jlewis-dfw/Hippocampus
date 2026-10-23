@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Mapping, Protocol
+from typing import Protocol
 
 from .chunker import Chunk, chunk_markdown
 from .embedder import Embedder
@@ -72,7 +73,7 @@ def sync_collection(
         if len(vectors) != len(chunks):
             raise ValueError(f"embedder returned {len(vectors)} vectors for {len(chunks)} chunks")
         store.replace_source(
-            collection, uri, doc.title, digest, [EmbeddedChunk(c, v) for c, v in zip(chunks, vectors)]
+            collection, uri, doc.title, digest, [EmbeddedChunk(c, v) for c, v in zip(chunks, vectors, strict=True)]
         )
         (result.changed if uri in known else result.added).append(uri)
     if prune:

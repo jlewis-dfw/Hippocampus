@@ -8,8 +8,8 @@ of the same section.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 TokenCounter = Callable[[str], int]
 
