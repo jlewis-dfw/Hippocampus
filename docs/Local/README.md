@@ -95,9 +95,10 @@ Podman and its `docker-compose` provider.
 
 ## The development database
 
-A separate, simpler setup for the tests: `scripts/dev-db.sh` (`up`, `down`, `status`, `logs`, `psql`, `migrate`, `reset`) starts one pgvector container from
+A separate, simpler database for working on the code by hand: `scripts/dev-db.sh` (`up`, `down`, `status`, `logs`, `psql`, `migrate`, `reset`) starts one pgvector container from
 `deploy/podman-compose.dev.yml` on `127.0.0.1:5442` (database `hippocampus_dev`, user `hippocampus`, a fixed development password) with its own volume. It does not
-touch the local stack. `scripts/check.sh` starts it when needed. **The script uses Podman.** With Docker only, start your own pgvector database and point the tests at it:
+touch the local stack. **The script uses Podman.** The tests no longer use it: `scripts/check.sh` and the integration tests start their own throwaway database
+(see [../Testing/README.md](../Testing/README.md#test-database)). To point the tests at a database of your own instead, for example this one:
 
 ```bash
 docker run -d --name hippo-test-db -p 127.0.0.1:5442:5432 \
@@ -105,7 +106,7 @@ docker run -d --name hippo-test-db -p 127.0.0.1:5442:5432 \
   pgvector/pgvector:pg16
 export HIPPO_TEST_DSN=postgresql://hippocampus:hippocampus_dev_password@127.0.0.1:5442/hippocampus_dev
 .venv/bin/python scripts/migrate_check.py apply     # prepare it
-scripts/check.sh                                    # uses HIPPO_TEST_DSN instead of starting its own
+scripts/check.sh                                    # uses HIPPO_TEST_DSN instead of starting a throwaway database
 ```
 
 ## Troubleshooting
@@ -122,4 +123,4 @@ docker compose --env-file hippocampus.env config      # the resolved compose fil
 ## Tests
 
 The local stack is verified by running it: `./hippocampus up`, then `scripts/smoke_live.py --url http://127.0.0.1:8090` (the same end-to-end check used on any instance).
-`tests/test_prereqs.py` covers the prerequisite checker. There is no automated test of the launcher itself.
+`tests/unit/test_prereqs.py` covers the prerequisite checker. There is no automated test of the launcher itself.

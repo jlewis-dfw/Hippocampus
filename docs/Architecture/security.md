@@ -71,7 +71,7 @@ Report vulnerabilities privately, as described in the repository's security poli
 
 ## Tests
 
-`tests/test_access.py` is the access-control suite (visibility, 404 for hidden collections, write rules, token handling, last-admin
-protection, rotation, job ownership, hostile result text). `tests/test_crawler.py` covers the address guard. `tests/test_repo_ingest.py`
-and `tests/test_docs_sync.py` cover the secret pre-flight and the path guards. `scripts/smoke_live.py` checks the isolation rules on a
+`tests/unit/test_access.py` is the access-control suite (visibility, 404 for hidden collections, write rules, token handling, last-admin
+protection, rotation, job ownership, hostile result text). `tests/unit/test_crawler.py` covers the address guard. `tests/unit/test_repo_ingest.py`
+and `tests/unit/test_docs_sync.py` cover the secret pre-flight and the path guards. `scripts/smoke_live.py` checks the isolation rules on a
 running instance.

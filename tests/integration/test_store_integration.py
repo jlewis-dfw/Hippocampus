@@ -1,4 +1,4 @@
-"""Needs a migrated hippocampus DB. Set HIPPO_TEST_DSN; uses a throwaway collection."""
+"""Runs against a migrated hippocampus database: a throwaway container by default, or the one HIPPO_TEST_DSN names."""
 import os
 import uuid
 
@@ -6,7 +6,7 @@ import pytest
 
 from hippocampus.diff import Document, sync_collection
 
-pytestmark = pytest.mark.skipif(not os.environ.get("HIPPO_TEST_DSN"), reason="set HIPPO_TEST_DSN")
+pytestmark = pytest.mark.usefixtures("database")  # a throwaway database unless HIPPO_TEST_DSN names one (see conftest.py)
 
 
 class FakeEmbedder:
@@ -145,5 +145,24 @@ def test_client_lifecycle(conn_and_slug):
         assert store.rotate_client(name, auth.hash_token(auth.new_token())) is False  # revoked clients stay revoked
         with pytest.raises(auth.AuthError):
             auth.authenticate(f"Bearer {token}", store)
+    finally:
+        conn.execute("DELETE FROM hippocampus.api_clients WHERE name = %s", (name,))
+
+
+def test_unknown_collection_and_admin_count(conn_and_slug):
+    from hippocampus import auth
+    from hippocampus.store import PgStore
+
+    conn, slug = conn_and_slug
+    store = PgStore(conn)
+    with pytest.raises(LookupError, match="does not exist"):
+        store.replace_source(f"missing-{slug}", "u", None, "sha", [])
+    name = f"adm-{slug[-8:]}"
+    before = store.count_admins()
+    try:
+        assert store.create_client(name, auth.hash_token(auth.new_token()), True, [], [], None) is True
+        assert store.count_admins() == before + 1
+        assert store.revoke_client(name) is True
+        assert store.count_admins() == before  # revoked admins do not count
     finally:
         conn.execute("DELETE FROM hippocampus.api_clients WHERE name = %s", (name,))

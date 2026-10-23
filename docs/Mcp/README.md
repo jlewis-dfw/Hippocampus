@@ -119,5 +119,5 @@ file from your disk. This is the setting to use whenever a model, rather than yo
 
 ## Tests
 
-`tests/test_mcp.py` starts a small fake API on a local port and checks the search formatting, indexing, the refusal of guarded and missing paths, the
+`tests/unit/test_mcp.py` starts a small fake API on a local port and checks the search formatting, indexing, the refusal of guarded and missing paths, the
 unreachable-API error, token handling, read-only mode and that exactly the expected tools are registered.
