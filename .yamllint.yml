@@ -1,0 +1,8 @@
+# yamllint rules for the compose files and workflows: the default rule set, minus line length (long commands are normal in
+# workflows) and the mandatory document-start marker.
+extends: default
+rules:
+  line-length: disable
+  document-start: disable
+  truthy:
+    check-keys: false   # the workflow key `on:` is not a boolean

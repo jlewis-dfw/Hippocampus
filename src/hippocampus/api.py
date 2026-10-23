@@ -6,10 +6,10 @@ import json
 import os
 import re
 import time
+from collections.abc import Callable
 from contextlib import AbstractContextManager
-from typing import Callable, Literal
-
 from pathlib import Path
+from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
@@ -17,8 +17,16 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .auth import (
-    ANONYMOUS, PRIVATE_URI_PREFIXES, CLIENT_NAME_RE, AuthError, Principal, authenticate, hash_token, is_private_slug,
-    new_token, validate_grants,
+    ANONYMOUS,
+    CLIENT_NAME_RE,
+    PRIVATE_URI_PREFIXES,
+    AuthError,
+    Principal,
+    authenticate,
+    hash_token,
+    is_private_slug,
+    new_token,
+    validate_grants,
 )
 from .diff import Document, sync_collection
 from .docs_sync import DocsSyncConfig, ForgejoSource, apply_changes, full_resync, plan_push, verify_signature

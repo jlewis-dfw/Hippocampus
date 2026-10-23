@@ -1,7 +1,8 @@
 """stdio MCP server (HIPPO-E04-F2-S01): hippocampus_search and hippocampus_index_doc over the REST API.
 
-Holds no state; it is a thin client of ``HIPPO_URL`` (the Hippocampus API). Register it in a CLI with
-``scripts/register-mcp.sh``. Needs the ``mcp`` extra.
+Holds no state; it is a thin client of ``HIPPO_URL`` (the Hippocampus API). Run it as ``python -m hippocampus.mcp_server``
+(it needs the ``mcp`` extra) and register that command, with HIPPO_URL and optionally HIPPO_TOKEN in its environment, in
+your MCP client. See docs/Mcp/README.md.
 """
 from __future__ import annotations
 

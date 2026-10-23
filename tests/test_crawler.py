@@ -1,12 +1,17 @@
 import pytest
+from test_api import KeywordEmbedder, MemStore
 
 from hippocampus.crawler import (
-    CrawlOptions, CrawlRefused, FetchResult, check_public_url, crawl_pages, make_crawler, normalize, parse_html,
+    CrawlOptions,
+    CrawlRefused,
+    FetchResult,
+    check_public_url,
+    crawl_pages,
+    make_crawler,
+    normalize,
+    parse_html,
 )
-from hippocampus.diff import sync_collection
 from hippocampus.jobs import Job
-
-from test_api import KeywordEmbedder, MemStore
 
 HOME = """<html><head><title>Home  Docs</title><style>x{}</style></head><body>
 <nav><a href="/nav-only">Nav</a></nav>
@@ -193,7 +198,7 @@ def _browser_available():
         with sync_playwright() as pw:
             pw.chromium.launch(args=["--no-sandbox"]).close()
         return True
-    except Exception:  # noqa: BLE001
+    except Exception:
         return False
 
 

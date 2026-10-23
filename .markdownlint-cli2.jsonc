@@ -1,0 +1,34 @@
+{
+  // A relaxed rule set: the structural rules stay on (heading levels in tables of contents, trailing spaces,
+  // blank lines around lists are not enforced); line length and inline HTML are allowed because the docs use wide tables.
+  "config": {
+    "MD001": false,
+    "MD007": false,
+    "MD012": false,
+    "MD013": false,
+    "MD022": false,
+    "MD024": { "siblings_only": true },
+    "MD025": false,
+    "MD026": false,
+    "MD027": false,
+    "MD028": false,
+    "MD029": false,
+    "MD031": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD036": false,
+    "MD037": false,
+    "MD040": false,
+    "MD041": false,
+    "MD047": false,
+    "MD060": false
+  },
+  "ignores": [
+    ".venv",
+    "**/node_modules/**",
+    "ideation/**",
+    "notes/**",
+    "backlog/**"
+  ]
+}

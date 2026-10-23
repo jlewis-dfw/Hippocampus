@@ -4,8 +4,8 @@ from __future__ import annotations
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 
 @dataclass
@@ -61,7 +61,7 @@ class JobRegistry:
             try:
                 job.result = runner(job)
                 job.status = "done"
-            except Exception as exc:  # noqa: BLE001 - surfaced to the caller via the job
+            except Exception as exc:  # surfaced to the caller via the job
                 job.error = f"{type(exc).__name__}: {exc}"
                 job.status = "error"
 
