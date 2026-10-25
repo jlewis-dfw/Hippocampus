@@ -16,10 +16,11 @@ from fastapi.staticfiles import StaticFiles
 from .docs_sync import DocsSyncConfig, ForgejoSource
 from .embedder import Embedder
 from .jobs import JobRegistry
-from .observability import log_requests, setup_logging
+from .observability import client_address, log_requests, setup_logging
 from .routes import ROUTERS
 from .routes.deps import SLUG_RE, Crawler, Deps, StoreFactory  # noqa: F401  (re-exported)
 from .routes.tags import METADATA
+from .store import StoreBusy
 
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
@@ -64,6 +65,11 @@ def create_app(
     """
     app = FastAPI(title="Hippocampus", version="0.1.0", openapi_tags=METADATA, description=API_DESCRIPTION)
     app.middleware("http")(log_requests)
+
+    @app.exception_handler(StoreBusy)
+    async def store_busy(request: Request, exc: StoreBusy):
+        log.warning("database pool exhausted: %s %s", request.method, request.url.path, extra={"client": client_address(request)})
+        return JSONResponse({"detail": "the database is busy, try again shortly"}, status_code=503, headers={"Retry-After": "1"})
 
     if allowed_networks is not None:
 
@@ -113,7 +119,11 @@ def app_from_env() -> FastAPI:
     log.info("starting: auth required=%s, networks=%s, crawl max pages=%s, docs sync=%s",
              os.environ.get("HIPPO_REQUIRE_AUTH", "false"), os.environ.get("HIPPO_ALLOWED_CIDRS", "default"),
              os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200"), bool(os.environ.get("HIPPO_FORGEJO_URL")))
-    factory = connect_store(os.environ["HIPPO_DSN"])
+    from .store import pool_settings
+
+    pool = pool_settings(os.environ)
+    factory = connect_store(os.environ["HIPPO_DSN"], pool=pool)
+    log.info("database pool: min %s, max %s, wait %s s", *pool)
     embedder = FastEmbedder(cache_dir=os.environ.get("HIPPO_MODEL_CACHE"))
     return create_app(
         factory,

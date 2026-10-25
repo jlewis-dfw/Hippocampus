@@ -86,14 +86,14 @@ def test_app_from_env_wires_everything(monkeypatch):
         yield mem
 
     seen = {}
-    monkeypatch.setattr(store_mod, "connect_store", lambda dsn: seen.setdefault("dsn", dsn) and factory)
+    monkeypatch.setattr(store_mod, "connect_store", lambda dsn, pool=None: seen.update(dsn=dsn, pool=pool) or factory)
     monkeypatch.setattr(embedder_mod, "FastEmbedder", lambda cache_dir=None: KeywordEmbedder())
     for k, v in {"HIPPO_DSN": "postgresql://x", "HIPPO_CRAWL_MAX_PAGES": "5", "HIPPO_CRAWL_DELAY": "0",
                  "HIPPO_REQUIRE_AUTH": "true", "HIPPO_ALLOWED_CIDRS": "10.0.0.0/8", "HIPPO_FORGEJO_URL": "https://forge.example",
                  "HIPPO_FORGEJO_TOKEN": "tok", "HIPPO_WEBHOOK_SECRET": "s3cret"}.items():
         monkeypatch.setenv(k, v)
     client = TestClient(api.app_from_env(), client=("10.1.2.3", 50000))
-    assert seen["dsn"] == "postgresql://x"
+    assert seen["dsn"] == "postgresql://x" and seen["pool"] == (1, 5, 5.0)  # the default pool
     assert client.get("/v1/status").status_code == 200
 
 

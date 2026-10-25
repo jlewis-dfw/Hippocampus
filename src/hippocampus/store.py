@@ -323,15 +323,71 @@ class PgStore:
         return {"collections": c, "sources": s, "chunks": ch}
 
 
-def connect_store(dsn: str):
-    """Context manager: one short-lived autocommit connection per request, yielding a PgStore."""
+class StoreBusy(Exception):
+    """No database connection became free within ``HIPPO_DB_POOL_TIMEOUT``. The API answers 503 with Retry-After."""
+
+
+POOL_MIN, POOL_MAX, POOL_TIMEOUT = 1, 5, 5.0  # sized for one local user; override with HIPPO_DB_POOL_*
+
+
+def pool_settings(env) -> tuple[int, int, float]:
+    """``(min, max, timeout seconds)`` from ``HIPPO_DB_POOL_MIN``, ``_MAX`` and ``_TIMEOUT``; a bad value is an error at start."""
+    try:
+        low = int(env.get("HIPPO_DB_POOL_MIN", POOL_MIN))
+        high = int(env.get("HIPPO_DB_POOL_MAX", POOL_MAX))
+        timeout = float(env.get("HIPPO_DB_POOL_TIMEOUT", POOL_TIMEOUT))
+    except ValueError as exc:
+        raise ValueError("HIPPO_DB_POOL_MIN and _MAX must be whole numbers and _TIMEOUT a number of seconds") from exc
+    if not (1 <= low <= high) or timeout <= 0:
+        raise ValueError("HIPPO_DB_POOL_MIN must be at least 1, _MAX at least _MIN, and _TIMEOUT above 0")
+    return low, high, timeout
+
+
+def connect_store(dsn: str, *, pool: tuple[int, int, float] | None = None):
+    """A factory of context managers, each yielding a PgStore on an autocommit connection.
+
+    With ``pool=(min, max, timeout)`` the connections come from a shared pool (opened on first use, closed at exit); when none
+    is free after ``timeout`` seconds the manager raises ``StoreBusy``. Without it each use opens and closes its own connection
+    (the admin tool, which runs once).
+    """
+    import atexit
+    import threading
     from contextlib import contextmanager
 
     import psycopg
 
-    @contextmanager
-    def _cm():
-        with psycopg.connect(dsn, autocommit=True) as conn:
-            yield PgStore(conn)
+    if pool is None:
 
-    return _cm
+        @contextmanager
+        def _single():
+            with psycopg.connect(dsn, autocommit=True) as conn:
+                yield PgStore(conn)
+
+        return _single
+
+    from psycopg_pool import ConnectionPool, PoolTimeout
+
+    low, high, timeout = pool
+    holder: list = []
+    lock = threading.Lock()
+
+    def _pool():
+        with lock:
+            if not holder:
+                created = ConnectionPool(dsn, min_size=low, max_size=high, timeout=timeout, open=False,
+                                         kwargs={"autocommit": True}, check=ConnectionPool.check_connection)
+                created.open()
+                atexit.register(created.close)
+                holder.append(created)
+            return holder[0]
+
+    @contextmanager
+    def _pooled():
+        shared = _pool()
+        try:
+            with shared.connection() as conn:
+                yield PgStore(conn)
+        except PoolTimeout as exc:  # only getting a connection times out; the body does not use the pool
+            raise StoreBusy("no database connection is free") from exc
+
+    return _pooled

@@ -21,7 +21,7 @@ This is a living document. It describes the schema as of migration `0003_sync_so
 | Extension | `vector` (pgvector), created by migration 0001 |
 | Embedding column | `vector(384)`, the width of the fixed embedding model |
 | Vector index | HNSW, cosine distance |
-| Connections | One short-lived autocommit connection per `with store_factory()` block; no pool |
+| Connections | A pool of autocommit connections (`psycopg_pool`), one taken per `with store_factory()` block and returned at its end. Size and wait: `HIPPO_DB_POOL_MIN`, `_MAX`, `_TIMEOUT` (default 1, 5, 5 s). When none is free after the wait the API answers `503` with `Retry-After: 1`. The admin tool opens its own single connection |
 | Access from the application | Only `store.py` runs SQL |
 
 ## Entity relationships
