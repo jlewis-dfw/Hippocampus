@@ -153,6 +153,12 @@ overrides the JUnit file. The code is `tests/hippo_report.py`, registered by `te
 HIPPO_RUN_MODEL_TESTS=1 .venv/bin/python -m pytest tests/integration/test_embedder_model.py   # downloads the model once
 ```
 
+### Shared filter vectors
+
+`tests/vectors/filter_vectors.json` and `vault_paths.json` hold the cases the Python rules (`sync_core.py`) and the dashboard's
+JavaScript (`folder.js`) must both answer the same way. `tests/unit/test_filter_vectors.py` runs them against Python and
+`node tests/js/check_vectors.js` against JavaScript (part of `scripts/check.sh`). Add a case to the JSON whenever a rule changes.
+
 ## Linting
 
 ```bash
@@ -206,7 +212,13 @@ The public copy of the project has an equivalent workflow that runs `scripts/che
 ## What is not tested
 
 - The launcher script (`hippocampus`) and the container build: verified by running `./hippocampus up` and `scripts/smoke_live.py`. `tests/e2e/` starts the same `compose.yaml` but not through the launcher.
-- The dashboard in a real browser: the headers and the absence of external addresses are tested; behaviour is checked by hand.
+- The dashboard in a real browser: the headers and the absence of external addresses are tested in the default suite, and `tests/e2e/test_folder_drop.py` drives
+  the folder picker in Chromium. Dragging a folder onto the drop zone cannot be driven by Playwright and is on the manual checklist below.
+- Manual checklist for the folder drop, to run on Linux, macOS and Windows (with Chrome or Edge, and with Firefox or Safari): drop the
+  fixture vault (`tests/vectors/vault_paths.json`, written out as a folder), confirm the preview lists `Café/menu.md`, `Journal/day.md`,
+  `Projects/p.md`, `README.md`, `Work/Clients/acme.md` and `Work/plan.md` as indexed and `Work/leak.md` as rejected, with `Journal`
+  unticked by default; index it; edit a file and drop again; check that only the edited file is re-embedded. Record the browser,
+  operating system and date here when done.
 - The Windows prerequisite script on real Windows.
 - Large crawls and performance.
 

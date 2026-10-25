@@ -1,4 +1,4 @@
-// DocuSync dashboard (HIPPO-E05). Everything from the API or the crawled web is untrusted:
+// DocuSync dashboard (HIPPO-E05); the folder drop is in sync.js and its rules in folder.js. Everything from the API or the crawled web is untrusted:
 // it is only ever written with textContent, never innerHTML.
 "use strict";
 
@@ -107,6 +107,7 @@ async function loadCollections() {
   }
   fillSelect($("collection"), true);
   fillSelect($("searchScope"), false);
+  fillFolderCollections();
 }
 
 function fillSelect(select, withNew) {
@@ -179,6 +180,7 @@ async function watchJob(jobId, label) {
   if (stream) stream.abort();
   const ctl = (stream = new AbortController());
   $("jobSection").hidden = false;
+  $("jobSection").scrollIntoView({ behavior: "smooth", block: "nearest" });
   $("log").textContent = "";
   $("jobMeta").textContent = `${label} - job ${jobId}`;
   setJob("running");
@@ -255,7 +257,7 @@ async function resyncDocs() {
 // --- search sandbox ---
 
 function openSearch(slug) {
-  $("drawer").hidden = false;
+  showTab("search");
   if (slug !== undefined) $("searchScope").value = slug;
   $("query").focus();
 }
@@ -389,24 +391,49 @@ function useToken(event) {
   refreshAll();
 }
 
+// --- tabs: Collections, Local, Web, Access ---
+
+const TABS = ["collections", "search", "local", "web", "access"];
+
+function showTab(name, focus = false, fromHash = false) {
+  if (!TABS.includes(name)) name = "collections";
+  for (const t of TABS) {
+    const on = t === name;
+    $(`panel-${t}`).hidden = !on;
+    $(`tab-${t}`).setAttribute("aria-selected", String(on));
+    $(`tab-${t}`).tabIndex = on ? 0 : -1;
+  }
+  if (focus) $(`tab-${name}`).focus();
+  if (!fromHash && location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
+}
+
 // --- wiring ---
 
-async function refreshAll() { await loadWho(); await Promise.all([loadStatus(), loadCollections()]); }
+async function refreshAll() { await loadWho(); await Promise.all([loadStatus(), loadCollections(), loadSavedSources()]); }
 
 $("crawlForm").addEventListener("submit", startCrawl);
 $("collection").addEventListener("change", () => { $("newCollection").hidden = $("collection").value !== NEW; $("newSlug").required = $("collection").value === NEW; });
 $("searchForm").addEventListener("submit", runSearch);
-$("openSearch").addEventListener("click", () => openSearch());
-$("closeSearch").addEventListener("click", () => { $("drawer").hidden = true; });
 $("closeSources").addEventListener("click", () => { $("sourcesSection").hidden = true; });
 $("refresh").addEventListener("click", refreshAll);
-$("openAccess").addEventListener("click", () => { $("accessSection").hidden = !$("accessSection").hidden; });
-$("closeAccess").addEventListener("click", () => { $("accessSection").hidden = true; });
+$("openAccess").addEventListener("click", () => showTab("access", true));
+for (const tab of document.querySelectorAll("[role=tab]")) {
+  tab.addEventListener("click", () => showTab(tab.dataset.tab));
+  tab.addEventListener("keydown", (e) => { // arrow keys move between tabs, as in the WAI-ARIA tabs pattern
+    const names = TABS, i = names.indexOf(tab.dataset.tab);
+    const to = { ArrowRight: names[(i + 1) % names.length], ArrowLeft: names[(i + names.length - 1) % names.length],
+      Home: names[0], End: names[names.length - 1] }[e.key];
+    if (to) { e.preventDefault(); showTab(to, true); }
+  });
+}
+window.addEventListener("hashchange", () => showTab(location.hash.slice(1), false, true));
 $("tokenForm").addEventListener("submit", useToken);
 $("clearToken").addEventListener("click", () => { setToken(""); $("tokenOnce").hidden = true; refreshAll(); });
 $("clientForm").addEventListener("submit", createClient);
 $("dismissToken").addEventListener("click", () => { $("tokenOnce").hidden = true; $("tokenOnceValue").textContent = ""; $("tokenOnceNote").textContent = ""; });
 $("resyncDocs").addEventListener("click", resyncDocs);
 
+initFolderSync();
+showTab(location.hash.slice(1), false, true);
 refreshAll();
 setInterval(loadStatus, 15000);

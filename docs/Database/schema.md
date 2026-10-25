@@ -83,6 +83,27 @@ Access-control accounts (added in 0002). See [../Api/authorization.md](../Api/au
 
 Written by: the client routes and the admin tool. Authentication reads it by `token_sha256` where `revoked_at IS NULL`.
 
+## `hippocampus.sync_sources`
+
+Saved sync sources (added in 0003): a named folder kept in step with a collection. No credentials are stored. Not to be confused with
+`hippocampus.sources`, which holds the indexed documents.
+
+| Column | Type | Null | Default | Notes |
+|---|---|---|---|---|
+| `id` | UUID | no | `gen_random_uuid()` | Primary key |
+| `name` | VARCHAR(100) | no | | **Unique.** The label in each file's source: `files://<name>/<path>` |
+| `kind` | VARCHAR(16) | no | `'upload'` | `CHECK (kind IN ('upload', 'mount', 's3', 'drive', 'git'))`; only `upload` has a reader today |
+| `collection_id` | UUID | no | | References `collections(id)` **ON DELETE CASCADE**: deleting the collection deletes its sources |
+| `settings` | JSONB | no | `'{}'` | `include`, `exclude`, `extensions`, `default_excludes`, `gitignore`, `folders` |
+| `folder_collections` | JSONB | no | `'{}'` | Top-level folder to the slug of its own collection |
+| `created_by` | VARCHAR(64) | no | | Name of the account that created it |
+| `created_at`, `updated_at` | TIMESTAMPTZ | no | `NOW()` | |
+| `last_run_at` | TIMESTAMPTZ | yes | | |
+| `last_status` | VARCHAR(16) | yes | | `'ok'` or `'error'` |
+| `last_summary` | JSONB | yes | | Counts of the last run, or `{"collection", "error"}` naming the failure by type; never file contents |
+
+`idx_sync_sources_collection` on `collection_id`. Written by the `/v1/sources` routes and by the end of a files-ingest run.
+
 ## `public.schema_migrations`
 
 | Column | Type | Notes |

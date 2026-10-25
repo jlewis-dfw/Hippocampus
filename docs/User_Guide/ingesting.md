@@ -123,6 +123,22 @@ curl -s -X POST http://127.0.0.1:8090/v1/ingest/repo \
 - After a re-index, files of that `repo` label that are no longer in the pack, **including files that now carry a secret**, are
   removed from the collection. Other sources in the collection are untouched.
 
+## Indexing a folder
+
+`POST /v1/ingest/files` takes the files of a folder in batches and keeps the index in step with it: only changed files are
+re-embedded, files that were not sent in the latest run are removed, and a file that now carries a secret is removed and
+reported. The same rules decide every file whichever route it arrives by:
+
+- Paths are stored with `/`, in Unicode NFC (so a Mac and a Linux box agree), and CRLF is treated as LF. Absolute paths, drive
+  letters, `..` and Windows reserved names (`CON`, `NUL.txt`) are rejected.
+- Skipped by default: `.git`, `.obsidian`, `.trash`, `node_modules`, `dist`, `build`, virtual environments, OS junk
+  (`.DS_Store`, `Thumbs.db`, `desktop.ini`, `~$*` lock files) and anything that is not `.md`, `.markdown`, `.txt` or `.rst`.
+- Rejected, and reported by path and rule: secret-looking names and contents, and files over 200,000 bytes.
+- Two paths that differ only by case are both indexed, with a `case-collision` warning, since they cannot coexist on macOS or Windows.
+
+Include and exclude rules, the extension list and a `dry_run` preview are in the
+[endpoint reference](../Api/endpoints.md#post-v1ingestfiles).
+
 ## Keeping a docs repository in sync
 
 An optional feature that keeps a collection in step with a **Forgejo** repository of Markdown files. It is off unless you

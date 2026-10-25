@@ -18,7 +18,7 @@ For people who run and use Hippocampus.
 | [getting-started.md](User_Guide/getting-started.md) | Check your machine, start the stack, first admin token, first collection and search |
 | [dashboard.md](User_Guide/dashboard.md) | Every part of the web dashboard |
 | [collections-and-access.md](User_Guide/collections-and-access.md) | Shared and restricted collections, accounts, tokens, grants, the authentication switch |
-| [ingesting.md](User_Guide/ingesting.md) | Crawling websites, importing repositories, keeping a docs repository in sync, removing things |
+| [ingesting.md](User_Guide/ingesting.md) | Crawling websites, importing repositories, syncing local folders, keeping a docs repository in sync, removing things |
 | [searching.md](User_Guide/searching.md) | Asking good questions, scores, filters |
 | [configuration.md](User_Guide/configuration.md) | Every environment variable and the network gate |
 | [operations.md](User_Guide/operations.md) | Health, logs, backups, upgrades, resource use, security checklist |

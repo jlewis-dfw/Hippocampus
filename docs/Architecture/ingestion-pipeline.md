@@ -2,7 +2,7 @@
 
 Every way of indexing content (a crawl, a pushed file, a repository pack, the docs sync) ends in one function, `sync_collection`
 in `diff.py`. This page describes it, and the two parsers that feed it besides the crawler: the repository ingester
-(`repo_ingest.py`) and the docs sync (`docs_sync.py`). The crawler has its own page: [crawler.md](crawler.md).
+(`repo_ingest.py`), the docs sync (`docs_sync.py`) and folder uploads (`files_ingest.py`, rules in `sync_core.py`). The crawler has its own page: [crawler.md](crawler.md).
 
 ## `sync_collection`
 
@@ -133,14 +133,48 @@ The result is `{added, changed, unchanged, removed, rejected: [{path, reasons}],
 (by URI prefix `repo://<repo>/`), apply all eligible files, and delete the stale URIs. Used for the first fill, for pushes of 20 or more
 commits, and for the manual `POST /v1/sync/docs`.
 
+## Folder uploads (`sync_core.py`, `files_ingest.py`)
+
+`sync_core.py` is the one place that decides which files are indexed. It is pure (no I/O), so the rules are identical on Linux, macOS and
+Windows. Paths are stored `/`-separated, NFC-normalised and relative; text is hashed with LF line endings. A `FileFilter` decides
+`indexed`, `skipped` or `rejected` for each file, first from the path alone (`check_path`), then from the content (`check_content`).
+`check_path` runs these checks and stops at the first that applies:
+
+1. A path that cannot be stored (reserved Windows names, drive letters, control characters, too long): rejected.
+2. A path containing an always-excluded fragment (`HIPPO_EXCLUDE_PATH_PARTS`): rejected. No client setting removes it.
+3. A secret-shaped file name (`.env`, private keys, `*.pem`, `credentials.json` ...): rejected.
+4. The default excluded directories and files (`.git`, `node_modules`, `.DS_Store` ...), unless switched off: skipped.
+5. An extension outside the list (default `.md`, `.markdown`, `.txt`, `.rst`): skipped.
+6. A match in the supplied `.gitignore`: skipped.
+7. A top-level folder outside the chosen roots, or no match in the include globs: skipped (`not-included`).
+8. A match in the exclude globs: skipped.
+9. A size over 200,000 bytes: rejected.
+
+`check_content` then skips binary files (a NUL byte), rejects files that are too large or contain secret-shaped content (credential
+patterns such as AWS keys, private-key headers, tokens), and skips empty files. Every `Decision` names the file and the rule, never the
+content. `scan_files` returns the decisions for a whole listing and flags case collisions.
+
+`files_ingest.py` turns uploads into a sync run. The caller (the dashboard's folder drop, a host command or a mount) sends batches to
+`POST /v1/ingest/files` under one upload session. Each batch is re-checked on the server (the caller is not trusted), diffed with
+`sync_collection` and indexed as it arrives, so a large folder stays under the request size limit and progress can be shown. Pruning happens
+once, when the final batch arrives: sources of the folder that were not sent, or are no longer eligible, are deleted. A file rejected for a
+secret is removed at once. Sources are `files://<source>/<path>`. Limits: 500 files and 20 MB per batch, 20,000 files per run, 50 open
+sessions, sessions expire after an hour. `DELETE /v1/ingest/files/{session}` cancels a run and the index keeps what it had. A `dry_run`
+batch only previews the decisions. When the final batch completes, the run is recorded as a finished `sync-files` job (its result holds
+the source, the collection and the totals). A cancelled or failed run creates no job. If the source is a saved source (`/v1/sources`),
+the outcome, `ok` or `error` with the reason, is also stored on the source ([schema](../Database/schema.md)).
+Saved sources cannot yet be re-read by the server: `POST /v1/sources/{name}/sync` answers `409` for browser-read sources, so the folder is
+dropped again to refresh it.
+
 ## Where the guarded fragments live
 
 A list of path fragments is checked in several places so that documents which must never enter a shared store are refused however they arrive:
 `api.py` (`FORBIDDEN_URI_PARTS`, for file and crawl requests and for repository labels), `crawler.py` (`FORBIDDEN_URL_PARTS`, for
-every URL), `repo_ingest.py` and `docs_sync.py` (`FORBIDDEN_PATH_PARTS`), and `mcp_server.py` (`FORBIDDEN`, for local file paths). They
+every URL), `repo_ingest.py` and `docs_sync.py` (`FORBIDDEN_PATH_PARTS`), `files_ingest.py` (the same fragments plus `HIPPO_EXCLUDE_PATH_PARTS`), and `mcp_server.py` (`FORBIDDEN`, for local file paths). They
 are kept in sync by hand; the tests assert each one.
 
 ## Tests
 
 `tests/unit/test_diff.py` (added, changed, unchanged, prune, embed-before-write), `tests/unit/test_repo_ingest.py` (formats, rejections, the endpoint),
-`tests/unit/test_docs_sync.py` (signature, plans, apply, full resync, the guards on both routes).
+`tests/unit/test_docs_sync.py` (signature, plans, apply, full resync, the guards on both routes), `tests/unit/test_sync_core.py` and `tests/unit/test_filter_vectors.py` (the filter rules, shared with the
+dashboard through `tests/vectors/`), `tests/unit/test_files_ingest.py` (sessions, batches, pruning, limits), `tests/unit/test_sources.py` (saved sources).

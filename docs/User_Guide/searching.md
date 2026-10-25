@@ -93,7 +93,7 @@ manipulate a model.
 
 ## The same search elsewhere
 
-- **Dashboard:** the **Search sandbox** ([dashboard.md](dashboard.md#search-sandbox)).
+- **Dashboard:** the **Search** tab ([dashboard.md](dashboard.md#search-tab)).
 - **MCP:** the `hippocampus_search` tool lets an assistant search for you ([../Mcp/README.md](../Mcp/README.md)).
 - **Python:**
 

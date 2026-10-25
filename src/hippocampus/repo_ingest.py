@@ -15,41 +15,23 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from .diff import Document, sync_collection
-
-FORBIDDEN_PATH_PARTS = ("private-infra",)
-MAX_FILE_BYTES = 200_000
-MAX_FILES = 5_000
-
-SECRET_RULES: tuple[tuple[str, re.Pattern], ...] = tuple(
-    (name, re.compile(rx)) for name, rx in (
-        ("aws-access-key-id", r"\b(?:AKIA|ASIA|AGPA|AIDA|AROA)[0-9A-Z]{16}\b"),
-        ("aws-secret-access-key", r"(?i)aws.{0,20}secret.{0,20}[:=]\s*['\"]?[A-Za-z0-9/+=]{40}\b"),
-        ("pem-private-key", r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
-        ("bearer-token", r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{20,}"),
-        ("jwt", r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),
-        ("github-token", r"\bgh[pousr]_[A-Za-z0-9]{30,}\b"),
-        ("slack-token", r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),
-        ("azure-storage-key", r"(?i)AccountKey=[A-Za-z0-9+/=]{40,}"),
-        ("credential-assignment", r"""(?ix)\b(?:password|passwd|secret|token|api[_-]?key|client[_-]?secret)\b
-                                      ["']?\s*[:=]\s*["'][^"'\s$<{][^"'\s]{7,}["']"""),
-    )
+from .sync_core import (  # noqa: F401  (re-exported: the rules live in sync_core)
+    MAX_FILE_BYTES,
+    MAX_FILES,
+    SECRET_PATH_RE,
+    SECRET_RULES,
+    exclude_path_parts,
+    scan_secrets,
 )
 
-SECRET_PATH_RE = re.compile(
-    r"(?i)(?:^|/)(?:\.env(?:\..*)?|\.vault_pass|vault\.yml|secrets?\.auto\.tfvars|id_(?:rsa|dsa|ecdsa|ed25519)"
-    r"|[^/]*\.(?:pem|key|p12|pfx|tfstate(?:\.backup)?)|credentials(?:\.json)?)$"
-)
+# The guarded fragment stays "private-infra" for the Forgejo build until HIPPO_EXCLUDE_PATH_PARTS replaces it.
+LEGACY_EXCLUDED_PARTS = ("private-infra",)
 
 _XML_FILE_RE = re.compile(r'<file path="([^"]+)">\n(.*?)\n</file>', re.DOTALL)
 _MD_FILE_RE = re.compile(r"^## File: ([^\n]+)\n(`{3,})[^\n]*\n(.*?)\n\2[ \t]*$", re.DOTALL | re.MULTILINE)
 _LANG = {".py": "python", ".cs": "csharp", ".ts": "typescript", ".js": "javascript", ".json": "json",
          ".yml": "yaml", ".yaml": "yaml", ".sh": "bash", ".tf": "hcl", ".sql": "sql", ".razor": "razor",
          ".html": "html", ".css": "css", ".toml": "toml", ".xml": "xml", ".csproj": "xml"}
-
-
-def scan_secrets(text: str) -> list[str]:
-    """Names of every secret rule that matches ``text`` (the matched text is never returned)."""
-    return [name for name, rx in SECRET_RULES if rx.search(text)]
 
 
 def parse_pack(pack: str) -> list[tuple[str, str]]:
@@ -84,7 +66,7 @@ def scan_pack(repo: str, pack: str) -> PackScan:
     out = PackScan()
     for path, content in files:
         reasons: list[str] = []
-        if any(p in path.lower() for p in FORBIDDEN_PATH_PARTS):
+        if any(p in path.lower() for p in exclude_path_parts(LEGACY_EXCLUDED_PARTS)):
             reasons.append("excluded-source")
         if SECRET_PATH_RE.search(path):
             reasons.append("secret-file-name")
@@ -104,7 +86,7 @@ def ingest_pack(collection: str, repo: str, pack: str, store, embedder,
                 log: Callable[[str], None] = lambda m: None) -> dict:
     """Pre-flight, then sync the clean files. Sources of this repo that are no longer in the pack, including
     files now rejected for a secret, are removed from the collection."""
-    if any(p in repo.lower() for p in FORBIDDEN_PATH_PARTS):
+    if any(p in repo.lower() for p in exclude_path_parts(LEGACY_EXCLUDED_PARTS)):
         raise ValueError("this source is excluded from ingestion")
     scan = scan_pack(repo, pack)
     for r in scan.rejected:

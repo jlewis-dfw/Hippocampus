@@ -14,7 +14,13 @@ Examples use `$T` for a token and `http://127.0.0.1:8090` for the service. All r
 | `DELETE /v1/collections/{slug}` | write (shared); admin (restricted) | Delete a collection and everything in it |
 | `GET /v1/collections/{slug}/sources` | read | List a collection's sources |
 | `POST /v1/ingest/file` | write | Index one Markdown document |
+| `POST /v1/ingest/files` | write | Index a folder of files, in batches (or preview with `dry_run`) |
 | `POST /v1/ingest/repo` | write | Index a Repomix pack (job) |
+| `DELETE /v1/ingest/files/{session}` | the run's owner | Cancel a folder run; the index keeps what it had |
+| `GET /v1/sources`, `GET /v1/sources/{name}` | read on the source's collection | Saved folder sources |
+| `POST /v1/sources` | write on the collection and on each folder collection | Save a folder source |
+| `PATCH /v1/sources/{name}`, `DELETE /v1/sources/{name}` | write | Edit the rules, or forget it (`?purge=true` also removes its files) |
+| `POST /v1/sources/{name}/sync` | write | Re-sync now (`409` for an upload source: drop the folder again) |
 | `POST /v1/crawl` | write | Crawl a site (job) |
 | `POST /v1/sync/docs` | write on the docs collection | Full resync of the docs repository (job) |
 | `POST /v1/webhooks/forgejo` | HMAC signature | Forgejo push webhook (job) |
@@ -144,6 +150,76 @@ text is skipped without embedding.
 | 403 `this source is excluded from ingestion` | The `uri` contains a guarded fragment (`FORBIDDEN_URI_PARTS`) |
 | 403 `private story sources may only be indexed into a restricted collection` | A reserved private URI scheme into a shared collection |
 | 403 / 404 | No write access / no such readable collection |
+
+## `POST /v1/ingest/files`
+
+Indexes a folder of files. Many requests with one `session` make one run, so a large folder stays under the request size limit.
+
+```json
+{"collection": "notes", "source": "vault", "files": [{"path": "Work/plan.md", "content": "# Plan\n..."}],
+ "filter": {"include": ["Work/"], "exclude": ["Work/Clients/"], "extensions": ["md"], "default_excludes": true,
+            "gitignore": null},
+ "session": null, "final": false, "dry_run": false}
+```
+
+- `source` is the folder's label (`^[A-Za-z0-9._-]{1,100}$`). Sources are `files://<source>/<path>`.
+- `files`: at most 500 per request and 20,000,000 characters of content. Paths use `/` or `\`; they are stored NFC-normalised
+  with `/`. Text is hashed with LF line endings, so CRLF and LF checkouts give one hash.
+- `filter` is used when the run starts and kept for the whole run. `include` and `exclude` are gitignore-style globs (a name with
+  no `/` matches at any depth, a `/` anchors to the root, `dir/` is a folder, `**` crosses folders). `extensions` defaults to
+  `md, markdown, txt, rst`; an empty list allows any. The server also applies the guarded path fragments
+  (`HIPPO_EXCLUDE_PATH_PARTS`, and `private-infra`), which no client setting removes.
+- The first request of a run omits `session`; the reply carries one. Send it back on each later request. `final: true` ends the
+  run: this folder's sources that were not sent are removed, and the session is closed (`"session": null` in the reply).
+  A session belongs to the account that started it and expires after an hour.
+- A file that is rejected (a secret, a secret-looking name, over 200,000 bytes, an unsafe path) is reported by path and rule,
+  never by content, and if it was indexed before it is removed at once.
+- `dry_run: true` decides and writes nothing. `content` may be left out in a dry run (send `size`) to preview by path.
+
+Reply: `{"session", "source", "files": [{"path", "outcome": "indexed|skipped|rejected", "reason", "action":
+"added|changed|unchanged|removed", "warning"}], "removed": [paths], "totals": {added, changed, unchanged, removed, skipped,
+rejected, files}}`. A dry run returns `{"dry_run": true, "counts", "files"}`.
+
+| Status | When |
+|---|---|
+| 403 / 404 | No write access / no such readable collection (the same 404 for a hidden one) |
+| 404 | The session is unknown, expired, or another account's |
+| 413 | The batch is over 20,000,000 characters, or the run over 20,000 files |
+| 422 | A rule is over 300 characters, a file has no `content` outside a dry run, or the source or slug is invalid |
+| 429 | Too many uploads in progress |
+
+When a saved source (below) has this `source` name, its rules replace the request's `filter`, and the request's `collection` must
+be the source's collection or one of its folder collections (`409` otherwise). A run that completes is recorded on the source and as a
+finished job of kind `sync-files` (`job_id` in the final reply, with the counts in its `result`); a cancelled or failed run is recorded
+on the source only. If a batch fails (the embedder is
+down, say), the open run is dropped, nothing is pruned, the index keeps what it had, and the source shows `last_status: "error"`
+with the cause named by type.
+
+## `DELETE /v1/ingest/files/{session}` — `204`
+
+Cancels a run. Only the account that started it can (`404` for anyone else). Pruning only happens on the final batch, so the index
+keeps what it had. `?reason=` (up to 100 characters) is shown on a saved source as the last error.
+
+## Saved sources
+
+A saved source keeps a folder's rules and target so a later drop uses the same ones.
+
+```json
+{"name": "vault", "collection": "notes",
+ "settings": {"folders": ["Work", "Projects"], "exclude": ["Work/Clients/"], "extensions": ["md"]},
+ "folder_collections": {"Work": "notes-work"}}
+```
+
+- `kind` is `upload` (the only one with a reader today); `mount`, `s3`, `drive` and `git` are reserved in the schema.
+- `settings` are the `filter` fields plus `folders`: the top-level folders to index (`"."` is the files at the top). Empty means all.
+  Unticking a folder and running again removes its files.
+- `folder_collections` sends a folder to a collection of its own. The client then runs once per collection with the same `source`;
+  the server only lets each folder's files into its own collection. The caller needs write access to every collection named.
+- Listing and reading need read access to the source's collection; a source you cannot read is a `404`. Creating, editing,
+  syncing and deleting need write access (`403` if you can read but not write, `404` if the collection is hidden). Deleting a source
+  leaves its indexed files searchable unless `?purge=true`.
+- A reply is `{name, kind, collection, settings, folder_collections, created_by, created_at, updated_at, last_run_at, last_status,
+  last_summary}`.
 
 ## `POST /v1/ingest/repo` — `202`
 

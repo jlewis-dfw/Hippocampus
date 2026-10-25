@@ -12,65 +12,164 @@
     <div class="brand">Hippocampus <span class="muted">DocuSync</span></div>
     <div class="pills" id="pills"></div>
     <button id="openAccess" title="Access token and clients"><span id="who">anonymous</span></button>
-    <button id="openSearch" class="primary">Search sandbox</button>
   </header>
 
   <div id="banner" class="banner" hidden></div>
 
   <main>
-    <section id="accessSection" hidden>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button id="tab-collections" class="tab" role="tab" aria-controls="panel-collections" aria-selected="true" data-tab="collections">Collections</button>
+      <button id="tab-search" class="tab" role="tab" aria-controls="panel-search" aria-selected="false" tabindex="-1" data-tab="search">Search</button>
+      <button id="tab-local" class="tab" role="tab" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-tab="local">Local</button>
+      <button id="tab-web" class="tab" role="tab" aria-controls="panel-web" aria-selected="false" tabindex="-1" data-tab="web">Web</button>
+      <button id="tab-access" class="tab" role="tab" aria-controls="panel-access" aria-selected="false" tabindex="-1" data-tab="access">Access</button>
+    </nav>
+    <div id="panel-collections" class="panel" role="tabpanel" aria-labelledby="tab-collections">
+    <section>
       <div class="row">
-        <h2>Access</h2>
+        <h2>Collections</h2>
         <div class="spacer"></div>
-        <button id="closeAccess">Close</button>
+        <button id="resyncDocs">Resync docs repo</button>
+        <button id="refresh">Refresh</button>
       </div>
-      <p class="muted">Without a token you see shared collections only. Paste a token to see and manage the collections it
-        is granted. It is kept in this tab's session storage and cleared when the tab closes.</p>
-      <form id="tokenForm" autocomplete="off">
-        <label class="wide">Bearer token
-          <input id="token" type="password" placeholder="hip_..." autocomplete="off" spellcheck="false">
-        </label>
-        <div class="actions">
-          <button type="submit" class="primary">Use token</button>
-          <button type="button" id="clearToken">Forget token</button>
-        </div>
-      </form>
-      <p class="mono" id="whoDetail"></p>
-
-      <div id="clientsBox" hidden>
-        <h2>Clients</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Name</th><th>Admin</th><th>Read</th><th>Write</th><th>Last used</th><th class="right">Actions</th></tr></thead>
-            <tbody id="clients"></tbody>
-          </table>
-        </div>
-        <h2>New client</h2>
-        <form id="clientForm" autocomplete="off">
-          <label>Name
-            <input id="clientName" type="text" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" placeholder="jstories-kobold">
-          </label>
-          <label>Read grants (comma separated slugs or globs)
-            <input id="clientRead" type="text" placeholder="jstories-*">
-          </label>
-          <label>Write grants
-            <input id="clientWrite" type="text" placeholder="jstories-*">
-          </label>
-          <label>Note
-            <input id="clientNote" type="text" maxlength="500">
-          </label>
-          <label><input id="clientAdmin" type="checkbox"> Admin (sees and manages everything)</label>
-          <div class="actions"><button type="submit" class="primary">Create client</button></div>
-        </form>
-        <div id="tokenOnce" class="tokenbox" hidden>
-          <p><strong>Token for <span id="tokenOnceName" class="mono"></span></strong>. It is shown once and only its hash is stored.</p>
-          <pre id="tokenOnceValue" class="mono"></pre>
-          <p id="tokenOnceNote" class="muted"></p>
-          <button id="dismissToken">I have stored it</button>
-        </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
+          <tbody id="collections"></tbody>
+        </table>
       </div>
     </section>
 
+    <section id="sourcesSection" hidden>
+      <div class="row">
+        <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
+        <div class="spacer"></div>
+        <button id="closeSources">Close</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
+          <tbody id="sources"></tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+    <div id="panel-search" class="panel" role="tabpanel" aria-labelledby="tab-search" hidden>
+    <section>
+      <h2>Search sandbox</h2>
+      <form id="searchForm" autocomplete="off">
+        <label>Scope <select id="searchScope"></select></label>
+        <label>Top-k <input id="topK" type="number" min="1" max="50" value="5"></label>
+        <label class="wide">Query <textarea id="query" rows="3" required maxlength="4000" placeholder="How do I ...?"></textarea></label>
+        <div class="actions"><button type="submit" class="primary">Run search</button></div>
+      </form>
+      <p class="muted mono" id="searchStats"></p>
+      <div id="results"></div>
+    </section>
+    </div>
+    <div id="panel-local" class="panel" role="tabpanel" aria-labelledby="tab-local" hidden>
+    <section id="folderSection">
+      <h2>Index a folder</h2>
+      <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Drop a folder here, or press Enter to choose one">
+        <strong>Drop a folder here</strong>
+        <span class="muted">notes, docs or code: it is read in your browser and only the files you pick are sent</span>
+        <button type="button" id="chooseFolder">Choose folder</button>
+        <input type="file" id="folderInput" webkitdirectory multiple hidden>
+      </div>
+      <p class="muted" id="folderStatus" aria-live="polite"></p>
+
+      <div id="folderPanel" hidden>
+        <div class="grid3">
+          <label>Source name (label for these files)
+            <input id="fName" type="text" maxlength="100" pattern="[A-Za-z0-9._\-]{1,100}">
+          </label>
+          <label>Collection
+            <select id="fCollection"></select>
+          </label>
+          <label class="check"><input id="fPerFolder" type="checkbox"> One collection per root folder</label>
+        </div>
+        <div id="fNewBox" class="grid3" hidden>
+          <label>New collection slug <input id="fNewSlug" type="text" pattern="[a-z0-9][a-z0-9\-]{0,63}" placeholder="notes"></label>
+          <label>Visibility
+            <select id="fNewVisibility">
+              <option value="shared" selected>shared (every client can read it)</option>
+              <option value="restricted">restricted (needs a grant; admin token)</option>
+            </select>
+          </label>
+        </div>
+        <label id="fPrefixLabel" hidden>Prefix for the new collection names <input id="fPrefix" type="text" maxlength="60"></label>
+
+        <h3>Folders and files in <span class="mono" id="fRootName"></span></h3>
+        <p class="muted">Tick what to index. Open a folder to see its files and why any are left out. Unticking something below the top
+          level adds a line to the Exclude rules. Folders that look private are left unticked.</p>
+        <div class="row">
+          <button type="button" id="fExpand">Expand all</button>
+          <button type="button" id="fCollapse">Collapse all</button>
+          <label class="inline">Show files
+            <select id="fShow">
+              <option value="all" selected>all</option>
+              <option value="on">to be indexed</option>
+              <option value="off">not indexed</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-wrap tree-wrap">
+          <table>
+            <thead><tr><th></th><th>Folder or file</th><th class="num">Files</th><th class="perFolderCell" id="fPerFolderHead">Collection</th><th class="perFolderCell">Visibility</th></tr></thead>
+            <tbody id="fTree"></tbody>
+          </table>
+        </div>
+
+        <h3>Rules</h3>
+        <div class="grid3">
+          <label>Include (one per line, optional)
+            <textarea id="fInclude" rows="3" placeholder="Work/&#10;Projects/**/*.md"></textarea>
+          </label>
+          <label>Exclude (one per line)
+            <textarea id="fExclude" rows="3" placeholder="Work/Clients/&#10;*.draft.md"></textarea>
+          </label>
+          <div>
+            <label>File types (blank: md, markdown, txt, rst; * for any)
+              <input id="fExt" type="text" placeholder="md, py">
+            </label>
+            <label class="check"><input id="fDefaults" type="checkbox" checked> Skip .obsidian, .trash, build output and OS junk</label>
+            <label class="check" id="fGitignoreRow" hidden><input id="fGitignore" type="checkbox" checked> Follow the folder's .gitignore</label>
+          </div>
+        </div>
+
+        <h3>Preview</h3>
+        <div id="fPreview"></div>
+        <p class="muted" id="fServerCheck" aria-live="polite"></p>
+        <p class="warn" id="fProblem" aria-live="polite"></p>
+
+        <div class="grid3">
+          <label class="check"><input type="radio" name="fMode" id="fModeOnce" checked> Import once</label>
+          <label class="check"><input type="radio" name="fMode" id="fModeSave"> Save as a source (re-sync later)</label>
+        </div>
+        <div class="actions">
+          <button type="button" id="fClose">Close</button>
+          <button type="button" id="fCheckServer">Check with server</button>
+          <button type="button" id="fCancel" hidden>Cancel</button>
+          <button type="button" id="fStart" class="primary">Index these files</button>
+        </div>
+        <progress id="fProgress" value="0" max="1" hidden></progress>
+        <div id="fSummary" hidden></div>
+      </div>
+    </section>
+
+    <section id="savedSection" hidden>
+      <h2>Saved folders</h2>
+      <p class="muted">Dropping a folder again updates it: only changed files are re-embedded and files that are gone are removed.
+        Browsers that allow it can re-sync in one click.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Collections</th><th>Folders</th><th>Last run</th><th class="right">Actions</th></tr></thead>
+          <tbody id="savedSources"></tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+    <div id="panel-web" class="panel" role="tabpanel" aria-labelledby="tab-web" hidden>
     <section>
       <h2>Crawl a site</h2>
       <form id="crawlForm" autocomplete="off">
@@ -114,59 +213,69 @@
         <div class="actions"><button type="submit" class="primary" id="crawlBtn">Start crawl</button></div>
       </form>
     </section>
+    </div>
+    <div id="panel-access" class="panel" role="tabpanel" aria-labelledby="tab-access" hidden>
+    <section id="accessSection">
+      <div class="row">
+        <h2>Access</h2>
+      </div>
+      <p class="muted">Without a token you see shared collections only. Paste a token to see and manage the collections it
+        is granted. It is kept in this tab's session storage and cleared when the tab closes.</p>
+      <form id="tokenForm" autocomplete="off">
+        <label class="wide">Bearer token
+          <input id="token" type="password" placeholder="hip_..." autocomplete="off" spellcheck="false">
+        </label>
+        <div class="actions">
+          <button type="submit" class="primary">Use token</button>
+          <button type="button" id="clearToken">Forget token</button>
+        </div>
+      </form>
+      <p class="mono" id="whoDetail"></p>
+
+      <div id="clientsBox" hidden>
+        <h2>Clients</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Admin</th><th>Read</th><th>Write</th><th>Last used</th><th class="right">Actions</th></tr></thead>
+            <tbody id="clients"></tbody>
+          </table>
+        </div>
+        <h2>New client</h2>
+        <form id="clientForm" autocomplete="off">
+          <label>Name
+            <input id="clientName" type="text" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" placeholder="docs-writer">
+          </label>
+          <label>Read grants (comma separated slugs or globs)
+            <input id="clientRead" type="text" placeholder="docs, team-*">
+          </label>
+          <label>Write grants
+            <input id="clientWrite" type="text" placeholder="docs">
+          </label>
+          <label>Note
+            <input id="clientNote" type="text" maxlength="500">
+          </label>
+          <label><input id="clientAdmin" type="checkbox"> Admin (sees and manages everything)</label>
+          <div class="actions"><button type="submit" class="primary">Create client</button></div>
+        </form>
+        <div id="tokenOnce" class="tokenbox" hidden>
+          <p><strong>Token for <span id="tokenOnceName" class="mono"></span></strong>. It is shown once and only its hash is stored.</p>
+          <pre id="tokenOnceValue" class="mono"></pre>
+          <p id="tokenOnceNote" class="muted"></p>
+          <button id="dismissToken">I have stored it</button>
+        </div>
+      </div>
+    </section>
+    </div>
 
     <section id="jobSection" hidden>
       <h2>Job <span id="jobStatus" class="badge"></span></h2>
       <p class="muted mono" id="jobMeta"></p>
       <pre id="log" class="log" aria-live="polite"></pre>
     </section>
-
-    <section>
-      <div class="row">
-        <h2>Collections</h2>
-        <div class="spacer"></div>
-        <button id="resyncDocs">Resync docs repo</button>
-        <button id="refresh">Refresh</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
-          <tbody id="collections"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="sourcesSection" hidden>
-      <div class="row">
-        <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
-        <div class="spacer"></div>
-        <button id="closeSources">Close</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
-          <tbody id="sources"></tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
-  <aside id="drawer" hidden>
-    <div class="row">
-      <h2>Search sandbox</h2>
-      <div class="spacer"></div>
-      <button id="closeSearch">Close</button>
-    </div>
-    <form id="searchForm" autocomplete="off">
-      <label>Scope <select id="searchScope"></select></label>
-      <label>Query <textarea id="query" rows="3" required maxlength="4000" placeholder="How do I ...?"></textarea></label>
-      <label>Top-k <input id="topK" type="number" min="1" max="50" value="5"></label>
-      <div class="actions"><button type="submit" class="primary">Run search</button></div>
-    </form>
-    <p class="muted mono" id="searchStats"></p>
-    <div id="results"></div>
-  </aside>
-
+  <script src="folder.js"></script>
+  <script src="sync.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

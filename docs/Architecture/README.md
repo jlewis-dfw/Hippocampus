@@ -2,12 +2,12 @@
 
 How Hippocampus is put together and why. This is the map; each topic has its own page.
 
-This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
+This is a living document. It describes the code as of migration `0003_sync_sources`; update it alongside the source.
 
 ## Contents
 
 - [embedding-and-chunking.md](embedding-and-chunking.md) — the chunker and the embedding model.
-- [ingestion-pipeline.md](ingestion-pipeline.md) — the content-hash sync shared by every way of indexing, the repository ingester and the docs sync.
+- [ingestion-pipeline.md](ingestion-pipeline.md) — the content-hash sync shared by every way of indexing, the repository ingester, the docs sync and folder uploads.
 - [crawler.md](crawler.md) — HTML to Markdown, the crawl loop, the two engines and the public-address guard.
 - [search.md](search.md) — the search query, scoring and why filtering happens before the limit.
 - [jobs.md](jobs.md) — background jobs and the live log.
@@ -47,6 +47,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 | **Crawler** | `crawler.py` | Fetches sites (static HTTP or headless Chromium) and converts them to Markdown |
 | **Repository ingester** | `repo_ingest.py` | Parses Repomix packs and rejects files that look like secrets |
 | **Docs sync** | `docs_sync.py` | Keeps a collection in step with a Forgejo repository via webhook |
+| **Folder uploads** | `sync_core.py`, `files_ingest.py` | One set of file rules; batched uploads that build a sync run, with saved sources |
 | **Jobs** | `jobs.py` | In-memory registry of background work with a replayable log |
 | **Migrations** | `migrate.py`, `db/migrations/` | The schema, applied in order |
 | **MCP server** | `mcp_server.py` | A stdio tool server that calls the REST API |

@@ -197,6 +197,78 @@ class PgStore:
             cur.execute("SELECT count(*) FROM hippocampus.api_clients WHERE is_admin AND revoked_at IS NULL")
             return cur.fetchone()[0]
 
+    # --- saved sync sources ---
+
+    _SOURCE_COLS = """s.name, s.kind, k.slug, s.settings, s.folder_collections, s.created_by, s.created_at, s.updated_at,
+                      s.last_run_at, s.last_status, s.last_summary"""
+
+    @staticmethod
+    def _source_row(r) -> dict:
+        return {"name": r[0], "kind": r[1], "collection": r[2], "settings": r[3], "folder_collections": r[4],
+                "created_by": r[5], "created_at": r[6].isoformat(), "updated_at": r[7].isoformat(),
+                "last_run_at": r[8].isoformat() if r[8] else None, "last_status": r[9], "last_summary": r[10]}
+
+    def list_sync_sources(self) -> list[dict]:
+        with self._conn.cursor() as cur:
+            cur.execute(f"""SELECT {self._SOURCE_COLS} FROM hippocampus.sync_sources s
+                            JOIN hippocampus.collections k ON k.id = s.collection_id ORDER BY s.name""")
+            return [self._source_row(r) for r in cur.fetchall()]
+
+    def get_sync_source(self, name: str) -> dict | None:
+        with self._conn.cursor() as cur:
+            cur.execute(f"""SELECT {self._SOURCE_COLS} FROM hippocampus.sync_sources s
+                            JOIN hippocampus.collections k ON k.id = s.collection_id WHERE s.name = %s""", (name,))
+            row = cur.fetchone()
+        return self._source_row(row) if row else None
+
+    def create_sync_source(self, name: str, kind: str, collection: str, settings: dict, folder_collections: dict,
+                           created_by: str) -> bool:
+        """False if the name is taken."""
+        from psycopg.types.json import Jsonb
+
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cid = self._collection_id(cur, collection)
+            cur.execute(
+                """INSERT INTO hippocampus.sync_sources (name, kind, collection_id, settings, folder_collections, created_by)
+                   VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (name) DO NOTHING""",
+                (name, kind, cid, Jsonb(settings), Jsonb(folder_collections), created_by),
+            )
+            return cur.rowcount == 1
+
+    def update_sync_source(self, name: str, collection: str | None, settings: dict | None,
+                           folder_collections: dict | None) -> bool:
+        """Only the given fields change. False if there is no such source."""
+        from psycopg.types.json import Jsonb
+
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cid = self._collection_id(cur, collection) if collection else None
+            cur.execute(
+                """UPDATE hippocampus.sync_sources
+                   SET collection_id = COALESCE(%s, collection_id), settings = COALESCE(%s, settings),
+                       folder_collections = COALESCE(%s, folder_collections), updated_at = NOW()
+                   WHERE name = %s""",
+                (cid, Jsonb(settings) if settings is not None else None,
+                 Jsonb(folder_collections) if folder_collections is not None else None, name),
+            )
+            return cur.rowcount == 1
+
+    def delete_sync_source(self, name: str) -> bool:
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute("DELETE FROM hippocampus.sync_sources WHERE name = %s", (name,))
+            return cur.rowcount == 1
+
+    def record_sync_run(self, name: str, status: str, summary: dict) -> bool:
+        """Remember how the last run ended. A failed run changes nothing else: the index is left as it was."""
+        from psycopg.types.json import Jsonb
+
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute(
+                """UPDATE hippocampus.sync_sources SET last_run_at = NOW(), last_status = %s, last_summary = %s
+                   WHERE name = %s""",
+                (status, Jsonb(summary), name),
+            )
+            return cur.rowcount == 1
+
     def delete_collection(self, slug: str) -> bool:
         with self._conn.transaction(), self._conn.cursor() as cur:
             cur.execute("DELETE FROM hippocampus.collections WHERE slug = %s", (slug,))

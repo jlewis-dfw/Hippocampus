@@ -4,7 +4,7 @@ Hippocampus keeps everything in one PostgreSQL 16 database with the **pgvector**
 vectors) and the access-control accounts. This page is the overview; the tables are in [schema.md](schema.md) and the migration process in
 [migrations.md](migrations.md).
 
-This is a living document. It describes the schema as of migration `0002_access_control`; update it alongside the migrations.
+This is a living document. It describes the schema as of migration `0003_sync_sources`; update it alongside the migrations.
 
 ## Contents
 

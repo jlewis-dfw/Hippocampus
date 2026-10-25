@@ -21,7 +21,7 @@ the Collections table lists `hippocampus-docs`.
 
 ## 2. Ask questions of the docs
 
-Click **Search sandbox**, choose the collection, type a question as a sentence and press **Run search**. Each result shows its score, the collection, the source,
+Open the **Search** tab, choose the collection, type a question as a sentence and press **Run search**. Each result shows its score, the collection, the source,
 the heading path of the passage and the text.
 
 **"how do I make a collection private?"** finds the admin command that changes visibility, then the guide's section on creating a restricted collection:
