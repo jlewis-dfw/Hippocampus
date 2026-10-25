@@ -257,7 +257,7 @@ async function resyncDocs() {
 // --- search sandbox ---
 
 function openSearch(slug) {
-  $("drawer").hidden = false;
+  showTab("search");
   if (slug !== undefined) $("searchScope").value = slug;
   $("query").focus();
 }
@@ -393,7 +393,7 @@ function useToken(event) {
 
 // --- tabs: Collections, Local, Web, Access ---
 
-const TABS = ["collections", "local", "web", "access"];
+const TABS = ["collections", "search", "local", "web", "access"];
 
 function showTab(name, focus = false, fromHash = false) {
   if (!TABS.includes(name)) name = "collections";
@@ -414,8 +414,6 @@ async function refreshAll() { await loadWho(); await Promise.all([loadStatus(), 
 $("crawlForm").addEventListener("submit", startCrawl);
 $("collection").addEventListener("change", () => { $("newCollection").hidden = $("collection").value !== NEW; $("newSlug").required = $("collection").value === NEW; });
 $("searchForm").addEventListener("submit", runSearch);
-$("openSearch").addEventListener("click", () => openSearch());
-$("closeSearch").addEventListener("click", () => { $("drawer").hidden = true; });
 $("closeSources").addEventListener("click", () => { $("sourcesSection").hidden = true; });
 $("refresh").addEventListener("click", refreshAll);
 $("openAccess").addEventListener("click", () => showTab("access", true));

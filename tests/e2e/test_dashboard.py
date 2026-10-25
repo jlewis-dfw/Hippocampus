@@ -123,8 +123,8 @@ def test_collection_row_shows_counts_and_lists_sources(dash, library):
 
 def test_search_sandbox_finds_by_meaning(dash, library):
     d = dash()
-    d.page.locator("#openSearch").click()
-    expect(d.page.locator("#drawer")).to_be_visible()
+    d.page.get_by_role("tab", name="Search").click()
+    expect(d.page.locator("#panel-search")).to_be_visible()
     d.page.select_option("#searchScope", library)
     d.page.fill("#query", "how do we keep copies of our data safe?")
     d.page.get_by_role("button", name="Run search").click()
@@ -139,13 +139,15 @@ def test_search_sandbox_finds_by_meaning(dash, library):
     expect(d.page.locator("#results .hit").first).to_contain_text("cats.md")
 
 
-def test_collection_search_button_scopes_the_drawer(dash, library):
+def test_collection_search_button_opens_the_search_tab_scoped_to_it(dash, library):
     d = dash()
     d.row("collections", library).get_by_role("button", name="Search").click()
-    expect(d.page.locator("#drawer")).to_be_visible()
+    expect(d.page.locator("#panel-search")).to_be_visible()
+    expect(d.page.get_by_role("tab", name="Search")).to_have_attribute("aria-selected", "true")
     expect(d.page.locator("#searchScope")).to_have_value(library)
-    d.page.locator("#closeSearch").click()
-    expect(d.page.locator("#drawer")).to_be_hidden()
+    expect(d.page.locator("#query")).to_be_focused()
+    d.page.get_by_role("tab", name="Collections").click()
+    expect(d.page.locator("#panel-search")).to_be_hidden()
 
 
 def test_hostile_content_is_shown_as_text_not_run(dash, admin):
@@ -157,7 +159,7 @@ def test_hostile_content_is_shown_as_text_not_run(dash, admin):
     d = dash()
     d.row("collections", slug).get_by_role("button", name="Sources").click()
     expect(d.row("sources", "x.md")).to_contain_text('<img src=x onerror="window.__pwned=1">')
-    d.page.locator("#openSearch").click()
+    d.page.get_by_role("tab", name="Search").click()
     d.page.select_option("#searchScope", slug)
     d.page.fill("#query", "growing tomatoes")
     d.page.get_by_role("button", name="Run search").click()
@@ -171,7 +173,7 @@ def test_hostile_content_is_shown_as_text_not_run(dash, admin):
 def test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys(dash, library):
     d = dash()
     page = d.page
-    panels = {"Collections": "#panel-collections", "Local": "#panel-local", "Web": "#panel-web", "Access": "#panel-access"}
+    panels = {"Collections": "#panel-collections", "Search": "#panel-search", "Local": "#panel-local", "Web": "#panel-web", "Access": "#panel-access"}
 
     def only(shown):
         for name, sel in panels.items():
@@ -180,6 +182,9 @@ def test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys(dash, lib
 
     only("Collections")  # the first tab is the default, and it holds the collections table
     expect(d.row("collections", library)).to_be_visible()
+    page.get_by_role("tab", name="Search").click()
+    only("Search")
+    expect(page.locator("#searchForm")).to_be_visible()
     page.get_by_role("tab", name="Local").click()
     only("Local")
     expect(page.locator("#dropZone")).to_be_visible()

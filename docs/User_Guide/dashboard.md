@@ -10,21 +10,21 @@ For how it is built, see [../Dashboard/README.md](../Dashboard/README.md). For s
 ## Layout
 
 ```
-┌ Hippocampus DocuSync  [status pills]            [identity button] [Search sandbox] ┐
+┌ Hippocampus DocuSync  [status pills]            [identity button]  ┐
 │ [banner: errors appear here]                                                        │
-│ [ Collections ] [ Local ] [ Web ] [ Access ]                                        │
+│ [ Collections ] [ Search ] [ Local ] [ Web ] [ Access ]                             │
 │                                                                                      │
 │ Collections: the collections table, and Sources in <collection> after you click it  │
+│ Search:      the search sandbox                                                      │
 │ Local:       Index a folder (drop zone, tree, rules, preview), and Saved folders    │
 │ Web:         Crawl a site                                                           │
 │ Access:      token, identity and clients                                            │
 │                                                                                      │
 │ Job log                 (below the tabs; appears while or after a job runs)          │
 └──────────────────────────────────────────────────────────────────────────────────────┘
-                                          Search sandbox opens as a side drawer
 ```
 
-The four tabs split the page by what you are doing. The address keeps the tab (`/ui/#local`), so a reload or a bookmark returns
+The five tabs split the page by what you are doing. The address keeps the tab (`/ui/#local`), so a reload or a bookmark returns
 to it, and the left and right arrow keys, **Home** and **End** move between tabs. The identity button in the header jumps to
 **Access**. The job log is not part of a tab, so a crawl or a resync keeps reporting while you look at another tab.
 
@@ -118,9 +118,9 @@ Click **Sources** on a collection to list its documents, most recently indexed f
 status (`indexed`), chunk count, the first 12 characters of the content hash and the time it was indexed. The hash is
 what lets a re-crawl skip pages that did not change.
 
-## Search sandbox
+## Search tab
 
-Click **Search sandbox** (or **Search** on a row). Choose a scope (all collections you may read, or one), type a question,
+Open the **Search** tab (or press **Search** on a collection row, which opens the tab scoped to it). Choose a scope (all collections you may read, or one), type a question,
 set **Top-k** (1 to 50), and run it. Each result shows its score, collection and title, the source URI with the heading path,
 and the passage. The footer reports how many results came back and how long it took. This is the same search the API
 and MCP tools use ([searching.md](searching.md)).

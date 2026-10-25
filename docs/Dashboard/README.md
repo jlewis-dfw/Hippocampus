@@ -30,7 +30,7 @@ The `/ui` path is **not** covered by the network gate (it holds no data); every 
 
 | File | Role |
 |---|---|
-| `index.html` | The page structure: header, the tab bar (Collections, Local, Web, Access) and its four panels, the job log, the search drawer |
+| `index.html` | The page structure: header, the tab bar (Collections, Search, Local, Web, Access) and its five panels, and the job log |
 | `app.css` | Dark theme with a few CSS variables; responsive grid; badges, pills, the token box |
 | `app.js` | The behaviour of everything except the folder drop, about 400 lines, no modules or dependencies |
 | `sync.js` | The folder drop: reading a dropped or chosen folder, the root-folder tree, the rules, the preview, batched upload with cancel, and the saved folders table. Loaded before `app.js`, which calls `initFolderSync()` |

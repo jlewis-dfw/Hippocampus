@@ -12,7 +12,6 @@
     <div class="brand">Hippocampus <span class="muted">DocuSync</span></div>
     <div class="pills" id="pills"></div>
     <button id="openAccess" title="Access token and clients"><span id="who">anonymous</span></button>
-    <button id="openSearch" class="primary">Search sandbox</button>
   </header>
 
   <div id="banner" class="banner" hidden></div>
@@ -20,6 +19,7 @@
   <main>
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button id="tab-collections" class="tab" role="tab" aria-controls="panel-collections" aria-selected="true" data-tab="collections">Collections</button>
+      <button id="tab-search" class="tab" role="tab" aria-controls="panel-search" aria-selected="false" tabindex="-1" data-tab="search">Search</button>
       <button id="tab-local" class="tab" role="tab" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-tab="local">Local</button>
       <button id="tab-web" class="tab" role="tab" aria-controls="panel-web" aria-selected="false" tabindex="-1" data-tab="web">Web</button>
       <button id="tab-access" class="tab" role="tab" aria-controls="panel-access" aria-selected="false" tabindex="-1" data-tab="access">Access</button>
@@ -52,6 +52,19 @@
           <tbody id="sources"></tbody>
         </table>
       </div>
+    </section>
+    </div>
+    <div id="panel-search" class="panel" role="tabpanel" aria-labelledby="tab-search" hidden>
+    <section>
+      <h2>Search sandbox</h2>
+      <form id="searchForm" autocomplete="off">
+        <label>Scope <select id="searchScope"></select></label>
+        <label>Top-k <input id="topK" type="number" min="1" max="50" value="5"></label>
+        <label class="wide">Query <textarea id="query" rows="3" required maxlength="4000" placeholder="How do I ...?"></textarea></label>
+        <div class="actions"><button type="submit" class="primary">Run search</button></div>
+      </form>
+      <p class="muted mono" id="searchStats"></p>
+      <div id="results"></div>
     </section>
     </div>
     <div id="panel-local" class="panel" role="tabpanel" aria-labelledby="tab-local" hidden>
@@ -260,22 +273,6 @@
       <pre id="log" class="log" aria-live="polite"></pre>
     </section>
   </main>
-
-  <aside id="drawer" hidden>
-    <div class="row">
-      <h2>Search sandbox</h2>
-      <div class="spacer"></div>
-      <button id="closeSearch">Close</button>
-    </div>
-    <form id="searchForm" autocomplete="off">
-      <label>Scope <select id="searchScope"></select></label>
-      <label>Query <textarea id="query" rows="3" required maxlength="4000" placeholder="How do I ...?"></textarea></label>
-      <label>Top-k <input id="topK" type="number" min="1" max="50" value="5"></label>
-      <div class="actions"><button type="submit" class="primary">Run search</button></div>
-    </form>
-    <p class="muted mono" id="searchStats"></p>
-    <div id="results"></div>
-  </aside>
 
   <script src="folder.js"></script>
   <script src="sync.js"></script>
