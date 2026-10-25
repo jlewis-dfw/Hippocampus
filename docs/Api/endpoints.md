@@ -111,7 +111,7 @@ Response `201`: `{"slug", "name", "description", "visibility"}`.
 | 403 `admin token required` | `visibility: "restricted"` and the caller is not an admin |
 | 403 `this collection name cannot be used` | The slug is taken by a restricted collection the caller cannot see |
 | 409 `collection '<slug>' already exists` | The slug is taken by a collection the caller can see |
-| 422 `collections named jstories* hold private data and must be restricted` | A reserved private prefix with `shared` ([authorization.md](authorization.md#reserved-private-names)) |
+| 422 `collections named private* hold private data and must be restricted` | A reserved private prefix with `shared` ([authorization.md](authorization.md#reserved-private-names)) |
 
 ## `PATCH /v1/collections/{slug}`
 

@@ -16,7 +16,7 @@ would make us change it. Short on purpose: the topic pages have the detail.
 
 - **Decision.** The pasted token lives in `sessionStorage`: gone when the tab closes, never in a cookie, never sent to another origin.
 - **Why.** A cookie would be sent automatically and need CSRF protection; `localStorage` would outlive the session. The dashboard is served
-  with a strict Content-Security-Policy (`script-src 'self'`, no inline script), which is what keeps injected script, the real risk to a stored
+  with a strict Content-Security-Policy (`default-src 'self'`, so no inline or third-party script), which is what keeps injected script, the real risk to a stored
   token, out.
 - **Considered.** An HttpOnly session cookie (needs login endpoints, CSRF tokens and server-side sessions); keeping the token in memory only
   (lost on every reload).

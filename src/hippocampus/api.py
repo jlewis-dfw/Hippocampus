@@ -273,7 +273,7 @@ def create_app(
     def create_collection(req: CollectionCreate, p: Principal = Depends(current_principal)):
         _check_slug(req.slug)
         if is_private_slug(req.slug) and req.visibility != "restricted":
-            raise HTTPException(422, "collections named jstories* hold private data and must be restricted")
+            raise HTTPException(422, "collections named private* hold private data and must be restricted")
         if req.visibility == "restricted":
             need_admin(p)
         elif not p.can_write(req.slug, "shared", require_auth=require_auth):
@@ -293,7 +293,7 @@ def create_app(
             need_read(p, store, slug)
             need_admin(p)
             if req.visibility == "shared" and is_private_slug(slug):
-                raise HTTPException(422, "collections named jstories* hold private data and must stay restricted")
+                raise HTTPException(422, "collections named private* hold private data and must stay restricted")
             store.update_collection(slug, req.name, req.description, req.visibility)
             return next(c for c in store.list_collections() if c["slug"] == slug)
 
@@ -687,7 +687,9 @@ def app_from_env() -> FastAPI:
     from .crawler import make_crawler
     from .embedder import FastEmbedder
     from .store import connect_store
+    from .workers import check_single_worker
 
+    check_single_worker()
     factory = connect_store(os.environ["HIPPO_DSN"])
     embedder = FastEmbedder(cache_dir=os.environ.get("HIPPO_MODEL_CACHE"))
     return create_app(

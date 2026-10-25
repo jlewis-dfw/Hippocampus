@@ -1,7 +1,7 @@
 """Admin CLI for access control, talking straight to Postgres (so the first admin needs no API token).
 
     HIPPO_DSN=... python -m hippocampus.admin create-client --name root --admin
-    HIPPO_DSN=... python -m hippocampus.admin create-client --name jstories-kobold --read 'jstories-*' --write 'jstories-*'
+    HIPPO_DSN=... python -m hippocampus.admin create-client --name private-kobold --read 'private-*' --write 'private-*'
     HIPPO_DSN=... python -m hippocampus.admin list-clients | rotate-client NAME | revoke-client NAME | set-visibility SLUG restricted
 
 The token is printed once and never stored (only its SHA-256 is).
@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"revoked {args.name}")
         elif args.cmd == "set-visibility":
             if args.visibility == "shared" and is_private_slug(args.slug):
-                print("collections named jstories* must stay restricted", file=sys.stderr)
+                print("collections named private* must stay restricted", file=sys.stderr)
                 return 2
             if not store.update_collection(args.slug, None, None, args.visibility):
                 print(f"no collection {args.slug!r}", file=sys.stderr)

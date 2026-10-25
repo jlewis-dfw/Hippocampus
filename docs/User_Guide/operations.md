@@ -36,6 +36,14 @@ The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and 
 The service logs requests and errors to standard output. Job logs (what a crawl fetched, what a sync rejected) are available
 through the API and the dashboard, not in the container log, and are lost on restart.
 
+## One worker only
+
+Jobs and folder-upload sessions are held in the memory of the API process, so the service must run as a single worker (the image
+starts uvicorn without `--workers`). With several workers a running upload fails with `404` and job history is split between
+processes. At start the service reads `WEB_CONCURRENCY`; above 1 it logs a warning, and with `HIPPO_REQUIRE_SINGLE_WORKER=true` it
+refuses to start. A `--workers` flag on the uvicorn command line is not visible to this check. Scaling out means moving this state
+into PostgreSQL first ([design-decisions.md](../Architecture/design-decisions.md)).
+
 ## Backups
 
 Everything lives in the PostgreSQL database (the `pgdata` volume). The embedding model is in the image, so it is not part of

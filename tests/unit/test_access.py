@@ -28,16 +28,16 @@ def add_client(mem, name, token, admin=False, read=(), write=()):
 
 @pytest.fixture
 def world():
-    """A shared 'pets' collection and a restricted 'jstories-a' whose chunk is the best match for 'cat'."""
+    """A shared 'pets' collection and a restricted 'private-a' whose chunk is the best match for 'cat'."""
     c, mem = build()
     admin = add_client(mem, "root", "hip_root", admin=True)
-    kobold = add_client(mem, "kobold", "hip_kobold", read=["jstories-*"], write=["jstories-*"])
-    other = add_client(mem, "other", "hip_other", read=["jstories-b"])
+    kobold = add_client(mem, "kobold", "hip_kobold", read=["private-*"], write=["private-*"])
+    other = add_client(mem, "other", "hip_other", read=["private-b"])
     assert c.post("/v1/collections", json={"slug": "pets", "name": "Pets"}).status_code == 201
-    assert c.post("/v1/collections", json={"slug": "jstories-a", "name": "A", "visibility": "restricted"},
+    assert c.post("/v1/collections", json={"slug": "private-a", "name": "A", "visibility": "restricted"},
                   headers=admin).status_code == 201
     c.post("/v1/ingest/file", json={"collection": "pets", "uri": "dogs.md", "text": "# D\nA dog."})
-    c.post("/v1/ingest/file", json={"collection": "jstories-a", "uri": "jstories://a/ch-1",
+    c.post("/v1/ingest/file", json={"collection": "private-a", "uri": "private://a/ch-1",
                                     "text": "# Ch1\ncat cat cat"}, headers=kobold)
     return c, mem, {"admin": admin, "kobold": kobold, "other": other}
 
@@ -45,14 +45,14 @@ def world():
 # --- grant matching ---
 
 def test_grant_globs_are_exact_about_the_prefix():
-    assert auth.matches(["jstories-*"], "jstories-a")
-    assert not auth.matches(["jstories-*"], "jstories")
-    assert not auth.matches(["jstories-*"], "xjstories-a")
+    assert auth.matches(["private-*"], "private-a")
+    assert not auth.matches(["private-*"], "private")
+    assert not auth.matches(["private-*"], "xprivate-a")
     assert auth.matches(["pets"], "pets") and not auth.matches(["pets"], "pets2")
 
 
 def test_validate_grants_refuses_a_bare_wildcard_and_junk():
-    assert auth.validate_grants(["a", "jstories-*", "a"]) == ["a", "jstories-*"]
+    assert auth.validate_grants(["a", "private-*", "a"]) == ["a", "private-*"]
     for bad in ("*", "**", "Upper", "a b", "../x", ""):
         with pytest.raises(ValueError):
             auth.validate_grants([bad])
@@ -75,10 +75,10 @@ def test_unscoped_search_never_returns_restricted_chunks_even_when_they_are_the_
 def test_named_restricted_collection_looks_missing_without_a_grant(world):
     c, _, tok = world
     missing = c.post("/v1/search", json={"query": "cat", "collections": ["no-such"]})
-    hidden = c.post("/v1/search", json={"query": "cat", "collections": ["jstories-a"]})
+    hidden = c.post("/v1/search", json={"query": "cat", "collections": ["private-a"]})
     assert hidden.status_code == missing.status_code == 404
-    assert c.get("/v1/collections/jstories-a/sources").status_code == 404
-    assert c.post("/v1/search", json={"query": "cat", "collections": ["jstories-a"]},
+    assert c.get("/v1/collections/private-a/sources").status_code == 404
+    assert c.post("/v1/search", json={"query": "cat", "collections": ["private-a"]},
                   headers=tok["other"]).status_code == 404  # a grant for a different story is not enough
 
 
@@ -86,15 +86,15 @@ def test_granted_client_and_admin_can_read_it(world):
     c, _, tok = world
     for who in ("kobold", "admin"):
         hits = c.post("/v1/search", json={"query": "cat"}, headers=tok[who]).json()["results"]
-        assert hits[0]["collection"] == "jstories-a"
-        assert c.get("/v1/collections/jstories-a/sources", headers=tok[who]).status_code == 200
+        assert hits[0]["collection"] == "private-a"
+        assert c.get("/v1/collections/private-a/sources", headers=tok[who]).status_code == 200
 
 
 def test_listing_and_status_counts_respect_the_principal(world):
     c, _, tok = world
     assert [x["slug"] for x in c.get("/v1/collections").json()["collections"]] == ["pets"]
     assert c.get("/v1/status").json()["collections"] == 1
-    assert [x["slug"] for x in c.get("/v1/collections", headers=tok["kobold"]).json()["collections"]] == ["jstories-a", "pets"]
+    assert [x["slug"] for x in c.get("/v1/collections", headers=tok["kobold"]).json()["collections"]] == ["pets", "private-a"]
     assert c.get("/v1/status", headers=tok["kobold"]).json()["collections"] == 2
     assert c.get("/v1/collections", headers=tok["admin"]).json()["collections"][0]["visibility"] == "restricted"
 
@@ -103,26 +103,26 @@ def test_listing_and_status_counts_respect_the_principal(world):
 
 def test_restricted_writes_need_a_write_grant(world):
     c, _, tok = world
-    body = {"collection": "jstories-a", "uri": "jstories://a/ch-2", "text": "# Ch2\nmore"}
+    body = {"collection": "private-a", "uri": "private://a/ch-2", "text": "# Ch2\nmore"}
     assert c.post("/v1/ingest/file", json=body).status_code == 404            # anonymous: hidden
     assert c.post("/v1/ingest/file", json=body, headers=tok["other"]).status_code == 404
-    read_only = add_client(world[1], "reader", "hip_reader", read=["jstories-a"])
+    read_only = add_client(world[1], "reader", "hip_reader", read=["private-a"])
     assert c.post("/v1/ingest/file", json=body, headers=read_only).status_code == 403
     assert c.post("/v1/ingest/file", json=body, headers=tok["kobold"]).status_code == 200
 
 
 def test_private_uris_cannot_be_indexed_into_a_shared_collection(world):
     c, _, tok = world
-    r = c.post("/v1/ingest/file", json={"collection": "pets", "uri": "jstories://a/ch-9", "text": "x"},
+    r = c.post("/v1/ingest/file", json={"collection": "pets", "uri": "private://a/ch-9", "text": "x"},
                headers=tok["admin"])
     assert r.status_code == 403 and "restricted" in r.json()["detail"]
 
 
-def test_jstories_collections_must_be_restricted(world):
+def test_private_collections_must_be_restricted(world):
     c, _, tok = world
-    r = c.post("/v1/collections", json={"slug": "jstories-z", "name": "Z"}, headers=tok["admin"])
+    r = c.post("/v1/collections", json={"slug": "private-z", "name": "Z"}, headers=tok["admin"])
     assert r.status_code == 422
-    r = c.patch("/v1/collections/jstories-a", json={"visibility": "shared"}, headers=tok["admin"])
+    r = c.patch("/v1/collections/private-a", json={"visibility": "shared"}, headers=tok["admin"])
     assert r.status_code == 422
 
 
@@ -139,15 +139,15 @@ def test_only_admins_create_restricted_or_change_visibility(world):
 
 def test_deleting_a_restricted_collection_needs_admin(world):
     c, mem, tok = world
-    assert c.delete("/v1/collections/jstories-a").status_code == 404
-    assert c.delete("/v1/collections/jstories-a", headers=tok["kobold"]).status_code == 403
-    assert c.delete("/v1/collections/jstories-a", headers=tok["admin"]).status_code == 204
-    assert "jstories-a" not in mem.collections
+    assert c.delete("/v1/collections/private-a").status_code == 404
+    assert c.delete("/v1/collections/private-a", headers=tok["kobold"]).status_code == 403
+    assert c.delete("/v1/collections/private-a", headers=tok["admin"]).status_code == 204
+    assert "private-a" not in mem.collections
 
 
 def test_creating_a_name_that_exists_as_hidden_does_not_confirm_it(world):
     c, _, _ = world
-    taken = c.post("/v1/collections", json={"slug": "jstories-a", "name": "x"})
+    taken = c.post("/v1/collections", json={"slug": "private-a", "name": "x"})
     assert taken.status_code == 422  # private prefix rule fires first
     c.patch("/v1/collections/pets", json={"visibility": "restricted"}, headers={"Authorization": "Bearer hip_root"})
     assert c.post("/v1/collections", json={"slug": "pets", "name": "x"}).status_code == 403
@@ -171,7 +171,7 @@ def test_whoami(world):
     c, _, tok = world
     assert c.get("/v1/whoami").json()["name"] == "anonymous"
     me = c.get("/v1/whoami", headers=tok["kobold"]).json()
-    assert me["name"] == "kobold" and me["write"] == ["jstories-*"] and not me["admin"]
+    assert me["name"] == "kobold" and me["write"] == ["private-*"] and not me["admin"]
 
 
 # --- client management ---
@@ -188,11 +188,11 @@ def test_client_admin_endpoints_need_admin(world):
 
 def test_create_client_shows_the_token_once_and_it_works(world):
     c, _, tok = world
-    r = c.post("/v1/clients", json={"name": "scribe", "read": ["jstories-a"]}, headers=tok["admin"])
+    r = c.post("/v1/clients", json={"name": "scribe", "read": ["private-a"]}, headers=tok["admin"])
     assert r.status_code == 201
     token = r.json()["token"]
     assert "token" not in str(c.get("/v1/clients", headers=tok["admin"]).json())
-    assert c.post("/v1/search", json={"query": "cat", "collections": ["jstories-a"]},
+    assert c.post("/v1/search", json={"query": "cat", "collections": ["private-a"]},
                   headers={"Authorization": f"Bearer {token}"}).status_code == 200
     assert c.post("/v1/clients", json={"name": "scribe"}, headers=tok["admin"]).status_code == 409
     assert c.post("/v1/clients", json={"name": "Bad Name"}, headers=tok["admin"]).status_code == 422
@@ -201,8 +201,8 @@ def test_create_client_shows_the_token_once_and_it_works(world):
 
 def test_update_and_revoke_client_and_last_admin_is_protected(world):
     c, _, tok = world
-    assert c.patch("/v1/clients/other", json={"read": ["jstories-a"]}, headers=tok["admin"]).status_code == 200
-    assert c.post("/v1/search", json={"query": "cat", "collections": ["jstories-a"]}, headers=tok["other"]).status_code == 200
+    assert c.patch("/v1/clients/other", json={"read": ["private-a"]}, headers=tok["admin"]).status_code == 200
+    assert c.post("/v1/search", json={"query": "cat", "collections": ["private-a"]}, headers=tok["other"]).status_code == 200
     assert c.delete("/v1/clients/other", headers=tok["admin"]).status_code == 204
     assert c.get("/v1/collections", headers=tok["other"]).status_code == 401
     assert c.delete("/v1/clients/root", headers=tok["admin"]).status_code == 409
@@ -219,10 +219,10 @@ def test_jobs_belong_to_their_owner(world):
 
     c, mem = build(crawler=crawler)
     admin = add_client(mem, "root", "hip_root", admin=True)
-    owner = add_client(mem, "kobold", "hip_kobold", write=["jstories-*"])
-    c.post("/v1/collections", json={"slug": "jstories-a", "name": "A", "visibility": "restricted"}, headers=admin)
-    jid = c.post("/v1/crawl", json={"url": "https://x.test", "collection": "jstories-a"}, headers=owner).json()["job_id"]
-    assert c.post("/v1/crawl", json={"url": "https://x.test", "collection": "jstories-a"}).status_code == 404
+    owner = add_client(mem, "kobold", "hip_kobold", write=["private-*"])
+    c.post("/v1/collections", json={"slug": "private-a", "name": "A", "visibility": "restricted"}, headers=admin)
+    jid = c.post("/v1/crawl", json={"url": "https://x.test", "collection": "private-a"}, headers=owner).json()["job_id"]
+    assert c.post("/v1/crawl", json={"url": "https://x.test", "collection": "private-a"}).status_code == 404
     assert c.get(f"/v1/jobs/{jid}").status_code == 404
     assert c.get(f"/v1/jobs/{jid}/events").status_code == 404
     assert c.get(f"/v1/jobs/{jid}", headers=owner).status_code == 200
@@ -259,8 +259,8 @@ def test_rotate_gives_a_new_token_and_kills_the_old_one(world):
     new = {"Authorization": f"Bearer {r.json()['token']}"}
     assert c.get("/v1/collections", headers=tok["kobold"]).status_code == 401           # old token is dead
     me = c.get("/v1/whoami", headers=new).json()
-    assert me["name"] == "kobold" and me["write"] == ["jstories-*"]                     # grants survived
-    assert c.post("/v1/search", json={"query": "cat"}, headers=new).json()["results"][0]["collection"] == "jstories-a"
+    assert me["name"] == "kobold" and me["write"] == ["private-*"]                     # grants survived
+    assert c.post("/v1/search", json={"query": "cat"}, headers=new).json()["results"][0]["collection"] == "private-a"
     assert "token" not in str(c.get("/v1/clients", headers=tok["admin"]).json())
 
 

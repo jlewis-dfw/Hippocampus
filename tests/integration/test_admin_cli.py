@@ -13,11 +13,11 @@ def test_cli_roundtrip(monkeypatch, capsys):
 
     dsn = os.environ["HIPPO_TEST_DSN"]
     monkeypatch.setenv("HIPPO_DSN", dsn)
-    name, slug = f"cli-{uuid.uuid4().hex[:8]}", f"jstories-{uuid.uuid4().hex[:8]}"
+    name, slug = f"cli-{uuid.uuid4().hex[:8]}", f"private-{uuid.uuid4().hex[:8]}"
     with psycopg.connect(dsn, autocommit=True) as conn:
         conn.execute("INSERT INTO hippocampus.collections (slug, name) VALUES (%s, %s)", (slug, slug))
         try:
-            assert admin.main(["create-client", "--name", name, "--read", "jstories-*"]) == 0
+            assert admin.main(["create-client", "--name", name, "--read", "private-*"]) == 0
             out = capsys.readouterr().out
             token = out.split("store it in the vault): ")[1].strip()
             assert token.startswith("hip_")
@@ -26,7 +26,7 @@ def test_cli_roundtrip(monkeypatch, capsys):
             assert admin.main(["create-client", "--name", name]) == 1               # duplicate
             assert admin.main(["create-client", "--name", "x", "--read", "*"]) == 2  # bare wildcard
             assert admin.main(["set-visibility", slug, "restricted"]) == 0
-            assert admin.main(["set-visibility", slug, "shared"]) == 2               # jstories* stays private
+            assert admin.main(["set-visibility", slug, "shared"]) == 2               # private* stays private
             assert admin.main(["list-clients"]) == 0 and name in capsys.readouterr().out
             assert admin.main(["rotate-client", name]) == 0
             new = capsys.readouterr().out.split("store it in the vault): ")[1].strip()
