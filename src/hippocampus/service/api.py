@@ -108,7 +108,7 @@ def create_app(
     return app
 
 def app_from_env() -> FastAPI:
-    """uvicorn --factory hippocampus.api:app_from_env  (HIPPO_DSN from the environment/secret)."""
+    """uvicorn --factory hippocampus.service.api:app_from_env  (HIPPO_DSN from the environment/secret)."""
     from ..core.embedder import FastEmbedder
     from ..ingest.crawler import make_crawler
     from ..storage.store import connect_store

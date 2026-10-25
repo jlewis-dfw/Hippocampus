@@ -1,6 +1,6 @@
 """Applies the SQL migrations in db/migrations to the database in HIPPO_DSN (needs the ``db`` extra).
 
-    python -m hippocampus.migrate
+    python -m hippocampus.storage.migrate
 
 Pending files are applied in order, each in a transaction, and recorded in ``public.schema_migrations`` (the table
 scripts/dev-db.sh and the homelab migrate step also use), so running it again does nothing. The folder comes from
