@@ -10,6 +10,8 @@ This is a living document. It describes the code as of migration `0002_access_co
 ```bash
 scripts/prereqs.sh --dev --setup     # checks tools, offers to install what is missing (y/N each), creates .venv with the dev extras
 # Windows: scripts\prereqs.ps1 -Dev -Setup
+# --setup also offers, as separate questions, the optional test tools: playwright with Chromium (browser-crawl and dashboard
+# tests) and fastembed (the embedding model test, which downloads the model and needs HIPPO_RUN_MODEL_TESTS=1)
 ```
 
 Read the script's warning first; it asks you to confirm you have. Without the script:

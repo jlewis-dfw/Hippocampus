@@ -10,10 +10,11 @@ hard to undo. It shows every command and asks y/N first, but you are responsible
 you answer. Without -Install and -Setup it only LOOKS and changes nothing.
 
   .\scripts\prereqs.ps1                    check what is needed to RUN Hippocampus; prints what is missing; changes nothing
-  .\scripts\prereqs.ps1 -Dev               also check what is needed to DEVELOP it (git, Python 3.12, node)
+  .\scripts\prereqs.ps1 -Dev               also check what is needed to DEVELOP it (git, Python 3.12, node, and the optional test tools:
+                                           playwright with Chromium, and fastembed)
   .\scripts\prereqs.ps1 -Install           after the report, ask y/N before EACH thing it would install or change
   .\scripts\prereqs.ps1 -Install -DryRun   show the exact commands it would run, without running them (changes nothing)
-  .\scripts\prereqs.ps1 -Dev -Setup        create .venv and install the development tools (asks first)
+  .\scripts\prereqs.ps1 -Dev -Setup        create .venv and install the development tools, then offer the optional test tools (asks first)
 
 Options: -Yes answers yes to every y/N question (it picks Docker as the engine); -Port N checks that another host port is free
 (default 8090); -IUnderstandTheRisk gives the acknowledgement below without typing it (for non-interactive use).
@@ -390,6 +391,22 @@ if ($Dev) {
     $venvPython = Join-Path $RepoRoot '.venv\Scripts\python.exe'
     if (Test-Path -LiteralPath $venvPython) { Write-Ok 'a virtualenv exists (.venv)' }
     else { Write-Warn 'no .venv yet' 'Create it with: .\scripts\prereqs.ps1 -Dev -Setup   (or: py -3.12 -m venv .venv ; .venv\Scripts\pip install -e ".[db,api,mcp,dev]")' }
+
+    # Optional test tools: without them two tests are skipped (the run report says so), and the dashboard tests cannot run.
+    if (Test-Path -LiteralPath $venvPython) {
+        & $venvPython -c 'import playwright' 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn 'playwright is not installed: the browser-crawl test and the dashboard (e2e) tests will be skipped' "Optional. .\scripts\prereqs.ps1 -Dev -Setup offers to install it (the 'browser' extra) and Chromium (about 150 MB)."
+        } else {
+            & $venvPython -c 'import os; from playwright.sync_api import sync_playwright as s; p = s().start(); ok = os.path.exists(p.chromium.executable_path); p.stop(); raise SystemExit(0 if ok else 1)' 2>$null
+            if ($LASTEXITCODE -ne 0) { Write-Warn 'Chromium is not installed for playwright: the browser-crawl test and the dashboard (e2e) tests will be skipped' 'Optional. Install it with: .venv\Scripts\playwright.exe install chromium (about 150 MB).' }
+            else { Write-Ok 'playwright and Chromium (browser-crawl test and dashboard e2e tests can run)' }
+        }
+        & $venvPython -c 'import fastembed' 2>$null
+        if ($LASTEXITCODE -ne 0) { Write-Warn 'fastembed is not installed: the embedding model test cannot run' "Optional. .\scripts\prereqs.ps1 -Dev -Setup offers to install it (the 'embed' extra)." }
+        else { Write-Ok 'fastembed (the embedding model test can run)' }
+    }
+    $script:Notes += 'The embedding model test downloads the model (about 130 MB) and only runs with HIPPO_RUN_MODEL_TESTS=1 (set it in the environment, then run pytest on tests/integration/test_embedder_model.py).'
 }
 
 # ---------------------------------------------------------------- what needs to be installed
@@ -465,6 +482,26 @@ if ($Dev -and $Setup -and $pythonCmd.Count -gt 0) {
             }
         }
     } else { Write-Host '      skipped' }
+
+    # Optional test tools. Each is its own question; nothing here is needed to run Hippocampus.
+    $venvPip = '.venv\Scripts\pip.exe'
+    if (Test-Path -LiteralPath '.venv\Scripts\python.exe') {
+        Write-Host '  * (optional) browser tests: the playwright package and the Chromium browser'
+        Write-Host "      command: $venvPip install -e `".[browser]`" ; .venv\Scripts\playwright.exe install chromium   (about 150 MB, needs internet)"
+        if (Confirm-Action '    Do this?') {
+            if ($DryRun) { Write-Host '      (dry run: not executed)' }
+            else {
+                & $venvPip install -q -e '.[browser]'
+                if ($LASTEXITCODE -eq 0) { & '.venv\Scripts\playwright.exe' install chromium }
+            }
+        } else { Write-Host '      skipped' }
+        Write-Host '  * (optional) embedding model test: the fastembed package (the model itself downloads when the test runs)'
+        Write-Host "      command: $venvPip install -e `".[embed]`"   (needs internet)"
+        if (Confirm-Action '    Do this?') {
+            if ($DryRun) { Write-Host '      (dry run: not executed)' }
+            else { & $venvPip install -q -e '.[embed]' }
+        } else { Write-Host '      skipped' }
+    }
 }
 
 # ---------------------------------------------------------------- summary

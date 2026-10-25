@@ -8,10 +8,11 @@
 # Checks (and, if you ask, installs) what Hippocampus needs on macOS or Linux. Windows: scripts/prereqs.ps1.
 #
 #   scripts/prereqs.sh                       check what is needed to RUN Hippocampus; prints what is missing; changes nothing
-#   scripts/prereqs.sh --dev                 also check what is needed to DEVELOP it (git, Python 3.12, node)
+#   scripts/prereqs.sh --dev                 also check what is needed to DEVELOP it (git, Python 3.12, node, and the optional test tools:
+#                                            playwright with Chromium, and fastembed)
 #   scripts/prereqs.sh --install             after the report, ask y/N before EACH thing it would install or change
 #   scripts/prereqs.sh --install --dry-run   show the exact commands it would run, without running them (changes nothing)
-#   scripts/prereqs.sh --dev --setup         create .venv and install the development tools (asks first)
+#   scripts/prereqs.sh --dev --setup         create .venv and install the development tools, then offer the optional test tools (asks first)
 #
 # Options: --yes answers "yes" to every y/N question (it picks Docker as the engine); --port N checks that a different host port is
 # free (default 8090); --i-understand-the-risk gives the acknowledgement below without typing it (for non-interactive use).
@@ -305,6 +306,19 @@ if (( DEV )); then
 
   if [[ -x .venv/bin/python ]]; then ok "a virtualenv exists (.venv)"
   else warn "no .venv yet" "Create it with: scripts/prereqs.sh --dev --setup  (or: python3 -m venv .venv && .venv/bin/pip install -e \".[db,api,mcp,dev]\")"; fi
+
+  # Optional test tools: without them two tests are skipped (the run report says so), and the dashboard tests cannot run.
+  if [[ -x .venv/bin/python ]]; then
+    if ! .venv/bin/python -c 'import playwright' >/dev/null 2>&1; then
+      warn "playwright is not installed: the browser-crawl test and the dashboard (e2e) tests will be skipped" "Optional. scripts/prereqs.sh --dev --setup offers to install it (the 'browser' extra) and Chromium (about 150 MB)."
+    elif ! .venv/bin/python -c 'import os; from playwright.sync_api import sync_playwright as s; p = s().start(); ok = os.path.exists(p.chromium.executable_path); p.stop(); raise SystemExit(0 if ok else 1)' >/dev/null 2>&1; then
+      warn "Chromium is not installed for playwright: the browser-crawl test and the dashboard (e2e) tests will be skipped" "Optional. Install it with: .venv/bin/playwright install chromium (about 150 MB). On Linux, if it will not start: .venv/bin/playwright install-deps chromium (uses sudo)."
+    else ok "playwright and Chromium (browser-crawl test and dashboard e2e tests can run)"; fi
+    if ! .venv/bin/python -c 'import fastembed' >/dev/null 2>&1; then
+      warn "fastembed is not installed: the embedding model test cannot run" "Optional. scripts/prereqs.sh --dev --setup offers to install it (the 'embed' extra)."
+    else ok "fastembed (the embedding model test can run)"; fi
+  fi
+  NOTES+=("The embedding model test downloads the model (about 130 MB) and only runs with HIPPO_RUN_MODEL_TESTS=1, for example: HIPPO_RUN_MODEL_TESTS=1 .venv/bin/python -m pytest tests/integration/test_embedder_model.py")
 fi
 
 # ---------------------------------------------------------------- what needs to be installed
@@ -366,6 +380,22 @@ if (( DEV && SETUP )) && [[ -n ${PYBIN:-} ]]; then
         && echo "      done. Next: scripts/check.sh --no-db   (or scripts/check.sh with a container engine for the database tests)"
     fi
   else echo "      skipped"; fi
+
+  # Optional test tools. Each is its own question; nothing here is needed to run Hippocampus.
+  if [[ -x .venv/bin/python ]]; then
+    echo "  * (optional) browser tests: the playwright package and the Chromium browser"
+    echo "      command: .venv/bin/pip install -e \".[browser]\" && .venv/bin/playwright install chromium   (about 150 MB, needs internet)"
+    if confirm "    Do this?"; then
+      if (( DRY )); then echo "      (dry run: not executed)"
+      else .venv/bin/pip install -q -e ".[browser]" && .venv/bin/playwright install chromium; fi
+    else echo "      skipped"; fi
+    echo "  * (optional) embedding model test: the fastembed package (the model itself downloads when the test runs)"
+    echo "      command: .venv/bin/pip install -e \".[embed]\"   (needs internet)"
+    if confirm "    Do this?"; then
+      if (( DRY )); then echo "      (dry run: not executed)"
+      else .venv/bin/pip install -q -e ".[embed]"; fi
+    else echo "      skipped"; fi
+  fi
 fi
 
 # ---------------------------------------------------------------- summary
