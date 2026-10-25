@@ -31,8 +31,19 @@ from .auth import (
 from .diff import Document, sync_collection
 from .docs_sync import DocsSyncConfig, ForgejoSource, apply_changes, full_resync, plan_push, verify_signature
 from .embedder import DIMENSIONS, MODEL_NAME, Embedder
+from .files_ingest import (
+    MAX_BATCH_CHARS,
+    MAX_BATCH_FILES,
+    LimitError,
+    SessionError,
+    UploadSessions,
+    finish,
+    preview,
+    process_batch,
+)
 from .jobs import Job, JobRegistry
 from .repo_ingest import ingest_pack, parse_pack
+from .sync_core import SOURCE_NAME_RE, FileFilter
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 # Infra docs must never enter a shared embedding store (specs.md section 1).
@@ -92,6 +103,35 @@ class IngestRepoRequest(BaseModel):
     collection: str
     repo: str = Field(pattern=r"^[A-Za-z0-9._-]{1,100}$")
     pack: str = Field(min_length=1, max_length=20_000_000)  # `repomix --style xml|markdown` output
+
+
+class FileItem(BaseModel):
+    path: str = Field(min_length=1, max_length=1024)
+    content: str | None = None  # None only in a dry run, to preview paths and sizes without sending the text
+    size: int | None = Field(None, ge=0)
+
+
+class FilterSpec(BaseModel):
+    include: list[str] = Field([], max_length=200)
+    exclude: list[str] = Field([], max_length=200)
+    extensions: list[str] | None = Field(None, max_length=100)  # None: the default text extensions
+    default_excludes: bool = True
+    gitignore: str | None = Field(None, max_length=100_000)
+
+    def build(self) -> FileFilter:
+        if any(len(g) > 300 for g in (*self.include, *self.exclude)):
+            raise HTTPException(422, "a rule is longer than 300 characters")
+        return FileFilter.build(self.include, self.exclude, self.extensions, self.default_excludes, self.gitignore)
+
+
+class IngestFilesRequest(BaseModel):
+    collection: str
+    source: str = Field(pattern=SOURCE_NAME_RE.pattern)  # the folder's label; sources are files://<source>/<path>
+    files: list[FileItem] = Field(max_length=MAX_BATCH_FILES)
+    filter: FilterSpec = FilterSpec()
+    session: str | None = None  # from the first batch's reply; later batches of the same run send it back
+    final: bool = False  # the last batch: files not sent in this run are removed
+    dry_run: bool = False  # decide only, write nothing
 
 
 class CrawlRequest(BaseModel):
@@ -345,6 +385,42 @@ def create_app(
 
         job = jobs.submit("ingest-repo", work, owner=p.name)
         return {"job_id": job.id, "status": job.status}
+
+    uploads = UploadSessions()
+
+    @app.post("/v1/ingest/files")
+    def ingest_files(req: IngestFilesRequest, p: Principal = Depends(current_principal)):
+        """One batch of a folder upload. Many batches with one ``session`` make one run; ``final`` closes it and prunes."""
+        _check_slug(req.collection)
+        if sum(len(f.content or "") for f in req.files) > MAX_BATCH_CHARS:
+            raise HTTPException(413, "batch is too large; send fewer files per request")
+        flt = req.filter.build()
+        with store_factory() as store:
+            need_write(p, store, req.collection)
+            if req.dry_run:
+                scan = preview(req.source, [(f.path, f.content, f.size) for f in req.files], flt)
+                return {"dry_run": True, "counts": scan.counts(), "files": [d.view() for d in scan.decisions]}
+            if any(f.content is None for f in req.files):
+                raise HTTPException(422, "every file needs its content")
+            try:
+                if req.session:
+                    session = uploads.get(req.session, p.name, req.collection, req.source)
+                else:
+                    session = uploads.start(p.name, req.collection, req.source, flt)
+            except SessionError as exc:
+                raise HTTPException(404, "upload session not found or expired") from exc
+            except LimitError as exc:
+                raise HTTPException(429, str(exc)) from exc
+            try:
+                results = process_batch(session, [(f.path, f.content, f.size) for f in req.files], store, embedder)
+            except LimitError as exc:
+                raise HTTPException(413, str(exc)) from exc
+            removed: list[str] = []
+            if req.final:
+                removed = finish(session, store)
+                uploads.end(session.id)
+        return {"session": None if req.final else session.id, "source": req.source, "files": results,
+                "removed": removed, "totals": dict(session.totals)}
 
     def _docs_collection_exists(cfg: DocsSyncConfig) -> bool:
         with store_factory() as store:

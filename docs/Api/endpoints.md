@@ -14,6 +14,7 @@ Examples use `$T` for a token and `http://127.0.0.1:8090` for the service. All r
 | `DELETE /v1/collections/{slug}` | write (shared); admin (restricted) | Delete a collection and everything in it |
 | `GET /v1/collections/{slug}/sources` | read | List a collection's sources |
 | `POST /v1/ingest/file` | write | Index one Markdown document |
+| `POST /v1/ingest/files` | write | Index a folder of files, in batches (or preview with `dry_run`) |
 | `POST /v1/ingest/repo` | write | Index a Repomix pack (job) |
 | `POST /v1/crawl` | write | Crawl a site (job) |
 | `POST /v1/sync/docs` | write on the docs collection | Full resync of the docs repository (job) |
@@ -144,6 +145,43 @@ text is skipped without embedding.
 | 403 `this source is excluded from ingestion` | The `uri` contains a guarded fragment (`FORBIDDEN_URI_PARTS`) |
 | 403 `private story sources may only be indexed into a restricted collection` | A reserved private URI scheme into a shared collection |
 | 403 / 404 | No write access / no such readable collection |
+
+## `POST /v1/ingest/files`
+
+Indexes a folder of files. Many requests with one `session` make one run, so a large folder stays under the request size limit.
+
+```json
+{"collection": "notes", "source": "vault", "files": [{"path": "Work/plan.md", "content": "# Plan\n..."}],
+ "filter": {"include": ["Work/"], "exclude": ["Work/Clients/"], "extensions": ["md"], "default_excludes": true,
+            "gitignore": null},
+ "session": null, "final": false, "dry_run": false}
+```
+
+- `source` is the folder's label (`^[A-Za-z0-9._-]{1,100}$`). Sources are `files://<source>/<path>`.
+- `files`: at most 500 per request and 20,000,000 characters of content. Paths use `/` or `\`; they are stored NFC-normalised
+  with `/`. Text is hashed with LF line endings, so CRLF and LF checkouts give one hash.
+- `filter` is used when the run starts and kept for the whole run. `include` and `exclude` are gitignore-style globs (a name with
+  no `/` matches at any depth, a `/` anchors to the root, `dir/` is a folder, `**` crosses folders). `extensions` defaults to
+  `md, markdown, txt, rst`; an empty list allows any. The server also applies the guarded path fragments
+  (`HIPPO_EXCLUDE_PATH_PARTS`, and `private-infra`), which no client setting removes.
+- The first request of a run omits `session`; the reply carries one. Send it back on each later request. `final: true` ends the
+  run: this folder's sources that were not sent are removed, and the session is closed (`"session": null` in the reply).
+  A session belongs to the account that started it and expires after an hour.
+- A file that is rejected (a secret, a secret-looking name, over 200,000 bytes, an unsafe path) is reported by path and rule,
+  never by content, and if it was indexed before it is removed at once.
+- `dry_run: true` decides and writes nothing. `content` may be left out in a dry run (send `size`) to preview by path.
+
+Reply: `{"session", "source", "files": [{"path", "outcome": "indexed|skipped|rejected", "reason", "action":
+"added|changed|unchanged|removed", "warning"}], "removed": [paths], "totals": {added, changed, unchanged, removed, skipped,
+rejected, files}}`. A dry run returns `{"dry_run": true, "counts", "files"}`.
+
+| Status | When |
+|---|---|
+| 403 / 404 | No write access / no such readable collection (the same 404 for a hidden one) |
+| 404 | The session is unknown, expired, or another account's |
+| 413 | The batch is over 20,000,000 characters, or the run over 20,000 files |
+| 422 | A rule is over 300 characters, a file has no `content` outside a dry run, or the source or slug is invalid |
+| 429 | Too many uploads in progress |
 
 ## `POST /v1/ingest/repo` — `202`
 
