@@ -30,7 +30,7 @@ The `/ui` path is **not** covered by the network gate (it holds no data); every 
 
 | File | Role |
 |---|---|
-| `index.html` | The page structure: header, the Access panel, the crawl form, the job log, the collections and sources tables, the search drawer |
+| `index.html` | The page structure: header, the tab bar (Collections, Local, Web, Access) and its four panels, the job log, the search drawer |
 | `app.css` | Dark theme with a few CSS variables; responsive grid; badges, pills, the token box |
 | `app.js` | The behaviour of everything except the folder drop, about 400 lines, no modules or dependencies |
 | `sync.js` | The folder drop: reading a dropped or chosen folder, the root-folder tree, the rules, the preview, batched upload with cancel, and the saved folders table. Loaded before `app.js`, which calls `initFolderSync()` |
@@ -47,6 +47,13 @@ The `/ui` path is **not** covered by the network gate (it holds no data); every 
    be blocked) and sent as an `X-Hippo-Token` header, **not** `Authorization`, because a login proxy in front of the page may set its own
    `Authorization`. It is never put in a URL, a cookie or the page text.
 5. **Destructive actions confirm.** Delete, Restrict/Share, Rotate and Revoke use `confirm()`.
+
+## Tabs
+
+`showTab(name)` in `app.js` shows one `role="tabpanel"` and hides the others, sets `aria-selected` and the roving `tabindex`, and writes
+the name to the URL hash (`history.replaceState`, so the back button is not filled with tab changes). `hashchange` and the first load
+read it back. An unknown hash falls back to Collections. Other code that needs a panel calls `showTab` (the identity button, and **Drop
+again** on a saved folder). Tests that touch a control must click its tab first; the e2e helpers do.
 
 ## Structure of `app.js`
 

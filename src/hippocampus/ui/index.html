@@ -18,59 +18,43 @@
   <div id="banner" class="banner" hidden></div>
 
   <main>
-    <section id="accessSection" hidden>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button id="tab-collections" class="tab" role="tab" aria-controls="panel-collections" aria-selected="true" data-tab="collections">Collections</button>
+      <button id="tab-local" class="tab" role="tab" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-tab="local">Local</button>
+      <button id="tab-web" class="tab" role="tab" aria-controls="panel-web" aria-selected="false" tabindex="-1" data-tab="web">Web</button>
+      <button id="tab-access" class="tab" role="tab" aria-controls="panel-access" aria-selected="false" tabindex="-1" data-tab="access">Access</button>
+    </nav>
+    <div id="panel-collections" class="panel" role="tabpanel" aria-labelledby="tab-collections">
+    <section>
       <div class="row">
-        <h2>Access</h2>
+        <h2>Collections</h2>
         <div class="spacer"></div>
-        <button id="closeAccess">Close</button>
+        <button id="resyncDocs">Resync docs repo</button>
+        <button id="refresh">Refresh</button>
       </div>
-      <p class="muted">Without a token you see shared collections only. Paste a token to see and manage the collections it
-        is granted. It is kept in this tab's session storage and cleared when the tab closes.</p>
-      <form id="tokenForm" autocomplete="off">
-        <label class="wide">Bearer token
-          <input id="token" type="password" placeholder="hip_..." autocomplete="off" spellcheck="false">
-        </label>
-        <div class="actions">
-          <button type="submit" class="primary">Use token</button>
-          <button type="button" id="clearToken">Forget token</button>
-        </div>
-      </form>
-      <p class="mono" id="whoDetail"></p>
-
-      <div id="clientsBox" hidden>
-        <h2>Clients</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Name</th><th>Admin</th><th>Read</th><th>Write</th><th>Last used</th><th class="right">Actions</th></tr></thead>
-            <tbody id="clients"></tbody>
-          </table>
-        </div>
-        <h2>New client</h2>
-        <form id="clientForm" autocomplete="off">
-          <label>Name
-            <input id="clientName" type="text" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" placeholder="docs-writer">
-          </label>
-          <label>Read grants (comma separated slugs or globs)
-            <input id="clientRead" type="text" placeholder="docs, team-*">
-          </label>
-          <label>Write grants
-            <input id="clientWrite" type="text" placeholder="docs">
-          </label>
-          <label>Note
-            <input id="clientNote" type="text" maxlength="500">
-          </label>
-          <label><input id="clientAdmin" type="checkbox"> Admin (sees and manages everything)</label>
-          <div class="actions"><button type="submit" class="primary">Create client</button></div>
-        </form>
-        <div id="tokenOnce" class="tokenbox" hidden>
-          <p><strong>Token for <span id="tokenOnceName" class="mono"></span></strong>. It is shown once and only its hash is stored.</p>
-          <pre id="tokenOnceValue" class="mono"></pre>
-          <p id="tokenOnceNote" class="muted"></p>
-          <button id="dismissToken">I have stored it</button>
-        </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
+          <tbody id="collections"></tbody>
+        </table>
       </div>
     </section>
 
+    <section id="sourcesSection" hidden>
+      <div class="row">
+        <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
+        <div class="spacer"></div>
+        <button id="closeSources">Close</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
+          <tbody id="sources"></tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+    <div id="panel-local" class="panel" role="tabpanel" aria-labelledby="tab-local" hidden>
     <section id="folderSection">
       <h2>Index a folder</h2>
       <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Drop a folder here, or press Enter to choose one">
@@ -171,7 +155,8 @@
         </table>
       </div>
     </section>
-
+    </div>
+    <div id="panel-web" class="panel" role="tabpanel" aria-labelledby="tab-web" hidden>
     <section>
       <h2>Crawl a site</h2>
       <form id="crawlForm" autocomplete="off">
@@ -215,40 +200,64 @@
         <div class="actions"><button type="submit" class="primary" id="crawlBtn">Start crawl</button></div>
       </form>
     </section>
+    </div>
+    <div id="panel-access" class="panel" role="tabpanel" aria-labelledby="tab-access" hidden>
+    <section id="accessSection">
+      <div class="row">
+        <h2>Access</h2>
+      </div>
+      <p class="muted">Without a token you see shared collections only. Paste a token to see and manage the collections it
+        is granted. It is kept in this tab's session storage and cleared when the tab closes.</p>
+      <form id="tokenForm" autocomplete="off">
+        <label class="wide">Bearer token
+          <input id="token" type="password" placeholder="hip_..." autocomplete="off" spellcheck="false">
+        </label>
+        <div class="actions">
+          <button type="submit" class="primary">Use token</button>
+          <button type="button" id="clearToken">Forget token</button>
+        </div>
+      </form>
+      <p class="mono" id="whoDetail"></p>
+
+      <div id="clientsBox" hidden>
+        <h2>Clients</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Admin</th><th>Read</th><th>Write</th><th>Last used</th><th class="right">Actions</th></tr></thead>
+            <tbody id="clients"></tbody>
+          </table>
+        </div>
+        <h2>New client</h2>
+        <form id="clientForm" autocomplete="off">
+          <label>Name
+            <input id="clientName" type="text" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" placeholder="docs-writer">
+          </label>
+          <label>Read grants (comma separated slugs or globs)
+            <input id="clientRead" type="text" placeholder="docs, team-*">
+          </label>
+          <label>Write grants
+            <input id="clientWrite" type="text" placeholder="docs">
+          </label>
+          <label>Note
+            <input id="clientNote" type="text" maxlength="500">
+          </label>
+          <label><input id="clientAdmin" type="checkbox"> Admin (sees and manages everything)</label>
+          <div class="actions"><button type="submit" class="primary">Create client</button></div>
+        </form>
+        <div id="tokenOnce" class="tokenbox" hidden>
+          <p><strong>Token for <span id="tokenOnceName" class="mono"></span></strong>. It is shown once and only its hash is stored.</p>
+          <pre id="tokenOnceValue" class="mono"></pre>
+          <p id="tokenOnceNote" class="muted"></p>
+          <button id="dismissToken">I have stored it</button>
+        </div>
+      </div>
+    </section>
+    </div>
 
     <section id="jobSection" hidden>
       <h2>Job <span id="jobStatus" class="badge"></span></h2>
       <p class="muted mono" id="jobMeta"></p>
       <pre id="log" class="log" aria-live="polite"></pre>
-    </section>
-
-    <section>
-      <div class="row">
-        <h2>Collections</h2>
-        <div class="spacer"></div>
-        <button id="resyncDocs">Resync docs repo</button>
-        <button id="refresh">Refresh</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
-          <tbody id="collections"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="sourcesSection" hidden>
-      <div class="row">
-        <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
-        <div class="spacer"></div>
-        <button id="closeSources">Close</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
-          <tbody id="sources"></tbody>
-        </table>
-      </div>
     </section>
   </main>
 

@@ -166,6 +166,43 @@ def test_hostile_content_is_shown_as_text_not_run(dash, admin):
     assert d.page.locator("#results img, #sources img").count() == 0
 
 
+# --- tabs
+
+def test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys(dash, library):
+    d = dash()
+    page = d.page
+    panels = {"Collections": "#panel-collections", "Local": "#panel-local", "Web": "#panel-web", "Access": "#panel-access"}
+
+    def only(shown):
+        for name, sel in panels.items():
+            (expect(page.locator(sel)).to_be_visible if name == shown else expect(page.locator(sel)).to_be_hidden)()
+            expect(page.get_by_role("tab", name=name)).to_have_attribute("aria-selected", "true" if name == shown else "false")
+
+    only("Collections")  # the first tab is the default, and it holds the collections table
+    expect(d.row("collections", library)).to_be_visible()
+    page.get_by_role("tab", name="Local").click()
+    only("Local")
+    expect(page.locator("#dropZone")).to_be_visible()
+    assert page.evaluate("location.hash") == "#local"
+    page.get_by_role("tab", name="Web").click()
+    only("Web")
+    expect(page.locator("#crawlForm")).to_be_visible()
+    page.reload()  # the hash brings the same tab back
+    only("Web")
+    page.get_by_role("tab", name="Web").focus()
+    page.keyboard.press("ArrowRight")
+    only("Access")
+    page.keyboard.press("ArrowRight")  # wraps around
+    only("Collections")
+    page.keyboard.press("End")
+    only("Access")
+    page.keyboard.press("Home")
+    only("Collections")
+    page.locator("#openAccess").click()  # the name in the header is a shortcut to the Access tab
+    only("Access")
+    assert d.errors == []
+
+
 # --- access panel
 
 def test_token_panel_signs_in_and_out(dash, admin_token, library):
@@ -261,6 +298,7 @@ def test_form_rejects_a_bare_wildcard_with_a_banner(dash, admin_token):
 
 def test_anonymous_crawl_is_refused_in_a_banner(dash):
     d = dash()
+    d.page.get_by_role("tab", name="Web").click()
     d.page.select_option("#collection", "__new__")
     expect(d.page.locator("#newCollection")).to_be_visible()
     d.page.fill("#newSlug", _slug("ui-anon"))
@@ -272,6 +310,7 @@ def test_anonymous_crawl_is_refused_in_a_banner(dash):
 
 def test_crawl_form_creates_a_collection_and_reports_the_failed_job(dash, admin_token):
     d = dash(admin_token)
+    d.page.get_by_role("tab", name="Web").click()
     slug = _slug("ui-crawl")
     d.page.select_option("#collection", "__new__")
     d.page.fill("#newSlug", slug)
@@ -282,7 +321,9 @@ def test_crawl_form_creates_a_collection_and_reports_the_failed_job(dash, admin_
     expect(d.page.locator("#jobStatus")).to_have_text("error")
     expect(d.page.locator("#log")).to_contain_text("non-public")
     expect(d.page.locator("#jobMeta")).to_contain_text(f"crawl http://127.0.0.1:9/ -> {slug}")
+    d.page.get_by_role("tab", name="Collections").click()
     expect(d.row("collections", slug)).to_contain_text("Crawl test")  # created before the crawl started
+    d.page.get_by_role("tab", name="Web").click()
     expect(d.page.locator("#collection")).to_have_value(slug)  # the form will not try to create it again
 
 

@@ -31,6 +31,7 @@ def uris(admin, slug):
 
 
 def choose(d: Dashboard, vault, name: str):
+    d.page.get_by_role("tab", name="Local").click()
     d.page.set_input_files("#folderInput", str(vault))
     expect(d.page.locator("#folderPanel")).to_be_visible()
     d.page.fill("#fName", name)
@@ -147,6 +148,7 @@ def test_a_new_drop_defaults_to_a_new_collection(dash, admin, admin_token, vault
     existing = f"keep-{uuid.uuid4().hex[:8]}"
     assert admin.post("/v1/collections", json={"slug": existing, "name": existing}).status_code == 201
     d = dash(admin_token)
+    d.page.get_by_role("tab", name="Local").click()
     d.page.set_input_files("#folderInput", str(vault))
     expect(d.page.locator("#folderPanel")).to_be_visible()
     expect(d.page.locator("#fCollection")).to_have_value("__new__")

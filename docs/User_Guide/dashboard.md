@@ -12,14 +12,21 @@ For how it is built, see [../Dashboard/README.md](../Dashboard/README.md). For s
 ```
 ┌ Hippocampus DocuSync  [status pills]            [identity button] [Search sandbox] ┐
 │ [banner: errors appear here]                                                        │
-│ Access panel            (opens from the identity button)                            │
-│ Crawl a site                                                                         │
-│ Job log                 (appears while or after a job runs)                          │
-│ Collections             (table)                                                      │
-│ Sources in <collection> (table, after you click Sources)                             │
+│ [ Collections ] [ Local ] [ Web ] [ Access ]                                        │
+│                                                                                      │
+│ Collections: the collections table, and Sources in <collection> after you click it  │
+│ Local:       Index a folder (drop zone, tree, rules, preview), and Saved folders    │
+│ Web:         Crawl a site                                                           │
+│ Access:      token, identity and clients                                            │
+│                                                                                      │
+│ Job log                 (below the tabs; appears while or after a job runs)          │
 └──────────────────────────────────────────────────────────────────────────────────────┘
                                           Search sandbox opens as a side drawer
 ```
+
+The four tabs split the page by what you are doing. The address keeps the tab (`/ui/#local`), so a reload or a bookmark returns
+to it, and the left and right arrow keys, **Home** and **End** move between tabs. The identity button in the header jumps to
+**Access**. The job log is not part of a tab, so a crawl or a resync keeps reporting while you look at another tab.
 
 ## Status pills
 
@@ -32,7 +39,7 @@ Updated every 15 seconds and after every action:
 | `N collections`, `N sources`, `N chunks` | Totals **for the collections you may read**. A restricted collection you cannot see is not counted. |
 | `N active jobs` | Crawls and imports currently running. |
 
-## Access panel
+## Access tab
 
 Click the identity button in the header (it reads `anonymous` until you sign in).
 

@@ -611,6 +611,7 @@ function refreshSource(s) {
   $("fPerFolder").checked = Object.keys(s.folder_collections).length > 0;
   $("folderPanel").hidden = true;
   setFolderStatus(`Drop or choose the folder for "${s.name}" to refresh it. Its saved rules are applied.`);
+  showTab("local");
   $("folderSection").scrollIntoView({ behavior: "smooth" });
   $("dropZone").focus();
 }
