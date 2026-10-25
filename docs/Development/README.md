@@ -41,7 +41,7 @@ for the local stack and, with Podman, for the development database.
 
 | Module | Role |
 |---|---|
-| `api.py` | The FastAPI application: routes, the network gate, dashboard headers, wiring |
+| `api/app.py` | The FastAPI application: routes, the network gate, dashboard headers, wiring |
 | `auth.py` | Tokens, accounts, grants, the access decisions |
 | `store.py` | All SQL: collections, sources, chunks, search, accounts |
 | `chunker.py` | Markdown into chunks ([../Architecture/embedding-and-chunking.md](../Architecture/embedding-and-chunking.md)) |
@@ -72,7 +72,7 @@ Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes st
 
 ### Add an endpoint
 
-1. Add the route in `api.py`. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
+1. Add the route in `api/app.py`. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
 2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/unit/test_api.py`, so the unit tests can exercise it.
 3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/unit/test_access.py` or `tests/unit/test_api.py`.
 4. Add the route to [../Api/endpoints.md](../Api/endpoints.md), and to [../Api/authorization.md](../Api/authorization.md) if it changes who may do what.

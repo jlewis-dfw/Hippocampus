@@ -20,7 +20,7 @@ would make us change it. Short on purpose: the topic pages have the detail.
   token, out.
 - **Considered.** An HttpOnly session cookie (needs login endpoints, CSRF tokens and server-side sessions); keeping the token in memory only
   (lost on every reload).
-- **Code.** `ui/app.js` (`getToken`, `setToken`); `UI_CSP` in `api.py`.
+- **Code.** `ui/app.js` (`getToken`, `setToken`); `UI_CSP` in `api/app.py`.
 - **Revisit when.** The dashboard needs user accounts or single sign-on, or when it must load third-party script.
 
 ## Raw SQL in one file

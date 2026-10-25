@@ -9,7 +9,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 
 ## How it is served
 
-`api.py` mounts the folder with Starlette's `StaticFiles(directory=UI_DIR, html=True)` at `/ui`, and `GET /` redirects to `/ui/`. The files are
+`api/app.py` mounts the folder with Starlette's `StaticFiles(directory=UI_DIR, html=True)` at `/ui`, and `GET /` redirects to `/ui/`. The files are
 packaged with the Python package (`package-data` in `pyproject.toml` includes `ui/*`), so they travel in the container image.
 
 A middleware adds these headers to every response whose path starts with `/ui`:
