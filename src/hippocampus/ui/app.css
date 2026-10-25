@@ -71,3 +71,15 @@ progress { width: 100%; margin-top: 12px; }
 .warn { color: var(--warn); min-height: 1em; }
 #fSummary { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 12px; }
 @media (max-width: 700px) { .grid3 { grid-template-columns: 1fr; } }
+
+.tree-wrap { max-height: 480px; overflow: auto; margin-top: 8px; }
+.tree-wrap td { padding: 4px 8px; vertical-align: middle; }
+.tree-wrap input[type=checkbox] { width: auto; }
+.twisty { display: inline-block; width: 22px; background: none; border: 0; padding: 0; color: var(--muted); text-align: center; cursor: pointer; }
+span.twisty { cursor: default; }
+.troot td { background: #0e1524; font-weight: 600; }
+.tfile td { color: var(--text); }
+.tfile.tout td { color: var(--muted); }
+.badge.skipped { color: var(--muted); }
+label.inline { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+label.inline select { width: auto; }

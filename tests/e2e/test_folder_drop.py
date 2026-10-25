@@ -106,3 +106,38 @@ def test_one_collection_per_folder(dash, admin, admin_token, vault):
     run(d, "2 removed")
     assert uris(admin, f"{prefix}-work") == []
     assert d.errors == []
+
+
+def test_the_tree_shows_paths_and_why_files_are_left_out_and_nested_boxes_exclude(dash, admin, admin_token, vault):
+    slug = f"vault-{uuid.uuid4().hex[:8]}"
+    d = dash(admin_token)
+    choose(d, vault, slug)
+    tree = d.page.locator("#fTree")
+    expect(d.page.locator("#fRootName")).to_have_text("vault/")
+    expect(tree.locator('tr[data-path="Work"]')).to_contain_text("3 to index")
+    d.page.get_by_role("button", name="Expand all").click()
+    # nested folders are drawn under their parent with their path, and every file says what happens to it
+    expect(tree.locator('tr[data-path="Work/Clients"]')).to_be_visible()
+    expect(tree.locator('tr[data-path="Work/Clients/acme.md"]')).not_to_have_class("tout")
+    expect(tree.locator('tr[data-path="Projects/diagram.png"]')).to_contain_text("extension")
+    expect(tree.locator('tr[data-path="Projects/diagram.png"] input')).to_be_disabled()
+    expect(tree.locator('tr[data-path=".obsidian"]')).to_have_count(0)  # nothing to choose in default-excluded folders
+    # unticking a nested folder writes an exclude rule and changes the counts
+    tree.locator('tr[data-path="Work/Clients"] input').uncheck()
+    expect(d.page.locator("#fExclude")).to_have_value("/Work/Clients/")
+    expect(tree.locator('tr[data-path="Work/Clients/acme.md"]')).to_contain_text("excluded-by-rule")
+    expect(tree.locator('tr[data-path="Work"]')).to_contain_text("2 to index")
+    expect(tree.locator('tr[data-path="Work"] input[data-root]')).to_have_js_property("indeterminate", True)
+    # a single file
+    tree.locator('tr[data-path="Work/plan.md"] input').uncheck()
+    expect(d.page.locator("#fExclude")).to_have_value("/Work/Clients/\n/Work/plan.md")
+    # the filter shows only what is left out
+    d.page.select_option("#fShow", "off")
+    expect(tree.locator('tr[data-path="Work/plan.md"]')).to_be_visible()
+    expect(tree.locator('tr[data-path="README.md"]')).to_have_count(0)
+    # ticking them again removes the lines
+    d.page.select_option("#fShow", "all")
+    tree.locator('tr[data-path="Work/Clients"] input').check()
+    tree.locator('tr[data-path="Work/plan.md"] input').check()
+    expect(d.page.locator("#fExclude")).to_have_value("")
+    assert d.errors == []

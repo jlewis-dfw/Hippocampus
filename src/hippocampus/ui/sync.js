@@ -18,7 +18,7 @@ const fs = {
   pruned: 0,           // folders not walked (.git, node_modules ...)
   handle: null,        // a FileSystemDirectoryHandle (Chromium) kept for one-click re-sync
   source: null,        // the saved source being refreshed, if any
-  roots: [],           // [{name, total, eligible}]
+  tree: null,          // the folders and files of the scan, built once
   running: false,
   cancel: false,
   sessions: new Set(), // open upload sessions, so a cancel can close them
@@ -108,6 +108,7 @@ async function loadScan(name, files, state, handle) {
   if (!fs.source) $("fName").value = slugify(name) || "folder";
   $("fPrefix").value = $("fName").value;
   buildTree();
+  applyPrefix();
   $("folderPanel").hidden = false;
   $("fSummary").hidden = true;
   recompute();
@@ -115,7 +116,13 @@ async function loadScan(name, files, state, handle) {
 
 function setFolderStatus(text) { $("folderStatus").textContent = text; }
 
-// --- rules and the tree of root folders ---
+// --- rules and the tree of folders and files ---
+
+// Why a file is out because of what the user chose (a rule or an unticked folder), as opposed to a built-in reason.
+const USER_REASONS = new Set(["excluded-by-rule", "not-included"]);
+const MAX_ROWS = 3000;      // rows drawn at once; a folder shows its first files and says how many more
+const FILES_PER_FOLDER = 300;
+const byName = (a, b) => a.name.localeCompare(b.name);
 
 function readRules(roots = []) {
   const ext = $("fExt").value.trim();
@@ -127,112 +134,238 @@ function readRules(roots = []) {
   };
 }
 
-const tickedRoots = () => [...document.querySelectorAll("#fTree input[data-root]")].filter((c) => c.checked).map((c) => c.dataset.root);
+const tickedRoots = () => [...fs.ticked];
 
+// Once per scan: the folder structure, and the state the controls start from (or the saved source's).
 function buildTree() {
-  const rules = readRules();
-  const flt = HF.makeFilter(rules);
-  const byRoot = new Map();
+  const top = { name: "", path: "", dirs: new Map(), files: [] };
   for (const f of fs.files) {
-    const root = HF.rootOf(f.path.replace(/\\/g, "/"));
-    const r = byRoot.get(root) || { name: root, total: 0, eligible: 0 };
-    r.total++;
-    if (HF.checkPath(flt, f.path, f.size).outcome === "indexed") r.eligible++;
-    byRoot.set(root, r);
+    const parts = f.path.replace(/\\/g, "/").split("/");
+    let node = top;
+    for (const seg of parts.slice(0, -1)) {
+      let next = node.dirs.get(seg);
+      if (!next) { next = { name: seg, path: node.path ? `${node.path}/${seg}` : seg, dirs: new Map(), files: [] }; node.dirs.set(seg, next); }
+      node = next;
+    }
+    node.files.push({ key: f.path, name: parts[parts.length - 1], path: parts.join("/"), size: f.size });
   }
-  fs.roots = [...byRoot.values()].sort((a, b) => (a.name === "." ? -1 : b.name === "." ? 1 : a.name.localeCompare(b.name)));
-  const saved = fs.source ? fs.source.settings.folders : [];
+  fs.tree = top;
+  fs.topNode = { name: ".", label: "(files at the top)", path: ".", dirs: new Map(), files: top.files };
+  fs.decisions = new Map();
+  fs.expanded = new Set();
+  fs.ticked = new Set();
+  fs.seen = new Set();
+  fs.slugs = new Map();
+  fs.vis = new Map();
   const mapping = fs.source ? fs.source.folder_collections : {};
+  for (const [root, slug] of Object.entries(mapping)) fs.slugs.set(root, { value: slug, edited: true });
   $("fPerFolder").checked = Object.keys(mapping).length > 0;
-  const body = $("fTree");
-  body.replaceChildren();
-  for (const r of fs.roots) {
-    if (readRules().defaultExcludes && HF.isDefaultExcludedDir(r.name)) continue; // .obsidian, .trash ...: nothing to choose
-    const ticked = saved.length ? saved.includes(r.name) : r.name === "." || !HF.PRIVATE_LOOKING.test(r.name);
-    const slug = el("input", { type: "text", "data-slug": r.name, pattern: "[a-z0-9][a-z0-9\\-]{0,63}", placeholder: "collection" });
-    slug.value = mapping[r.name] || "";
-    slug.addEventListener("input", () => { slug.dataset.edited = "1"; recompute(); });
-    const vis = el("select", { "data-vis": r.name }, el("option", { value: "shared" }, "shared"), el("option", { value: "restricted" }, "restricted"));
-    const box = el("input", { type: "checkbox", "data-root": r.name, "aria-label": `Index ${r.name === "." ? "files at the top" : r.name}` });
-    box.checked = ticked;
-    box.addEventListener("change", recompute);
-    body.append(el("tr", { "data-row": r.name },
-      el("td", {}, box),
-      el("td", { class: "mono" }, r.name === "." ? "(files at the top)" : r.name,
-        HF.PRIVATE_LOOKING.test(r.name) ? el("span", { class: "badge restricted" }, "looks private") : ""),
-      el("td", { class: "num" }, `${fmtNum(r.eligible)} / ${fmtNum(r.total)}`),
-      el("td", { class: "perFolderCell" }, r.name === "." ? "" : slug),
-      el("td", { class: "perFolderCell" }, r.name === "." ? "" : vis)));
+  $("fPrefixLabel").hidden = !$("fPerFolder").checked;
+  $("fRootName").textContent = `${fs.root}/`;
+}
+
+// The top-level rows: the files at the top, then each folder. A root not seen before is ticked unless it looks private.
+function rootNodes() {
+  const saved = fs.source ? fs.source.settings.folders : [];
+  const defaults = $("fDefaults").checked;
+  const out = [];
+  if (fs.topNode.files.length) out.push(fs.topNode);
+  for (const d of [...fs.tree.dirs.values()].sort(byName)) if (!(defaults && HF.isDefaultExcludedDir(d.name))) out.push(d);
+  for (const n of out) {
+    if (fs.seen.has(n.name)) continue;
+    fs.seen.add(n.name);
+    if (saved.length ? saved.includes(n.name) : n.name === "." || !HF.PRIVATE_LOOKING.test(n.name)) fs.ticked.add(n.name);
   }
-  applyPrefix();
-  togglePerFolder();
+  return out;
 }
 
 function applyPrefix() {
   const prefix = slugify($("fPrefix").value);
-  for (const input of document.querySelectorAll("#fTree input[data-slug]")) {
-    if (!input.dataset.edited && !(fs.source && fs.source.folder_collections[input.dataset.slug])) {
-      input.value = slugify(`${prefix}-${input.dataset.slug}`);
-    }
+  for (const name of fs.tree ? fs.tree.dirs.keys() : []) {
+    const cur = fs.slugs.get(name);
+    if (!cur || !cur.edited) fs.slugs.set(name, { value: slugify(`${prefix}-${name}`), edited: false });
   }
 }
 
-function togglePerFolder() {
-  const on = $("fPerFolder").checked;
-  for (const cell of document.querySelectorAll(".perFolderCell")) cell.hidden = !on;
-  $("fPrefixLabel").hidden = !on;
-  for (const input of document.querySelectorAll("#fTree input[data-slug]")) {
-    const exists = collections.some((c) => c.slug === input.value);
-    const vis = document.querySelector(`#fTree select[data-vis="${CSS.escape(input.dataset.slug)}"]`);
-    if (vis) vis.disabled = exists;
-  }
-}
+const slugOf = (root) => (fs.slugs.get(root) || { value: "" }).value.trim();
+const exists = (slug) => collections.some((c) => c.slug === slug);
 
 // What goes where: one group per collection, each with the root folders that belong to it.
 function plan() {
   const roots = tickedRoots();
   const base = targetSlug();
-  if (!$("fPerFolder").checked) return [{ collection: base, roots, new: !collections.some((c) => c.slug === base), visibility: $("fNewVisibility").value }];
+  const baseGroup = (rs) => ({ collection: base, roots: rs, new: !exists(base), visibility: $("fNewVisibility").value });
+  if (!$("fPerFolder").checked) return [baseGroup(roots)];
   const groups = [];
-  const top = roots.filter((r) => r === ".");
-  if (top.length) groups.push({ collection: base, roots: top, new: !collections.some((c) => c.slug === base), visibility: $("fNewVisibility").value });
+  if (roots.includes(".")) groups.push(baseGroup(["."]));
   for (const r of roots.filter((x) => x !== ".")) {
-    const slug = document.querySelector(`#fTree input[data-slug="${CSS.escape(r)}"]`).value.trim();
-    const vis = document.querySelector(`#fTree select[data-vis="${CSS.escape(r)}"]`).value;
-    groups.push({ collection: slug, roots: [r], new: !collections.some((c) => c.slug === slug), visibility: vis });
+    groups.push({ collection: slugOf(r), roots: [r], new: !exists(slugOf(r)), visibility: fs.vis.get(r) || "shared" });
   }
   return groups;
 }
 
 const targetSlug = () => ($("fCollection").value === NEW ? $("fNewSlug").value.trim() : $("fCollection").value);
 
+// --- the tree: counts, checkboxes, and the status of every file ---
+
+function annotate(node) {
+  node.on = 0; node.off = 0; node.total = 0;
+  for (const f of node.files) {
+    f.d = fs.decisions.get(f.key);
+    node.total++;
+    if (f.d.outcome === "indexed") node.on++;
+    else if (USER_REASONS.has(f.d.reason)) node.off++;
+  }
+  for (const c of node.dirs.values()) { annotate(c); node.on += c.on; node.off += c.off; node.total += c.total; }
+}
+
+const treeLine = (path, isDir) => `/${path}${isDir ? "/" : ""}`;
+const fmtSize = (n) => (n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`);
+
+// A box below the top level adds or removes a line in the Exclude rules, so the choice is visible and is saved with the source.
+function toggleExclude(node, isDir, include) {
+  const line = treeLine(node.path, isDir);
+  let lines = HF.splitLines($("fExclude").value).filter((l) => l.trim() !== "");
+  if (include) lines = lines.filter((l) => l.trim() !== line && !(isDir && l.trim().startsWith(line)));
+  else if (!lines.some((l) => l.trim() === line)) lines.push(line);
+  $("fExclude").value = lines.join("\n");
+  recompute();
+}
+
+function toggleRoot(name, on) {
+  if (on) fs.ticked.add(name); else fs.ticked.delete(name);
+  recompute();
+}
+
+function renderTree() {
+  const body = $("fTree");
+  body.replaceChildren();
+  const ctx = { rows: 0, show: $("fShow").value, perFolder: $("fPerFolder").checked,
+    lines: new Set(HF.splitLines($("fExclude").value).map((l) => l.trim())) };
+  for (const th of document.querySelectorAll("th.perFolderCell")) th.hidden = !ctx.perFolder;
+  for (const r of rootNodes()) addNode(body, r, 0, true, false, ctx);
+  if (ctx.rows >= MAX_ROWS) body.append(el("tr", {}, el("td", { colspan: 5, class: "muted" },
+    `Only the first ${fmtNum(MAX_ROWS)} rows are drawn. Collapse folders, or use the Exclude rules.`)));
+}
+
+function addNode(body, node, depth, isRoot, blocked, ctx) {
+  if (ctx.rows >= MAX_ROWS) return;
+  ctx.rows++;
+  const open = fs.expanded.has(node.path);
+  const kids = node.dirs.size + node.files.length > 0;
+  const rootOn = isRoot && fs.ticked.has(node.name);
+  const isTop = node.name === "." && isRoot;
+  const box = el("input", { type: "checkbox", "aria-label": `Index ${isTop ? "the files at the top" : node.path}` });
+  if (isRoot) {
+    box.setAttribute("data-root", node.name);
+    box.checked = rootOn;
+    box.indeterminate = rootOn && node.off > 0;
+    box.addEventListener("change", () => toggleRoot(node.name, box.checked));
+  } else {
+    box.checked = node.on > 0 && node.off === 0;
+    box.indeterminate = node.on > 0 && node.off > 0;
+    box.disabled = blocked || (node.on === 0 && node.off === 0);
+    box.title = box.disabled && !blocked ? "Nothing in this folder can be indexed" : "";
+    box.addEventListener("change", () => toggleExclude(node, true, box.checked));
+  }
+  const twisty = kids ? el("button", { class: "twisty", type: "button", "aria-expanded": String(open),
+    "aria-label": `${open ? "Collapse" : "Expand"} ${node.path}`, onclick: () => { if (open) fs.expanded.delete(node.path); else fs.expanded.add(node.path); renderTree(); } },
+  open ? "▾" : "▸") : el("span", { class: "twisty" }, "");
+  const name = el("td", { title: isTop ? "Files directly in the folder" : node.path }, twisty,
+    el("span", { class: "mono" }, isTop ? node.label : `${node.name}/`),
+    isRoot && HF.PRIVATE_LOOKING.test(node.name) ? el("span", { class: "badge restricted" }, "looks private") : "");
+  name.style.paddingLeft = `${8 + depth * 20}px`;
+  const out = node.total - node.on;
+  const summary = el("td", { class: "num" }, `${fmtNum(node.on)} to index`,
+    el("span", { class: "muted" }, ` · ${fmtNum(out)} not`));
+  const slugCell = el("td", { class: "perFolderCell" });
+  const visCell = el("td", { class: "perFolderCell" });
+  slugCell.hidden = visCell.hidden = !ctx.perFolder;
+  if (isRoot && !isTop) {
+    const slug = el("input", { type: "text", "data-slug": node.name, pattern: "[a-z0-9][a-z0-9\\-]{0,63}", placeholder: "collection" });
+    slug.value = slugOf(node.name);
+    slug.addEventListener("input", () => { fs.slugs.set(node.name, { value: slug.value, edited: true }); renderPreview(); });
+    const vis = el("select", { "data-vis": node.name }, el("option", { value: "shared" }, "shared"), el("option", { value: "restricted" }, "restricted"));
+    vis.value = fs.vis.get(node.name) || "shared";
+    vis.disabled = exists(slug.value);
+    vis.addEventListener("change", () => fs.vis.set(node.name, vis.value));
+    slugCell.append(slug);
+    visCell.append(vis);
+  }
+  body.append(el("tr", { class: `tnode${isRoot ? " troot" : ""}`, "data-path": node.path }, el("td", {}, box), name, summary, slugCell, visCell));
+  if (!open) return;
+  const childBlocked = blocked || (isRoot ? !rootOn : node.on === 0 && node.off > 0);
+  for (const d of [...node.dirs.values()].sort(byName)) addNode(body, d, depth + 1, false, childBlocked, ctx);
+  const files = node.files.filter((f) => ctx.show === "all" || (ctx.show === "on") === (f.d.outcome === "indexed"));
+  for (const f of files.slice(0, FILES_PER_FOLDER)) addFile(body, f, depth + 1, childBlocked, ctx);
+  if (files.length > FILES_PER_FOLDER) body.append(el("tr", {}, el("td", {}), el("td", { colspan: 4, class: "muted" },
+    `... and ${fmtNum(files.length - FILES_PER_FOLDER)} more files in ${node.path}`)));
+}
+
+function addFile(body, f, depth, blocked, ctx) {
+  if (ctx.rows >= MAX_ROWS) return;
+  ctx.rows++;
+  const d = f.d, on = d.outcome === "indexed";
+  const line = treeLine(f.path, false);
+  const box = el("input", { type: "checkbox", "aria-label": `Index ${f.path}` });
+  box.checked = on;
+  // a file can be toggled when only the user's choices keep it out, and not by a rule that is not a line of its own
+  box.disabled = blocked || !(on || (d.reason === "excluded-by-rule" && ctx.lines.has(line)));
+  if (!on && d.reason === "excluded-by-rule" && !ctx.lines.has(line)) box.title = "Excluded by a rule you wrote; edit the rule";
+  box.addEventListener("change", () => toggleExclude(f, false, box.checked));
+  const name = el("td", { title: f.path }, el("span", { class: "twisty" }, ""), el("span", { class: "mono" }, f.name),
+    on ? "" : el("span", { class: `badge ${d.outcome === "rejected" ? "error" : "skipped"}` }, d.reason));
+  name.style.paddingLeft = `${8 + depth * 20}px`;
+  body.append(el("tr", { class: `tfile${on ? "" : " tout"}`, "data-path": f.path }, el("td", {}, box), name,
+    el("td", { class: "num muted" }, fmtSize(f.size)), el("td", { class: "perFolderCell", hidden: "" }), el("td", { class: "perFolderCell", hidden: "" })));
+}
+
+function expandAll(open) {
+  fs.expanded.clear();
+  if (!open) { renderTree(); return; }
+  const walk = (n) => { for (const c of n.dirs.values()) { fs.expanded.add(c.path); walk(c); } };
+  for (const r of rootNodes()) { fs.expanded.add(r.path); walk(r); }
+  renderTree();
+}
+
 // --- the live preview (local rules; the server repeats every check) ---
 
 function recompute() {
-  togglePerFolder();
+  rootNodes(); // ticks any root that appeared (for instance when the default exclusions are turned off)
   const roots = tickedRoots();
-  const flt = HF.makeFilter(readRules(roots));
+  const flt = HF.makeFilter(readRules(roots.length ? roots : ["\0"])); // no roots would mean "all of them"
   const counts = { indexed: 0, skipped: 0, rejected: 0 };
-  const reasons = new Map();
-  const rejected = [];
+  fs.reasons = new Map();
+  fs.rejected = [];
+  fs.decisions = new Map();
   for (const f of fs.files) {
     const d = HF.checkPath(flt, f.path, f.size);
+    fs.decisions.set(f.path, d);
     counts[d.outcome]++;
     if (d.outcome !== "indexed") {
-      reasons.set(d.reason, (reasons.get(d.reason) || 0) + 1);
-      if (d.outcome === "rejected" && rejected.length < 20) rejected.push(d);
+      fs.reasons.set(d.reason, (fs.reasons.get(d.reason) || 0) + 1);
+      if (d.outcome === "rejected" && fs.rejected.length < 20) fs.rejected.push(d);
     }
   }
   fs.eligible = counts.indexed;
+  fs.counts = counts;
+  annotate(fs.topNode);
+  for (const d of fs.tree.dirs.values()) annotate(d);
+  renderTree();
+  renderPreview();
+}
+
+function renderPreview() {
+  const counts = fs.counts;
   const box = $("fPreview");
   box.replaceChildren(el("p", {}, el("strong", {}, `${fmtNum(counts.indexed)} files to index`),
     `, ${fmtNum(counts.skipped)} skipped, ${fmtNum(counts.rejected)} rejected. Files are also read for secrets just before upload.`));
   const list = el("ul", { class: "reasons" });
-  for (const [reason, n] of [...reasons].sort((a, b) => b[1] - a[1])) list.append(el("li", {}, `${fmtNum(n)} ${reason}`));
+  for (const [reason, n] of [...fs.reasons].sort((a, b) => b[1] - a[1])) list.append(el("li", {}, `${fmtNum(n)} ${reason}`));
   box.append(list);
-  if (rejected.length) {
+  if (fs.rejected.length) {
     box.append(el("p", { class: "muted" }, "Rejected (path and rule):"),
-      el("ul", { class: "reasons mono" }, ...rejected.map((d) => el("li", {}, `${d.path}: ${d.reason}`))));
+      el("ul", { class: "reasons mono" }, ...fs.rejected.map((d) => el("li", {}, `${d.path}: ${d.reason}`))));
   }
   const problem = problems();
   $("fProblem").textContent = problem;
@@ -246,9 +379,9 @@ function problems() {
   if (!/^[A-Za-z0-9._-]{1,100}$/.test(name)) return "The source name uses letters, digits, . _ - (up to 100).";
   if (!tickedRoots().length) return "Tick at least one folder.";
   if (fs.eligible > MAX_ELIGIBLE_FILES) return `${fmtNum(fs.eligible)} files is over the limit of ${fmtNum(MAX_ELIGIBLE_FILES)} for one run: untick folders or add exclude rules.`;
-  for (const g of plan()) if (!SLUG_OK.test(g.collection)) return `Collection name "${g.collection}" must be lowercase letters, digits and dashes.`;
-  const slugs = plan().map((g) => g.collection);
-  if (new Set(slugs).size !== slugs.length) return "Two folders go to the same collection name; give each its own.";
+  const groups = plan();
+  for (const g of groups) if (!SLUG_OK.test(g.collection)) return `Collection name "${g.collection}" must be lowercase letters, digits and dashes.`;
+  if (new Set(groups.map((g) => g.collection)).size !== groups.length) return "Two folders go to the same collection name; give each its own.";
   return "";
 }
 
@@ -539,31 +672,20 @@ function initFolderSync() {
   zone.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("folderInput").click(); } });
   $("chooseFolder").addEventListener("click", () => $("folderInput").click());
   $("folderInput").addEventListener("change", (e) => { scanInput(e.target.files).catch((err) => setFolderStatus(err.message)); e.target.value = ""; });
-  for (const id of ["fInclude", "fExclude", "fExt", "fDefaults", "fGitignore", "fName", "fCollection", "fNewSlug", "fNewVisibility"]) {
-    $(id).addEventListener("input", () => { if (["fInclude", "fExclude", "fExt", "fDefaults", "fGitignore"].includes(id)) buildTreeKeepingTicks(); else recompute(); });
-  }
-  $("fPrefix").addEventListener("input", () => { applyPrefix(); recompute(); });
-  $("fName").addEventListener("input", () => { if (!fs.source) { $("fPrefix").value = $("fName").value; applyPrefix(); } });
-  $("fPerFolder").addEventListener("change", () => { applyPrefix(); recompute(); });
-  $("fCollection").addEventListener("change", () => { $("fNewBox").hidden = $("fCollection").value !== NEW; recompute(); });
+  for (const id of ["fInclude", "fExclude", "fExt", "fDefaults", "fGitignore"]) $(id).addEventListener("input", recompute);
+  for (const id of ["fName", "fCollection", "fNewSlug", "fNewVisibility"]) $(id).addEventListener("input", renderPreview);
+  $("fShow").addEventListener("change", renderTree);
+  $("fExpand").addEventListener("click", () => expandAll(true));
+  $("fCollapse").addEventListener("click", () => expandAll(false));
+  $("fPrefix").addEventListener("input", () => { applyPrefix(); renderTree(); renderPreview(); });
+  $("fName").addEventListener("input", () => { if (!fs.source) { $("fPrefix").value = $("fName").value; applyPrefix(); renderTree(); } });
+  $("fPerFolder").addEventListener("change", () => { $("fPrefixLabel").hidden = !$("fPerFolder").checked; applyPrefix(); renderTree(); renderPreview(); });
+  $("fCollection").addEventListener("change", () => { $("fNewBox").hidden = $("fCollection").value !== NEW; renderPreview(); });
   $("fStart").addEventListener("click", runSync);
   $("fCancel").addEventListener("click", () => { fs.cancel = true; });
   $("fCheckServer").addEventListener("click", checkServer);
   $("fClose").addEventListener("click", resetFolder);
   loadSavedSources();
-}
-
-// Changing a rule changes the per-folder counts but must not undo the user's ticks.
-function buildTreeKeepingTicks() {
-  const ticks = new Map([...document.querySelectorAll("#fTree input[data-root]")].map((c) => [c.dataset.root, c.checked]));
-  const slugs = new Map([...document.querySelectorAll("#fTree input[data-slug]")].map((c) => [c.dataset.slug, [c.value, c.dataset.edited]]));
-  buildTree();
-  for (const c of document.querySelectorAll("#fTree input[data-root]")) if (ticks.has(c.dataset.root)) c.checked = ticks.get(c.dataset.root);
-  for (const c of document.querySelectorAll("#fTree input[data-slug]")) {
-    const old = slugs.get(c.dataset.slug);
-    if (old && old[1]) { c.value = old[0]; c.dataset.edited = "1"; }
-  }
-  recompute();
 }
 
 function resetFolder() {

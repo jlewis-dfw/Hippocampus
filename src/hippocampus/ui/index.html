@@ -102,11 +102,23 @@
         </div>
         <label id="fPrefixLabel" hidden>Prefix for the new collection names <input id="fPrefix" type="text" maxlength="60"></label>
 
-        <h3>Folders</h3>
-        <p class="muted">Tick what to index. Folders that look private are left unticked.</p>
-        <div class="table-wrap">
+        <h3>Folders and files in <span class="mono" id="fRootName"></span></h3>
+        <p class="muted">Tick what to index. Open a folder to see its files and why any are left out. Unticking something below the top
+          level adds a line to the Exclude rules. Folders that look private are left unticked.</p>
+        <div class="row">
+          <button type="button" id="fExpand">Expand all</button>
+          <button type="button" id="fCollapse">Collapse all</button>
+          <label class="inline">Show files
+            <select id="fShow">
+              <option value="all" selected>all</option>
+              <option value="on">to be indexed</option>
+              <option value="off">not indexed</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-wrap tree-wrap">
           <table>
-            <thead><tr><th></th><th>Folder</th><th class="num">To index / files</th><th class="perFolderCell" id="fPerFolderHead">Collection</th><th class="perFolderCell">Visibility</th></tr></thead>
+            <thead><tr><th></th><th>Folder or file</th><th class="num">Files</th><th class="perFolderCell" id="fPerFolderHead">Collection</th><th class="perFolderCell">Visibility</th></tr></thead>
             <tbody id="fTree"></tbody>
           </table>
         </div>
