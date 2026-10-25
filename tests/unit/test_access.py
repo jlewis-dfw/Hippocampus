@@ -96,7 +96,7 @@ def test_listing_and_status_counts_respect_the_principal(world):
     assert c.get("/v1/status").json()["collections"] == 1
     assert [x["slug"] for x in c.get("/v1/collections", headers=tok["kobold"]).json()["collections"]] == ["pets", "private-a"]
     assert c.get("/v1/status", headers=tok["kobold"]).json()["collections"] == 2
-    assert c.get("/v1/collections", headers=tok["admin"]).json()["collections"][0]["visibility"] == "restricted"
+    assert {x["slug"]: x["visibility"] for x in c.get("/v1/collections", headers=tok["admin"]).json()["collections"]}["private-a"] == "restricted"
 
 
 # --- writes ---
