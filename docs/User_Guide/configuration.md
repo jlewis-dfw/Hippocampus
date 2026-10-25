@@ -32,7 +32,7 @@ The launcher itself reads one more: `CONTAINER_ENGINE=docker|podman` forces the 
 | `HIPPO_LOG_LEVEL`, `HIPPO_LOG_FORMAT` | `INFO`, `text` | Log level, and `json` for one JSON object per line. See [operations](operations.md#logs). |
 | `HIPPO_REQUIRE_SINGLE_WORKER` | `false` | Refuse to start when `WEB_CONCURRENCY` is above 1, instead of only logging a warning. |
 | `HIPPO_EXCLUDE_PATH_PARTS` | none | Comma-separated, case-insensitive path fragments that are never indexed: repository and docs ingesters, file and folder uploads, crawled URLs, `index_doc`. No client setting removes them. |
-| `HIPPO_MIGRATIONS_DIR` | `<repo>/db/migrations` | Where `python -m hippocampus.migrate` reads migrations. The image sets `/app/db/migrations`. |
+| `HIPPO_MIGRATIONS_DIR` | `<repo>/db/migrations` | Where `python -m hippocampus.storage.migrate` reads migrations. The image sets `/app/db/migrations`. |
 
 ### Docs repository sync (optional)
 
@@ -55,7 +55,7 @@ Off unless the first three are all set. See [ingesting.md](ingesting.md#keeping-
 | `HIPPO_TOKEN` | MCP server | Token sent as `Authorization: Bearer ...`. Optional: without it the server acts as anonymous |
 | `HIPPO_MCP_READONLY` | MCP server | `1`, `true` or `yes` leaves out the indexing tool |
 | `HIPPO_ADMIN_TOKEN` | `scripts/smoke_live.py` | An admin token, instead of typing it |
-| `HIPPO_DSN` | `python -m hippocampus.admin`, `python -m hippocampus.migrate` | Database to talk to |
+| `HIPPO_DSN` | `python -m hippocampus.cli.admin`, `python -m hippocampus.storage.migrate` | Database to talk to |
 | `HIPPO_TEST_DSN` | `scripts/check.sh`, the database tests | A pgvector database the tests may use. Use a throwaway one |
 | `HIPPO_RUN_MODEL_TESTS` | the test suite | `1` runs the tests that download the real embedding model |
 | `PY` | `scripts/check.sh` | The Python to use (default `.venv/bin/python`, else `python3`) |

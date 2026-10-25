@@ -1,6 +1,6 @@
 # MCP server
 
-`src/hippocampus/mcp_server.py` is a stdio [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI assistant search
+`src/hippocampus/cli/mcp_server.py` is a stdio [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI assistant search
 Hippocampus, and optionally index local files into it. It holds no state and no data: it is a thin client of the REST API, so every
 access rule of the service applies to it through the token it is given.
 
@@ -58,14 +58,14 @@ python -m venv .venv
 .venv/bin/pip install -e ".[mcp]"          # the server needs the mcp package (>= 1.2, < 2)
 ```
 
-Register the command `python -m hippocampus.mcp_server` with your assistant, with the variables above.
+Register the command `python -m hippocampus.cli.mcp_server` with your assistant, with the variables above.
 
 **Claude Code:**
 
 ```bash
 claude mcp add hippocampus \
   -e HIPPO_URL=http://127.0.0.1:8090 -e HIPPO_TOKEN=hip_... -e HIPPO_MCP_READONLY=1 \
-  -- /path/to/hippocampus/.venv/bin/python -m hippocampus.mcp_server
+  -- /path/to/hippocampus/.venv/bin/python -m hippocampus.cli.mcp_server
 ```
 
 **Any client that reads a JSON configuration** (the common `mcpServers` form):
@@ -75,7 +75,7 @@ claude mcp add hippocampus \
   "mcpServers": {
     "hippocampus": {
       "command": "/path/to/hippocampus/.venv/bin/python",
-      "args": ["-m", "hippocampus.mcp_server"],
+      "args": ["-m", "hippocampus.cli.mcp_server"],
       "env": {
         "HIPPO_URL": "http://127.0.0.1:8090",
         "HIPPO_TOKEN": "hip_...",
@@ -114,7 +114,7 @@ file from your disk. This is the setting to use whenever a model, rather than yo
 | `Error: Hippocampus API answered 401: ...` | The token is wrong, revoked or rotated |
 | `Error: Hippocampus API answered 404: collection '...' not found` | The collection does not exist or the token cannot read it |
 | `Error: Hippocampus API answered 403: ...` | The token lacks write access (indexing), or the client's address is outside the allowed networks |
-| The tools do not appear in the assistant | The server failed to start: run `HIPPO_URL=... .venv/bin/python -m hippocampus.mcp_server` by hand and look for an import error (`pip install -e ".[mcp]"`) |
+| The tools do not appear in the assistant | The server failed to start: run `HIPPO_URL=... .venv/bin/python -m hippocampus.cli.mcp_server` by hand and look for an import error (`pip install -e ".[mcp]"`) |
 | Only `hippocampus_search` is listed | `HIPPO_MCP_READONLY` is set; unset it if you want indexing |
 
 ## Tests

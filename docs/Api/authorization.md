@@ -1,7 +1,7 @@
 # Authorization
 
 How the API decides who may do what. Two layers apply to a request: the **network gate** (by client address) and the
-**principal** (who the caller is, from an optional bearer token). Source: `src/hippocampus/api.py` and `src/hippocampus/auth.py`.
+**principal** (who the caller is, from an optional bearer token). Source: `src/hippocampus/service/api.py` and `src/hippocampus/service/auth.py`.
 
 ## The network gate
 
@@ -131,7 +131,7 @@ Two constants in `auth.py` protect material that must never end up in a collecti
 An ordinary installation never meets these. They exist for a companion application that keeps private story summaries in
 `private-*` collections. To protect another family of names, add its prefix to the tuples (and a test).
 
-Separately, `HIPPO_EXCLUDE_PATH_PARTS` (checked in `routes/ingest.py`, `crawler.py`, `repo_ingest.py`, `docs_sync.py`,
+Separately, `HIPPO_EXCLUDE_PATH_PARTS` (checked in `service/routes/ingest.py`, `crawler.py`, `repo_ingest.py`, `docs_sync.py`,
 `files_ingest.py` and `mcp_server.py`) is a list of path fragments that are **refused as sources** (`403 this source is excluded from ingestion`): a guard so that
 infrastructure documents can never be indexed into a store other tools can read. Change it only together with its tests.
 

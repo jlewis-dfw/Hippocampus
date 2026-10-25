@@ -1,6 +1,6 @@
 # Migrations
 
-How the schema is versioned, applied and checked. Source: `src/hippocampus/migrate.py`, `db/migrations/`, `scripts/migrate_check.py`.
+How the schema is versioned, applied and checked. Source: `src/hippocampus/storage/migrate.py`, `db/migrations/`, `scripts/migrate_check.py`.
 
 ## The files
 
@@ -15,7 +15,7 @@ underscores. The numbers must run `0001, 0002, 0003, ...` **without gaps or repe
 
 ## The runner
 
-`python -m hippocampus.migrate` (reads `HIPPO_DSN`; the folder is `HIPPO_MIGRATIONS_DIR`, or `<repo>/db/migrations` in a checkout):
+`python -m hippocampus.storage.migrate` (reads `HIPPO_DSN`; the folder is `HIPPO_MIGRATIONS_DIR`, or `<repo>/db/migrations` in a checkout):
 
 1. Waits for the database, retrying the connection up to 30 times, 2 seconds apart.
 2. Creates `public.schema_migrations` if it does not exist.

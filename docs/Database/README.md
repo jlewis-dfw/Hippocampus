@@ -40,8 +40,8 @@ collections 1 ──< sources 1 ──< document_chunks          api_clients  (s
 | Connection | By | Needs |
 |---|---|---|
 | The API and jobs | `PgStore` through `connect_store(dsn)` | read and write on the `hippocampus` schema |
-| The migration runner | `python -m hippocampus.migrate` | create schema, tables and the `vector` extension (a superuser or a role that may create extensions) |
-| The admin tool | `python -m hippocampus.admin` | read and write on `hippocampus.api_clients` and `hippocampus.collections` |
+| The migration runner | `python -m hippocampus.storage.migrate` | create schema, tables and the `vector` extension (a superuser or a role that may create extensions) |
+| The admin tool | `python -m hippocampus.cli.admin` | read and write on `hippocampus.api_clients` and `hippocampus.collections` |
 | You | `psql` | anything |
 
 The local stack uses the database's superuser for all of them, which is acceptable for a single-machine setup. For a shared database,

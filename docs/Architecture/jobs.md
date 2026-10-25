@@ -1,6 +1,6 @@
 # Background jobs
 
-Crawls, repository imports, docs syncs and folder uploads can take minutes, so they run in the background. `src/hippocampus/jobs.py` provides a small
+Crawls, repository imports, docs syncs and folder uploads can take minutes, so they run in the background. `src/hippocampus/service/jobs.py` provides a small
 in-process registry; the API returns `202` with a `job_id` and the client polls or streams the log.
 
 The registry lives in the memory of one process, so the service runs as a single worker; a start with `WEB_CONCURRENCY` above 1 logs a

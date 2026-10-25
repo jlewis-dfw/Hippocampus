@@ -33,7 +33,7 @@ Walk the user through four steps in order. Finish and verify each step before st
      `./hippocampus admin create-client --name <assistant>-reader --read '<collection or glob>'`. Ask which collections it should see; never use a
      bare `*`. The token is shown once.
    - Have the user load the token without echoing it: `read -rs HIPPO_TOKEN && export HIPPO_TOKEN`. Then show the registration command for
-     their assistant (Claude Code: `claude mcp add hippocampus -e HIPPO_URL=... -e HIPPO_TOKEN="$HIPPO_TOKEN" -e HIPPO_MCP_READONLY=1 -- <abs path to .venv/bin/python> -m hippocampus.mcp_server`).
+     their assistant (Claude Code: `claude mcp add hippocampus -e HIPPO_URL=... -e HIPPO_TOKEN="$HIPPO_TOKEN" -e HIPPO_MCP_READONLY=1 -- <abs path to .venv/bin/python> -m hippocampus.cli.mcp_server`).
      Ask before running it yourself.
    - Verify: `claude mcp list` shows `hippocampus` connected, then run one `hippocampus_search` and show the result.
 4. **Query it.** Show the three ways to get answers, with one working example of each against the user's own service:

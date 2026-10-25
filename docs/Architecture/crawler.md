@@ -1,6 +1,6 @@
 # The crawler
 
-`src/hippocampus/crawler.py` fetches web pages and turns them into Markdown documents for the ingestion pipeline. It has three
+`src/hippocampus/ingest/crawler.py` fetches web pages and turns them into Markdown documents for the ingestion pipeline. It has three
 parts: an HTML-to-Markdown extractor, a crawl loop, and two fetchers (static HTTP and headless Chromium). Fetched content is
 untrusted data; nothing in this module interprets it as instructions.
 

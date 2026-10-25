@@ -1,6 +1,6 @@
 # Hippocampus API
 
-Technical reference for the HTTP API in `src/hippocampus/api.py` and `src/hippocampus/routes/`: a FastAPI application served by uvicorn. It stores and
+Technical reference for the HTTP API in `src/hippocampus/service/api.py` and `src/hippocampus/service/routes/`: a FastAPI application served by uvicorn. It stores and
 searches embedded documents in PostgreSQL (see [../Database/README.md](../Database/README.md)) and serves the dashboard.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
@@ -16,7 +16,7 @@ This is a living document. It describes the code as of migration `0002_access_co
   pages are at `/docs` (interactive) and `/redoc`, and the machine-readable description at `/openapi.json`. The dashboard's **API**
   tab shows the same reference offline, and its "Try it out" uses the token from the Access tab.
 - **API reference groups:** every operation carries one tag (Status, Search, Collections, Access, Ingest, Folder uploads, Saved
-  sources, Docs sync, Jobs), one per module in `routes/`; the groups and their descriptions are in `routes/tags.py`. A test fails
+  sources, Docs sync, Jobs), one per module in `service/routes/`; the groups and their descriptions are in `service/routes/tags.py`. A test fails
   when an operation has no tag or description, so a new route must add both (a docstring is its description).
 - **Format:** requests and responses are JSON (`Content-Type: application/json`), except the live job log, which is
   `text/event-stream`. Timestamps are ISO 8601 strings, except a job's `created_at`, which is a Unix time in seconds.
@@ -45,7 +45,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 
 `create_app(store_factory, embedder, jobs, crawler, allowed_networks, docs_sync, require_auth)` builds the application. It takes
 its collaborators as arguments, so the tests run the whole API against in-memory fakes ([../Testing/README.md](../Testing/README.md)).
-`app_from_env()` is the production factory (`uvicorn --factory hippocampus.api:app_from_env`): it reads the environment
+`app_from_env()` is the production factory (`uvicorn --factory hippocampus.service.api:app_from_env`): it reads the environment
 ([../User_Guide/configuration.md](../User_Guide/configuration.md)), connects to the database, creates the embedder and the crawler,
 and optionally the docs sync.
 
@@ -76,23 +76,29 @@ repository imports and syncs run in daemon threads owned by the job registry.
 
 ```
 src/hippocampus/
-  api.py            — wiring only: middleware, the shared dependencies, the routers, app_from_env
-  routes/           — one module per area (health, search, collections, access, ingest, uploads, sources, docs, jobs),
+  service/          — the HTTP service
+    api.py          — wiring only: middleware, the shared dependencies, the routers, app_from_env
+    routes/         — one module per area (health, search, collections, access, ingest, uploads, sources, docs, jobs),
                       the request bodies (schemas.py) and the shared access checks (deps.py)
-  auth.py           — Principal, token hashing, grant matching, authenticate()
-  store.py          — PgStore: every SQL statement; connect_store()
-  diff.py           — content-hash sync of documents into a collection (the shared indexing step)
-  chunker.py        — header-aware Markdown chunking
-  embedder.py       — the embedding model wrapper and the Embedder protocol
-  crawler.py        — HTML to Markdown, the crawl loop, the static and browser fetchers, the public-address check
-  repo_ingest.py    — Repomix pack parsing and the secret pre-flight
-  docs_sync.py      — Forgejo push-webhook sync of a docs repository
-  jobs.py           — the in-memory job registry
-  migrate.py        — the migration runner
-  admin.py          — the admin command-line tool
-  mcp_server.py     — the stdio MCP server
-  healthcheck.py    — container health probe
-  ui/               — the dashboard (index.html, app.js, app.css)
+    auth.py         — Principal, token hashing, grant matching, authenticate()
+    jobs.py         — the in-memory job registry
+    ui/             — the dashboard (index.html, app.js, app.css)
+  storage/
+    store.py        — PgStore: every SQL statement; connect_store()
+    migrate.py      — the migration runner
+  ingest/
+    crawler.py      — HTML to Markdown, the crawl loop, the static and browser fetchers, the public-address check
+    repo_ingest.py  — Repomix pack parsing and the secret pre-flight
+    docs_sync.py    — Forgejo push-webhook sync of a docs repository
+    sync_core.py    — the file filter and scan rules; files_ingest.py — folder uploads
+  core/
+    diff.py         — content-hash sync of documents into a collection (the shared indexing step)
+    chunker.py      — header-aware Markdown chunking
+    embedder.py     — the embedding model wrapper and the Embedder protocol
+  cli/
+    admin.py        — the admin command-line tool
+    mcp_server.py   — the stdio MCP server
+    healthcheck.py  — container health probe
 ```
 
 ## Known gaps

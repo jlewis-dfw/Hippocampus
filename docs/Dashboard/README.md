@@ -3,14 +3,14 @@
 How the web dashboard is built. For how to *use* it, see [../User_Guide/dashboard.md](../User_Guide/dashboard.md).
 
 The dashboard is a few static files served by the API itself: no build step, no framework, and no request to any other site. The one
-third-party file is the vendored Swagger UI for the API tab. Source: `src/hippocampus/ui/`.
+third-party file is the vendored Swagger UI for the API tab. Source: `src/hippocampus/service/ui/`.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
 
 ## How it is served
 
 `api.py` mounts the folder with Starlette's `StaticFiles(directory=UI_DIR, html=True)` at `/ui`, and `GET /` redirects to `/ui/`. The files are
-packaged with the Python package (`package-data` in `pyproject.toml` includes `ui/*` and the vendored Swagger UI), so they travel in the container image.
+packaged with the Python package (`package-data` in `pyproject.toml` includes `service/ui/*` and the vendored Swagger UI), so they travel in the container image.
 
 A middleware adds these headers to every response whose path starts with `/ui`:
 
@@ -84,8 +84,8 @@ stream (`AbortController`).
 
 ## Changing it
 
-1. Edit the files in `src/hippocampus/ui/`.
-2. Run the service from the source tree to see the change without rebuilding: `PYTHONPATH=src .venv/bin/uvicorn --factory hippocampus.api:app_from_env --port 8099`
+1. Edit the files in `src/hippocampus/service/ui/`.
+2. Run the service from the source tree to see the change without rebuilding: `PYTHONPATH=src .venv/bin/uvicorn --factory hippocampus.service.api:app_from_env --port 8099`
    with `HIPPO_DSN` set, or rebuild the container (`./hippocampus up`, which always rebuilds the image first).
 3. Hard-reload the browser (the files are served `no-cache`, so a normal reload also works).
 4. Run `scripts/check.sh`: the dashboard JavaScript is syntax-checked with node, and the UI test asserts the headers and that the files contain no external addresses.

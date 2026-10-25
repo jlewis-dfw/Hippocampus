@@ -30,7 +30,7 @@ for the local stack and, with Podman, for the development database.
 | Path | Contents |
 |---|---|
 | `src/hippocampus/` | The package (below) |
-| `src/hippocampus/ui/` | The dashboard: `index.html`, `app.js`, `app.css` ([../Dashboard/README.md](../Dashboard/README.md)) |
+| `src/hippocampus/service/ui/` | The dashboard: `index.html`, `app.js`, `app.css` ([../Dashboard/README.md](../Dashboard/README.md)) |
 | `db/migrations/` | Numbered SQL files, applied in order ([../Database/migrations.md](../Database/migrations.md)) |
 | `tests/` | The test suite, in `unit/`, `integration/` and `e2e/` ([../Testing/README.md](../Testing/README.md)) |
 | `scripts/` | Checks, linters, the prerequisite scripts, the docs indexer, the smoke test, deploy and export helpers |
@@ -41,24 +41,26 @@ for the local stack and, with Podman, for the development database.
 
 ### The package
 
+Grouped by layer; imports point downwards only (`cli` and `service` -> `ingest` and `storage` -> `core`). `ingest/sync_core.py` (file filter and scan rules) and `ingest/files_ingest.py` (folder uploads) are not listed below.
+
 | Module | Role |
 |---|---|
-| `api.py` | The FastAPI application: the network gate, dashboard headers, and wiring of the routers |
-| `routes/` | The routes, one module per area; `deps.py` has the shared access checks and `schemas.py` the request bodies |
-| `auth.py` | Tokens, accounts, grants, the access decisions |
-| `store.py` | All SQL: collections, sources, chunks, search, accounts |
-| `chunker.py` | Markdown into chunks ([../Architecture/embedding-and-chunking.md](../Architecture/embedding-and-chunking.md)) |
-| `embedder.py` | The embedding model |
-| `diff.py` | Which chunks are new, kept or gone |
-| `crawler.py` | The web crawler and its safety rules ([../Architecture/crawler.md](../Architecture/crawler.md)) |
-| `repo_ingest.py` | Repomix pack parsing and the secret pre-flight |
-| `docs_sync.py` | The Forgejo webhook sync |
-| `jobs.py` | In-memory background jobs and their logs ([../Architecture/jobs.md](../Architecture/jobs.md)) |
-| `mcp_server.py` | The MCP server ([../Mcp/README.md](../Mcp/README.md)) |
-| `admin.py` | The admin command line ([../Admin/README.md](../Admin/README.md)) |
-| `migrate.py`, `healthcheck.py` | The migration runner and the container health check |
+| `service/api.py` | The FastAPI application: the network gate, dashboard headers, and wiring of the routers |
+| `service/routes/` | The routes, one module per area; `deps.py` has the shared access checks and `schemas.py` the request bodies |
+| `service/auth.py` | Tokens, accounts, grants, the access decisions |
+| `storage/store.py` | All SQL: collections, sources, chunks, search, accounts |
+| `core/chunker.py` | Markdown into chunks ([../Architecture/embedding-and-chunking.md](../Architecture/embedding-and-chunking.md)) |
+| `core/embedder.py` | The embedding model |
+| `core/diff.py` | Which chunks are new, kept or gone |
+| `ingest/crawler.py` | The web crawler and its safety rules ([../Architecture/crawler.md](../Architecture/crawler.md)) |
+| `ingest/repo_ingest.py` | Repomix pack parsing and the secret pre-flight |
+| `ingest/docs_sync.py` | The Forgejo webhook sync |
+| `service/jobs.py` | In-memory background jobs and their logs ([../Architecture/jobs.md](../Architecture/jobs.md)) |
+| `cli/mcp_server.py` | The MCP server ([../Mcp/README.md](../Mcp/README.md)) |
+| `cli/admin.py` | The admin command line ([../Admin/README.md](../Admin/README.md)) |
+| `storage/migrate.py`, `cli/healthcheck.py` | The migration runner and the container health check |
 
-Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes stay thin.
+Rule of thumb: SQL lives in `storage/store.py`; access decisions in `service/auth.py`; routes stay thin.
 
 ## Conventions
 
@@ -75,7 +77,7 @@ Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes st
 
 ### Add an endpoint
 
-1. Add the route in the module of `routes/` for its area (a new area is a new module with `build(deps)`, added to `routes/__init__.py`, and a tag in `routes/tags.py`). Give the handler a one-line docstring: it is the description in the API reference, and a test requires it. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
+1. Add the route in the module of `service/routes/` for its area (a new area is a new module with `build(deps)`, added to `service/routes/__init__.py`, and a tag in `service/routes/tags.py`). Give the handler a one-line docstring: it is the description in the API reference, and a test requires it. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
 2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/unit/test_api.py`, so the unit tests can exercise it.
 3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/unit/test_access.py` or `tests/unit/test_api.py`.
 4. Add the route to [../Api/endpoints.md](../Api/endpoints.md), and to [../Api/authorization.md](../Api/authorization.md) if it changes who may do what.
