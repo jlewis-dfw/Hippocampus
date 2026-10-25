@@ -13,7 +13,11 @@ This is a living document. It describes the code as of migration `0002_access_co
 ## Conventions
 
 - **Base path:** all data endpoints live under `/v1/`. The dashboard is at `/ui/` and `/` redirects there. FastAPI's generated
-  pages are at `/docs` (interactive) and `/redoc`, and the machine-readable description at `/openapi.json`.
+  pages are at `/docs` (interactive) and `/redoc`, and the machine-readable description at `/openapi.json`. The dashboard's **API**
+  tab shows the same reference offline, and its "Try it out" uses the token from the Access tab.
+- **API reference groups:** every operation carries one tag (Status, Search, Collections, Access, Ingest, Folder uploads, Saved
+  sources, Docs sync, Jobs), one per module in `routes/`; the groups and their descriptions are in `routes/tags.py`. A test fails
+  when an operation has no tag or description, so a new route must add both (a docstring is its description).
 - **Format:** requests and responses are JSON (`Content-Type: application/json`), except the live job log, which is
   `text/event-stream`. Timestamps are ISO 8601 strings, except a job's `created_at`, which is a Unix time in seconds.
 - **Authentication:** optional bearer token, sent as `Authorization: Bearer hip_...` or `X-Hippo-Token: hip_...`

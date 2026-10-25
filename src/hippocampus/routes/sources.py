@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..auth import Principal
 from .deps import Deps, check_slug
 from .schemas import SourceCreate, SourceUpdate
+from .tags import SOURCES
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[SOURCES])
     store_factory = d.store_factory
     current_principal = d.current_principal
     need_write = d.need_write
@@ -31,6 +32,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.get("/v1/sources")
     def list_sync_sources(p: Principal = Depends(current_principal)):
+        """The saved folders the caller may read."""
         with store_factory() as store:
             vis = {c["slug"]: c["visibility"] for c in store.list_collections()}
             return {"sources": [s for s in store.list_sync_sources()
@@ -38,11 +40,13 @@ def build(d: Deps) -> APIRouter:
 
     @router.get("/v1/sources/{name}")
     def get_sync_source(name: str, p: Principal = Depends(current_principal)):
+        """One saved folder, with its rules and last run."""
         with store_factory() as store:
             return _source_visible(p, store, store.get_sync_source(name))
 
     @router.post("/v1/sources", status_code=201)
     def create_sync_source(req: SourceCreate, p: Principal = Depends(current_principal)):
+        """Save a folder's rules and target collection (and which top-level folders go to their own collections)."""
         check_slug(req.collection)
         req.settings.build()  # validates the rules
         with store_factory() as store:
@@ -55,6 +59,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.patch("/v1/sources/{name}")
     def update_sync_source(name: str, req: SourceUpdate, p: Principal = Depends(current_principal)):
+        """Change a saved folder's collection, rules or folder mapping."""
         with store_factory() as store:
             src = _source_visible(p, store, store.get_sync_source(name))
             need_write(p, store, src["collection"])
@@ -85,6 +90,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/sources/{name}/sync")
     def sync_source_now(name: str, p: Principal = Depends(current_principal)):
+        """Refresh a saved folder from the server. Folders are read in the browser, so this answers `409`: drop the folder again."""
         with store_factory() as store:
             src = _source_visible(p, store, store.get_sync_source(name))
             need_write(p, store, src["collection"])

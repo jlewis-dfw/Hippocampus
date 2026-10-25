@@ -8,10 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from ..auth import Principal
 from ..docs_sync import DocsSyncConfig, apply_changes, full_resync, plan_push, verify_signature
 from .deps import Deps
+from .tags import DOCS
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[DOCS])
     store_factory = d.store_factory
     embedder = d.embedder
     jobs = d.jobs
@@ -53,6 +54,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/sync/docs", status_code=202)
     def sync_docs(p: Principal = Depends(current_principal)):
+        """Start a full resync of the docs collection from the Forgejo repository. Runs as a job."""
         if docs_sync is None:
             raise HTTPException(501, "docs sync not configured")
         with store_factory() as store:

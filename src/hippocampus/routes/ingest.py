@@ -9,10 +9,11 @@ from ..repo_ingest import ingest_pack, parse_pack
 from ..sync_core import exclude_path_parts
 from .deps import Deps, check_slug
 from .schemas import CrawlRequest, IngestFileRequest, IngestRepoRequest
+from .tags import INGEST
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[INGEST])
     store_factory = d.store_factory
     embedder = d.embedder
     jobs = d.jobs
@@ -22,6 +23,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/ingest/file")
     def ingest_file(req: IngestFileRequest, p: Principal = Depends(current_principal)):
+        """Index one document (text) under a URI. An unchanged document is skipped."""
         check_slug(req.collection)
         if any(part in req.uri.lower() for part in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
@@ -36,6 +38,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/ingest/repo", status_code=202)
     def ingest_repo(req: IngestRepoRequest, p: Principal = Depends(current_principal)):
+        """Index a repository pack (`repomix --style xml|markdown`). Runs as a job; files with secrets are rejected."""
         check_slug(req.collection)
         if any(part in req.repo.lower() for part in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
@@ -56,6 +59,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/crawl", status_code=202)
     def crawl(req: CrawlRequest, p: Principal = Depends(current_principal)):
+        """Crawl a website into a collection (static or browser engine, to a depth of 5). Runs as a job."""
         check_slug(req.collection)
         if crawler is None:
             raise HTTPException(501, "crawler not available (HIPPO-E03)")

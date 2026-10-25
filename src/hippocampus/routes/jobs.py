@@ -9,10 +9,11 @@ from fastapi.responses import StreamingResponse
 from ..auth import Principal
 from ..jobs import Job
 from .deps import Deps
+from .tags import JOBS
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[JOBS])
     jobs = d.jobs
     current_principal = d.current_principal
 
@@ -25,10 +26,12 @@ def build(d: Deps) -> APIRouter:
 
     @router.get("/v1/jobs/{job_id}")
     def job_status(job_id: str, p: Principal = Depends(current_principal)):
+        """A job's status, result or error."""
         return _job(job_id, p).view()
 
     @router.get("/v1/jobs/{job_id}/events")
     def job_events(job_id: str, p: Principal = Depends(current_principal)):
+        """A job's log as a server-sent event stream; it ends with an `end` event carrying the final status."""
         job = _job(job_id, p)
 
         def stream():

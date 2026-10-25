@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends
 from ..auth import Principal
 from .deps import Deps, check_slug
 from .schemas import SearchRequest
+from .tags import SEARCH
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[SEARCH])
     store_factory = d.store_factory
     embedder = d.embedder
     current_principal = d.current_principal
@@ -18,6 +19,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/search")
     def search(req: SearchRequest, p: Principal = Depends(current_principal)):
+        """Search the named collections, or every collection the caller may read when none are named. Scores are cosine similarity."""
         for slug in req.collections:
             check_slug(slug)
         vector = embedder.embed([req.query])[0]

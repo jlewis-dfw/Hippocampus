@@ -8,10 +8,11 @@ from ..files_ingest import MAX_BATCH_CHARS, LimitError, SessionError, UploadSess
 from ..sync_core import FileFilter
 from .deps import Deps, check_slug
 from .schemas import FilterSpec, IngestFilesRequest
+from .tags import UPLOADS
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[UPLOADS])
     store_factory = d.store_factory
     embedder = d.embedder
     jobs = d.jobs

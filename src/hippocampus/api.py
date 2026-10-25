@@ -19,6 +19,7 @@ from .jobs import JobRegistry
 from .observability import log_requests, setup_logging
 from .routes import ROUTERS
 from .routes.deps import SLUG_RE, Crawler, Deps, StoreFactory  # noqa: F401  (re-exported)
+from .routes.tags import METADATA
 
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
@@ -30,6 +31,13 @@ API_CSP = UI_CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'").rep
     "img-src", "style-src 'self' 'unsafe-inline'; img-src")
 
 log = logging.getLogger("hippocampus")
+
+API_DESCRIPTION = """A small memory service: documents are stored as searchable chunks and found by meaning.
+
+**Access.** Without a token a caller reads shared collections. Send `Authorization: Bearer <token>` (or `X-Hippo-Token`) to see
+and write more; a restricted collection the token cannot read answers `404`, the same as a missing one. A bad token answers `401`.
+
+**Jobs.** Crawls, repository imports and docs syncs answer `202` with a `job_id`; follow it under *Jobs*."""
 
 # Interim network gate (HIPPO-E04-F1-S02). TEMPORARY: replaced by external JWT validation in HIPPO-E06.
 # Defence in depth only: the primary gate is binding the published port to a private address (see compose.yaml, HIPPO_BIND).
@@ -54,7 +62,7 @@ def create_app(
     ``require_auth``: writes to shared collections also need a write grant (anonymous stays read-only on shared).
     Restricted collections always need a grant, whatever this says.
     """
-    app = FastAPI(title="Hippocampus", version="0.1.0")
+    app = FastAPI(title="Hippocampus", version="0.1.0", openapi_tags=METADATA, description=API_DESCRIPTION)
     app.middleware("http")(log_requests)
 
     if allowed_networks is not None:

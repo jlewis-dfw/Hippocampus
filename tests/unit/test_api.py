@@ -336,6 +336,16 @@ def test_api_tab_page_allows_inline_styles_only_there_and_is_framable_only_by_th
     assert 'data-tab="api"' in c.get("/ui/").text
 
 
+def test_every_operation_is_tagged_and_described_for_the_api_reference():
+    c, _ = make_client()
+    spec = c.get("/openapi.json").json()
+    declared = {t["name"] for t in spec["tags"]}
+    ops = [(path, method, op) for path, item in spec["paths"].items() for method, op in item.items()]
+    assert ops and all(op.get("tags") and set(op["tags"]) <= declared for _, _, op in ops)
+    assert all(op.get("description") for _, _, op in ops), [(p, m) for p, m, op in ops if not op.get("description")]
+    assert all(t.get("description") for t in spec["tags"]) and spec["info"]["description"]
+
+
 def test_network_gate_covers_api_but_not_ui():
     from hippocampus.api import parse_networks
     gated = TestClient(create_app(lambda: None, KeywordEmbedder(), allowed_networks=parse_networks("203.0.113.0/24")))

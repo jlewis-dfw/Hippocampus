@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from ..auth import Principal, is_private_slug
 from .deps import Deps, check_slug
 from .schemas import CollectionCreate, CollectionUpdate
+from .tags import COLLECTIONS
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[COLLECTIONS])
     store_factory = d.store_factory
     require_auth = d.require_auth
     current_principal = d.current_principal
@@ -20,11 +21,13 @@ def build(d: Deps) -> APIRouter:
 
     @router.get("/v1/collections")
     def list_collections(p: Principal = Depends(current_principal)):
+        """The collections the caller may read."""
         with store_factory() as store:
             return {"collections": readable(p, store)}
 
     @router.get("/v1/collections/{slug}/sources")
     def list_sources(slug: str, p: Principal = Depends(current_principal), limit: int = Query(200, ge=1, le=1000)):
+        """The indexed sources (documents) in one collection, with their chunk counts."""
         check_slug(slug)
         with store_factory() as store:
             need_read(p, store, slug)
@@ -35,6 +38,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.post("/v1/collections", status_code=201)
     def create_collection(req: CollectionCreate, p: Principal = Depends(current_principal)):
+        """Create a collection. A restricted collection needs an admin token."""
         check_slug(req.slug)
         if is_private_slug(req.slug) and req.visibility != "restricted":
             raise HTTPException(422, "collections named private* hold private data and must be restricted")
@@ -52,6 +56,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.patch("/v1/collections/{slug}")
     def update_collection(slug: str, req: CollectionUpdate, p: Principal = Depends(current_principal)):
+        """Rename a collection or change its description or visibility. Admin only."""
         check_slug(slug)
         with store_factory() as store:
             need_read(p, store, slug)
@@ -63,6 +68,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.delete("/v1/collections/{slug}", status_code=204)
     def delete_collection(slug: str, p: Principal = Depends(current_principal)):
+        """Delete a collection and everything indexed in it. Restricted collections need an admin token."""
         check_slug(slug)
         with store_factory() as store:
             vis = need_read(p, store, slug)

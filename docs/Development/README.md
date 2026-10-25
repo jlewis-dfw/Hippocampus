@@ -73,7 +73,7 @@ Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes st
 
 ### Add an endpoint
 
-1. Add the route in the module of `routes/` for its area (a new area is a new module with `build(deps)`, added to `routes/__init__.py`). Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
+1. Add the route in the module of `routes/` for its area (a new area is a new module with `build(deps)`, added to `routes/__init__.py`, and a tag in `routes/tags.py`). Give the handler a one-line docstring: it is the description in the API reference, and a test requires it. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
 2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/unit/test_api.py`, so the unit tests can exercise it.
 3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/unit/test_access.py` or `tests/unit/test_api.py`.
 4. Add the route to [../Api/endpoints.md](../Api/endpoints.md), and to [../Api/authorization.md](../Api/authorization.md) if it changes who may do what.

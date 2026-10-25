@@ -6,22 +6,25 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..auth import CLIENT_NAME_RE, Principal, hash_token, new_token, validate_grants
 from .deps import Deps
 from .schemas import ClientCreate, ClientUpdate
+from .tags import ACCESS
 
 
 def build(d: Deps) -> APIRouter:
-    router = APIRouter()
+    router = APIRouter(tags=[ACCESS])
     store_factory = d.store_factory
     current_principal = d.current_principal
     need_admin = d.need_admin
 
     @router.get("/v1/clients")
     def list_clients(p: Principal = Depends(current_principal)):
+        """All accounts and their grants (never their tokens)."""
         need_admin(p)
         with store_factory() as store:
             return {"clients": store.list_clients()}
 
     @router.post("/v1/clients", status_code=201)
     def create_client(req: ClientCreate, p: Principal = Depends(current_principal)):
+        """Create an account. The token in the reply is shown once."""
         need_admin(p)
         if not CLIENT_NAME_RE.match(req.name):
             raise HTTPException(422, f"invalid client name {req.name!r}")
@@ -42,6 +45,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.patch("/v1/clients/{name}")
     def update_client(name: str, req: ClientUpdate, p: Principal = Depends(current_principal)):
+        """Change an account's grants, admin flag or note. The last admin cannot be demoted."""
         need_admin(p)
         try:
             read = validate_grants(req.read) if req.read is not None else None
@@ -67,6 +71,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.delete("/v1/clients/{name}", status_code=204)
     def revoke_client(name: str, p: Principal = Depends(current_principal)):
+        """Revoke an account; its token stops working at once. The last admin cannot be revoked."""
         need_admin(p)
         with store_factory() as store:
             if _last_admin(store, name):
