@@ -1,0 +1,18 @@
+{
+  "files": {
+    "README.md": "# Vault\nThe top of the vault.",
+    "Work/plan.md": "# Plan\nShip the cat feature.",
+    "Work/Clients/acme.md": "# Acme\nContract notes.",
+    "Work/leak.md": "# Oops\ntoken = \"abcdefgh12345678\"",
+    "Projects/p.md": "# P\nThe dog project.",
+    "Journal/day.md": "# Day\nPrivate thoughts.",
+    "Café/menu.md": "# Menu\nCoffee.",
+    ".obsidian/app.json": "{}",
+    ".trash/old.md": "# Old",
+    "node_modules/x/readme.md": "# dep",
+    "Projects/diagram.png": "not text",
+    "Thumbs.db": "junk"
+  },
+  "indexed_by_default": ["Café/menu.md", "Journal/day.md", "Projects/p.md", "README.md", "Work/Clients/acme.md", "Work/plan.md"],
+  "rejected_by_default": ["Work/leak.md"]
+}

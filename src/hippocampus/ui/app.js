@@ -1,4 +1,4 @@
-// DocuSync dashboard (HIPPO-E05). Everything from the API or the crawled web is untrusted:
+// DocuSync dashboard (HIPPO-E05); the folder drop is in sync.js and its rules in folder.js. Everything from the API or the crawled web is untrusted:
 // it is only ever written with textContent, never innerHTML.
 "use strict";
 
@@ -107,6 +107,7 @@ async function loadCollections() {
   }
   fillSelect($("collection"), true);
   fillSelect($("searchScope"), false);
+  fillFolderCollections();
 }
 
 function fillSelect(select, withNew) {
@@ -391,7 +392,7 @@ function useToken(event) {
 
 // --- wiring ---
 
-async function refreshAll() { await loadWho(); await Promise.all([loadStatus(), loadCollections()]); }
+async function refreshAll() { await loadWho(); await Promise.all([loadStatus(), loadCollections(), loadSavedSources()]); }
 
 $("crawlForm").addEventListener("submit", startCrawl);
 $("collection").addEventListener("change", () => { $("newCollection").hidden = $("collection").value !== NEW; $("newSlug").required = $("collection").value === NEW; });
@@ -408,5 +409,6 @@ $("clientForm").addEventListener("submit", createClient);
 $("dismissToken").addEventListener("click", () => { $("tokenOnce").hidden = true; $("tokenOnceValue").textContent = ""; $("tokenOnceNote").textContent = ""; });
 $("resyncDocs").addEventListener("click", resyncDocs);
 
+initFolderSync();
 refreshAll();
 setInterval(loadStatus, 15000);

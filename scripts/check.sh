@@ -5,7 +5,7 @@
 #   scripts/check.sh            full run: starts a throwaway test database in a container (docker or podman) and removes it at the end, then
 #                               1. migrations apply to a throwaway database from zero and the schema is as the code expects
 #                               2. the whole test suite, including the database tests
-#                               3. the dashboard JavaScript parses (if node is installed)
+#                               3. the dashboard JavaScript parses and its folder rules match the server's (if node is installed)
 #   --skip-js                   leave out the JavaScript check (used by the CI image, which has no node)
 #   --skip-md                   leave out the Markdown linter (same reason; CI lints Markdown in its own step)
 #   --no-lint                   leave out the linters (ruff, shellcheck, yamllint, markdownlint); see scripts/lint.sh
@@ -110,7 +110,8 @@ fi
 if [[ -n $SKIPJS ]]; then
   SKIP+=("dashboard JavaScript (checked in its own CI step)")
 elif command -v node >/dev/null 2>&1; then
-  step "dashboard JavaScript parses" node --check src/hippocampus/ui/app.js
+  for js in src/hippocampus/ui/*.js; do step "dashboard JavaScript parses ($(basename "$js"))" node --check "$js"; done
+  step "folder rules agree with the server (shared vectors)" node tests/js/check_vectors.js
 else
   [[ $MODE == ci ]] && FAIL+=("node is required in CI for the JavaScript check") || SKIP+=("dashboard JavaScript (node not installed)")
 fi

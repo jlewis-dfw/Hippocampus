@@ -50,6 +50,28 @@ Click the identity button in the header (it reads `anonymous` until you sign in)
 - **New client** (admin only): name, read grants, write grants, a note and an **Admin** checkbox. The new token is shown
   once, in a box with the note "shown once and only its hash is stored". Copy it before you click **I have stored it**.
 
+## Index a folder
+
+Drop a folder on the dashed box (or press **Choose folder**) to index notes, docs or code from your own machine. The browser reads
+the folder; nothing is uploaded until you press **Index these files**, and only the files that pass the rules are sent.
+
+1. **Folders.** The top-level folders are listed with how many files each would index. Everything is ticked except folders that look
+   private (`Journal`, `Personal`, `Private`, ...). `.git`, `node_modules` and the like are never read.
+2. **Where it goes.** Pick a collection or create one, or tick **One collection per root folder** to give each folder its own
+   collection (and its own visibility, so `Work` can be shared and `Personal` restricted). Files at the top of the folder go to the
+   collection chosen above.
+3. **Rules.** Optional include and exclude lines (gitignore style), the file types (default `md, markdown, txt, rst`), the default
+   exclusions, and the folder's own `.gitignore` if it has one. The **Preview** updates as you type: how many files will be
+   indexed, how many are skipped and why, and which are rejected. **Check with server** asks the server the same question.
+4. **Import once** or **Save as a source.** A saved source remembers the rules and folders; it appears under **Saved folders**.
+5. **Index these files.** A progress bar runs and **Cancel** stops it without removing anything. The summary lists what was added,
+   changed, removed, skipped and rejected. Rejected files are named with the rule, never the content. A file that now holds a secret
+   is removed from the index.
+
+To refresh, press **Drop again** on a saved folder and drop it; only changed files are embedded again and files that are gone are
+removed. Chromium-based browsers remember the folder and offer **Re-sync** for one-click refresh after asking for permission. Unticking
+a folder and running again removes its files. **Forget** removes the saved source, and optionally the files it indexed.
+
 ## Crawl a site
 
 Fetches a site and indexes its pages into a collection. **Only crawl sites you have the right to copy:** read [legal-and-ethics.md](legal-and-ethics.md) first. See [ingesting.md](ingesting.md#crawling-a-site) for what the

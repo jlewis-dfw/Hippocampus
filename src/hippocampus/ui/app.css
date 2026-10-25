@@ -59,3 +59,15 @@ td.uri { max-width: 340px; overflow-wrap: anywhere; }
 .tokenbox { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; margin-top: 12px; }
 .tokenbox pre { white-space: pre-wrap; word-break: break-all; user-select: all; }
 #who { font-weight: 600; }
+
+.dropzone { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; display: grid; gap: 8px; justify-items: center; text-align: center; }
+.dropzone.over, .dropzone:focus { border-color: var(--accent); background: #0c1a24; outline: none; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+label.check { display: flex; align-items: center; gap: 8px; color: var(--text); }
+label.check input { width: auto; }
+h3 { margin: 16px 0 8px; font-size: 13px; }
+progress { width: 100%; margin-top: 12px; }
+.reasons { margin: 4px 0; padding-left: 20px; font-size: 12px; }
+.warn { color: var(--warn); min-height: 1em; }
+#fSummary { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 12px; }
+@media (max-width: 700px) { .grid3 { grid-template-columns: 1fr; } }

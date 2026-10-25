@@ -127,6 +127,20 @@ def test_per_folder_collections_keep_each_folder_in_its_own_collection():
     assert run(c, collection="elsewhere", files=docs).status_code == 409
 
 
+def test_an_empty_final_batch_releases_a_collection_the_source_no_longer_uses():
+    c, mem = make()
+    c.post("/v1/sources", json={"name": "vault", "collection": "notes", "folder_collections": {"Work": "notes-work"}})
+    docs = files(**{"Work/a.md": "# A", "top.md": "# T"})
+    run(c, collection="notes", files=docs)
+    run(c, collection="notes-work", files=docs)
+    c.patch("/v1/sources/vault", json={"folder_collections": {}})  # Work now goes to the base collection
+    assert run(c, collection="notes-work", files=docs).status_code == 409  # a real run may not borrow the name
+    r = run(c, collection="notes-work", files=[])  # but an empty final batch may clear what the source left there
+    assert r.status_code == 200 and r.json()["removed"] == ["Work/a.md"]
+    assert mem.collections["notes-work"] == {}
+    assert sorted(mem.collections["notes"]) == ["files://vault/top.md"]  # other collections are untouched
+
+
 def test_a_mapped_collection_with_its_folder_unticked_gets_nothing():
     c, mem = make()
     c.post("/v1/sources", json={"name": "vault", "collection": "notes",

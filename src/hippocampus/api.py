@@ -418,10 +418,14 @@ def create_app(
         roots = [f for f in mapped if not spec.folders or f in spec.folders]
         return spec.build(roots or ["\x00"])  # empty roots would mean "everything"; this matches nothing
 
-    def saved_source(store, name: str, collection: str) -> dict | None:
+    def saved_source(store, name: str, collection: str, release: bool) -> dict | None:
+        """The saved source of this name, if it uses ``collection``. A ``release`` (an empty final batch) may also name a
+        collection the source no longer uses, to remove the files it left there."""
         src = store.get_sync_source(name)
         if src is not None and collection not in (src["collection"], *src["folder_collections"].values()):
-            raise HTTPException(409, f"{name!r} is a saved source for another collection")
+            if not release:
+                raise HTTPException(409, f"{name!r} is a saved source for another collection")
+            return None
         return src
 
     def record(store, name: str, status: str, summary: dict) -> None:
@@ -435,7 +439,7 @@ def create_app(
             raise HTTPException(413, "batch is too large; send fewer files per request")
         with store_factory() as store:
             need_write(p, store, req.collection)
-            src = saved_source(store, req.source, req.collection)
+            src = saved_source(store, req.source, req.collection, req.final and not req.files and not req.session)
             flt = run_filter(src, req.collection, req.filter)
             if req.dry_run:
                 scan = preview(req.source, [(f.path, f.content, f.size) for f in req.files], flt)

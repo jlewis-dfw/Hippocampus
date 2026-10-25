@@ -71,6 +71,95 @@
       </div>
     </section>
 
+    <section id="folderSection">
+      <h2>Index a folder</h2>
+      <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Drop a folder here, or press Enter to choose one">
+        <strong>Drop a folder here</strong>
+        <span class="muted">notes, docs or code: it is read in your browser and only the files you pick are sent</span>
+        <button type="button" id="chooseFolder">Choose folder</button>
+        <input type="file" id="folderInput" webkitdirectory multiple hidden>
+      </div>
+      <p class="muted" id="folderStatus" aria-live="polite"></p>
+
+      <div id="folderPanel" hidden>
+        <div class="grid3">
+          <label>Source name (label for these files)
+            <input id="fName" type="text" maxlength="100" pattern="[A-Za-z0-9._\-]{1,100}">
+          </label>
+          <label>Collection
+            <select id="fCollection"></select>
+          </label>
+          <label class="check"><input id="fPerFolder" type="checkbox"> One collection per root folder</label>
+        </div>
+        <div id="fNewBox" class="grid3" hidden>
+          <label>New collection slug <input id="fNewSlug" type="text" pattern="[a-z0-9][a-z0-9\-]{0,63}" placeholder="notes"></label>
+          <label>Visibility
+            <select id="fNewVisibility">
+              <option value="shared" selected>shared (every client can read it)</option>
+              <option value="restricted">restricted (needs a grant; admin token)</option>
+            </select>
+          </label>
+        </div>
+        <label id="fPrefixLabel" hidden>Prefix for the new collection names <input id="fPrefix" type="text" maxlength="60"></label>
+
+        <h3>Folders</h3>
+        <p class="muted">Tick what to index. Folders that look private are left unticked.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Folder</th><th class="num">To index / files</th><th class="perFolderCell" id="fPerFolderHead">Collection</th><th class="perFolderCell">Visibility</th></tr></thead>
+            <tbody id="fTree"></tbody>
+          </table>
+        </div>
+
+        <h3>Rules</h3>
+        <div class="grid3">
+          <label>Include (one per line, optional)
+            <textarea id="fInclude" rows="3" placeholder="Work/&#10;Projects/**/*.md"></textarea>
+          </label>
+          <label>Exclude (one per line)
+            <textarea id="fExclude" rows="3" placeholder="Work/Clients/&#10;*.draft.md"></textarea>
+          </label>
+          <div>
+            <label>File types (blank: md, markdown, txt, rst; * for any)
+              <input id="fExt" type="text" placeholder="md, py">
+            </label>
+            <label class="check"><input id="fDefaults" type="checkbox" checked> Skip .obsidian, .trash, build output and OS junk</label>
+            <label class="check" id="fGitignoreRow" hidden><input id="fGitignore" type="checkbox" checked> Follow the folder's .gitignore</label>
+          </div>
+        </div>
+
+        <h3>Preview</h3>
+        <div id="fPreview"></div>
+        <p class="muted" id="fServerCheck" aria-live="polite"></p>
+        <p class="warn" id="fProblem" aria-live="polite"></p>
+
+        <div class="grid3">
+          <label class="check"><input type="radio" name="fMode" id="fModeOnce" checked> Import once</label>
+          <label class="check"><input type="radio" name="fMode" id="fModeSave"> Save as a source (re-sync later)</label>
+        </div>
+        <div class="actions">
+          <button type="button" id="fClose">Close</button>
+          <button type="button" id="fCheckServer">Check with server</button>
+          <button type="button" id="fCancel" hidden>Cancel</button>
+          <button type="button" id="fStart" class="primary">Index these files</button>
+        </div>
+        <progress id="fProgress" value="0" max="1" hidden></progress>
+        <div id="fSummary" hidden></div>
+      </div>
+    </section>
+
+    <section id="savedSection" hidden>
+      <h2>Saved folders</h2>
+      <p class="muted">Dropping a folder again updates it: only changed files are re-embedded and files that are gone are removed.
+        Browsers that allow it can re-sync in one click.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Collections</th><th>Folders</th><th>Last run</th><th class="right">Actions</th></tr></thead>
+          <tbody id="savedSources"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section>
       <h2>Crawl a site</h2>
       <form id="crawlForm" autocomplete="off">
@@ -167,6 +256,8 @@
     <div id="results"></div>
   </aside>
 
+  <script src="folder.js"></script>
+  <script src="sync.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
