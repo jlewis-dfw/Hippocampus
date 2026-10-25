@@ -9,11 +9,13 @@ Used by the ``migrate`` service in compose.yaml before the API starts.
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
 import sys
 from pathlib import Path
 
+log = logging.getLogger("hippocampus")
 NAME_RE = re.compile(r"^(\d{4})_[a-z0-9_]+\.sql$")
 
 
@@ -52,6 +54,7 @@ def apply_all(conn, folder: Path | None = None) -> list[str]:
             conn.execute(f.read_text())
             conn.execute("INSERT INTO public.schema_migrations(name) VALUES (%s)", (f.name,))
         applied.append(f.name)
+        log.info("migration applied: %s", f.name)
     return applied
 
 
@@ -60,6 +63,9 @@ def main() -> int:
 
     import psycopg
 
+    from .observability import setup_logging
+
+    setup_logging(os.environ)
     dsn = os.environ.get("HIPPO_DSN")
     if not dsn:
         print("HIPPO_DSN is not set", file=sys.stderr)

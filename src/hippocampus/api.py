@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import logging
 import os
 import re
 import time
@@ -42,6 +43,7 @@ from .files_ingest import (
     process_batch,
 )
 from .jobs import Job, JobRegistry
+from .observability import client_address, log_requests, setup_logging
 from .repo_ingest import ingest_pack, parse_pack
 from .sync_core import SOURCE_NAME_RE, FileFilter, exclude_path_parts
 
@@ -50,6 +52,8 @@ SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
 UI_CSP = "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+
+log = logging.getLogger("hippocampus")
 
 StoreFactory = Callable[[], AbstractContextManager]
 Crawler = Callable[[Job, "CrawlRequest"], dict | None]
@@ -187,6 +191,7 @@ def create_app(
     Restricted collections always need a grant, whatever this says.
     """
     app = FastAPI(title="Hippocampus", version="0.1.0")
+    app.middleware("http")(log_requests)
 
     if allowed_networks is not None:
 
@@ -213,6 +218,7 @@ def create_app(
             with store_factory() as store:
                 return authenticate(header, store, alt)
         except AuthError as exc:
+            log.warning("authentication failed: %s", exc, extra={"client": client_address(request), "path": request.url.path})
             raise HTTPException(401, str(exc), headers={"WWW-Authenticate": "Bearer"}) from exc
 
     def need_read(p: Principal, store, slug: str) -> str:
@@ -689,7 +695,11 @@ def app_from_env() -> FastAPI:
     from .store import connect_store
     from .workers import check_single_worker
 
+    setup_logging(os.environ)
     check_single_worker()
+    log.info("starting: auth required=%s, networks=%s, crawl max pages=%s, docs sync=%s",
+             os.environ.get("HIPPO_REQUIRE_AUTH", "false"), os.environ.get("HIPPO_ALLOWED_CIDRS", "default"),
+             os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200"), bool(os.environ.get("HIPPO_FORGEJO_URL")))
     factory = connect_store(os.environ["HIPPO_DSN"])
     embedder = FastEmbedder(cache_dir=os.environ.get("HIPPO_MODEL_CACHE"))
     return create_app(

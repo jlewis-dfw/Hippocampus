@@ -28,6 +28,7 @@ The launcher itself reads one more: `CONTAINER_ENGINE=docker|podman` forces the 
 | `HIPPO_ALLOWED_CIDRS` | `10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,::1/128` | As above. This is the service's built-in default; the local stack sets its own (above). |
 | `HIPPO_REQUIRE_AUTH` | off | Accepts `1`, `true` or `yes` (case-insensitive). |
 | `HIPPO_CRAWL_MAX_PAGES`, `HIPPO_CRAWL_DELAY` | `200`, `0.5` | As above. |
+| `HIPPO_LOG_LEVEL`, `HIPPO_LOG_FORMAT` | `INFO`, `text` | Log level, and `json` for one JSON object per line. See [operations](operations.md#logs). |
 | `HIPPO_REQUIRE_SINGLE_WORKER` | `false` | Refuse to start when `WEB_CONCURRENCY` is above 1, instead of only logging a warning. |
 | `HIPPO_EXCLUDE_PATH_PARTS` | none | Comma-separated, case-insensitive path fragments that are never indexed: repository and docs ingesters, file and folder uploads, crawled URLs, `index_doc`. No client setting removes them. |
 | `HIPPO_MIGRATIONS_DIR` | `<repo>/db/migrations` | Where `python -m hippocampus.migrate` reads migrations. The image sets `/app/db/migrations`. |

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Protocol
@@ -23,6 +24,7 @@ from .repo_ingest import MAX_FILE_BYTES, scan_secrets
 from .sync_core import exclude_path_parts
 
 # Forgejo truncates the commit list of a large push; at or beyond this many commits we resync instead.
+_log = logging.getLogger("hippocampus")
 MAX_PAYLOAD_COMMITS = 20
 SIGNATURE_HEADERS = ("x-forgejo-signature", "x-gitea-signature")
 
@@ -125,6 +127,7 @@ def apply_changes(cfg: DocsSyncConfig, store, embedder, ref: str, upserts, remov
         hits = scan_secrets(text)
         if hits:
             log(f"rejected {path}: {', '.join(hits)}")
+            _log.warning("file rejected: %s (rule %s)", path, ", ".join(hits))
             rejected.append({"path": path, "reasons": hits})
             gone.add(cfg.uri(path))  # a file now carrying a secret must not stay indexed
             continue

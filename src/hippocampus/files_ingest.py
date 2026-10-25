@@ -10,6 +10,7 @@ Sources are ``files://<source>/<path>``. The caller is not trusted: every path, 
 from __future__ import annotations
 
 import dataclasses
+import logging
 import threading
 import time
 import uuid
@@ -22,6 +23,7 @@ MAX_BATCH_FILES = 500
 MAX_BATCH_CHARS = 20_000_000
 MAX_SESSION_FILES = 20_000
 SESSION_TTL_SECONDS = 3600
+log = logging.getLogger("hippocampus")
 MAX_SESSIONS = 50
 
 
@@ -112,6 +114,8 @@ def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
         for d in scan.decisions:
             uri = file_uri(session.source, d.path)
             row = d.view()
+            if d.outcome == "rejected":
+                log.warning("file rejected: %s (rule %s)", d.path, d.reason, extra={"source": session.source})
             if d.outcome == "indexed":
                 row["action"] = action.get(uri, "skipped")
             elif d.outcome == "rejected" and not (d.reason or "").startswith("invalid-path") and uri in known:

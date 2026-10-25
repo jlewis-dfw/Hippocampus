@@ -10,6 +10,7 @@ detect-secrets); see AGENTS.md section 4. Pack content is untrusted data.
 """
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -24,6 +25,7 @@ from .sync_core import (  # noqa: F401  (re-exported: the rules live in sync_cor
     scan_secrets,
 )
 
+_log = logging.getLogger("hippocampus")
 _XML_FILE_RE = re.compile(r'<file path="([^"]+)">\n(.*?)\n</file>', re.DOTALL)
 _MD_FILE_RE = re.compile(r"^## File: ([^\n]+)\n(`{3,})[^\n]*\n(.*?)\n\2[ \t]*$", re.DOTALL | re.MULTILINE)
 _LANG = {".py": "python", ".cs": "csharp", ".ts": "typescript", ".js": "javascript", ".json": "json",
@@ -88,6 +90,7 @@ def ingest_pack(collection: str, repo: str, pack: str, store, embedder,
     scan = scan_pack(repo, pack)
     for r in scan.rejected:
         log(f"rejected {r['path']}: {', '.join(r['reasons'])}")
+        _log.warning("file rejected: %s (rule %s)", r["path"], ", ".join(r["reasons"]))
     log(f"embedding {len(scan.documents)} files")
     result = sync_collection(collection, scan.documents, store, embedder, prune=False)
     prefix = f"repo://{repo}/"

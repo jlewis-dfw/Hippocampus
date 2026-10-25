@@ -1,6 +1,7 @@
 """In-memory job registry for background work (crawl/ingest) with a replayable event log."""
 from __future__ import annotations
 
+import logging
 import threading
 import time
 import uuid
@@ -31,6 +32,8 @@ class Job:
                 "error": self.error, "event_count": len(self.events), "created_at": self.created_at}
 
 
+log = logging.getLogger("hippocampus")
+
 Runner = Callable[[Job], dict | None]
 
 
@@ -58,12 +61,17 @@ class JobRegistry:
 
         def run() -> None:
             job.status = "running"
+            started = time.monotonic()
+            log.info("job %s started: %s", job.id[:8], kind, extra={"job": job.id, "owner": owner})
             try:
                 job.result = runner(job)
                 job.status = "done"
             except Exception as exc:  # surfaced to the caller via the job
                 job.error = f"{type(exc).__name__}: {exc}"
                 job.status = "error"
+            log.log(logging.ERROR if job.status == "error" else logging.INFO, "job %s ended: %s %s in %.1f s%s",
+                    job.id[:8], kind, job.status, time.monotonic() - started,
+                    f" ({job.error.split(':')[0]})" if job.error else "", extra={"job": job.id, "owner": owner})
 
         if background:
             threading.Thread(target=run, name=f"job-{job.id[:8]}", daemon=True).start()
