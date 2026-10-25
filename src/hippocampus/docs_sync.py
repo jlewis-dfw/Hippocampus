@@ -5,7 +5,7 @@ Forgejo API) and re-indexed, and unchanged content is skipped by the SHA-256 dif
 tree for first fill and drift repair. Sources are ``repo://<repo>/<path>``, the same scheme as the Repomix
 ingester.
 
-Nothing under ``private-infra`` (or ``HIPPO_EXCLUDE_PATH_PARTS``) is ever indexed: the check runs on every path,
+Nothing matching ``HIPPO_EXCLUDE_PATH_PARTS`` is ever indexed: the check runs on every path,
 on the webhook route and the resync route alike, before any file is fetched. Files that match a secret shape
 are rejected whole, as in the Repomix ingester. Webhook payloads and file contents are untrusted data.
 """
@@ -19,7 +19,7 @@ from typing import Protocol
 from urllib.parse import quote
 
 from .diff import Document, sync_collection
-from .repo_ingest import LEGACY_EXCLUDED_PARTS, MAX_FILE_BYTES, scan_secrets
+from .repo_ingest import MAX_FILE_BYTES, scan_secrets
 from .sync_core import exclude_path_parts
 
 # Forgejo truncates the commit list of a large push; at or beyond this many commits we resync instead.
@@ -28,9 +28,9 @@ SIGNATURE_HEADERS = ("x-forgejo-signature", "x-gitea-signature")
 
 
 def is_indexable(path: str) -> bool:
-    """Markdown only, never anything under private-infra, never a path that escapes the repo."""
+    """Markdown only, never a path with an excluded fragment, never a path that escapes the repo."""
     lower = path.lower()
-    if any(p in lower for p in exclude_path_parts(LEGACY_EXCLUDED_PARTS)):
+    if any(p in lower for p in exclude_path_parts()):
         return False
     if path.startswith("/") or ".." in path.split("/"):
         return False

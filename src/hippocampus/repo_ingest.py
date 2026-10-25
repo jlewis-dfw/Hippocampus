@@ -24,9 +24,6 @@ from .sync_core import (  # noqa: F401  (re-exported: the rules live in sync_cor
     scan_secrets,
 )
 
-# The guarded fragment stays "private-infra" for the Forgejo build until HIPPO_EXCLUDE_PATH_PARTS replaces it.
-LEGACY_EXCLUDED_PARTS = ("private-infra",)
-
 _XML_FILE_RE = re.compile(r'<file path="([^"]+)">\n(.*?)\n</file>', re.DOTALL)
 _MD_FILE_RE = re.compile(r"^## File: ([^\n]+)\n(`{3,})[^\n]*\n(.*?)\n\2[ \t]*$", re.DOTALL | re.MULTILINE)
 _LANG = {".py": "python", ".cs": "csharp", ".ts": "typescript", ".js": "javascript", ".json": "json",
@@ -66,7 +63,7 @@ def scan_pack(repo: str, pack: str) -> PackScan:
     out = PackScan()
     for path, content in files:
         reasons: list[str] = []
-        if any(p in path.lower() for p in exclude_path_parts(LEGACY_EXCLUDED_PARTS)):
+        if any(p in path.lower() for p in exclude_path_parts()):
             reasons.append("excluded-source")
         if SECRET_PATH_RE.search(path):
             reasons.append("secret-file-name")
@@ -86,7 +83,7 @@ def ingest_pack(collection: str, repo: str, pack: str, store, embedder,
                 log: Callable[[str], None] = lambda m: None) -> dict:
     """Pre-flight, then sync the clean files. Sources of this repo that are no longer in the pack, including
     files now rejected for a secret, are removed from the collection."""
-    if any(p in repo.lower() for p in exclude_path_parts(LEGACY_EXCLUDED_PARTS)):
+    if any(p in repo.lower() for p in exclude_path_parts()):
         raise ValueError("this source is excluded from ingestion")
     scan = scan_pack(repo, pack)
     for r in scan.rejected:

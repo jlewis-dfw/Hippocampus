@@ -14,7 +14,6 @@ from pathlib import Path
 
 DEFAULT_COLLECTION = "docs"
 MAX_FILE_BYTES = 1_000_000
-FORBIDDEN = ("private-infra",)
 _TIMEOUT = 60
 
 
@@ -49,9 +48,15 @@ def search(query: str, collection: str | None = None, top_k: int = 5) -> str:
     )
 
 
+def _excluded_parts() -> tuple[str, ...]:
+    """Path fragments never indexed: ``HIPPO_EXCLUDE_PATH_PARTS``, comma separated, none by default."""
+    raw = os.environ.get("HIPPO_EXCLUDE_PATH_PARTS", "")
+    return tuple(p.strip().lower() for p in raw.split(",") if p.strip())
+
+
 def index_doc(path: str, collection: str | None = None) -> str:
     p = Path(path).expanduser().resolve()
-    if any(part in str(p).lower() for part in FORBIDDEN):
+    if any(part in str(p).lower() for part in _excluded_parts()):
         return "Refused: this source is excluded from ingestion."
     if not p.is_file():
         return f"Not a file: {p}"

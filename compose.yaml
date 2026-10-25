@@ -44,6 +44,7 @@ services:
       # With a published port the app sees the Docker network's address, so the private ranges must be allowed.
       HIPPO_ALLOWED_CIDRS: ${HIPPO_ALLOWED_CIDRS:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
       HIPPO_REQUIRE_AUTH: ${HIPPO_REQUIRE_AUTH:-true}
+      HIPPO_EXCLUDE_PATH_PARTS: ${HIPPO_EXCLUDE_PATH_PARTS:-}
       HIPPO_CRAWL_MAX_PAGES: ${HIPPO_CRAWL_MAX_PAGES:-200}
       HIPPO_CRAWL_DELAY: ${HIPPO_CRAWL_DELAY:-0.5}
     ports:

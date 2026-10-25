@@ -16,7 +16,6 @@ import uuid
 from dataclasses import dataclass, field
 
 from .diff import sync_collection
-from .repo_ingest import LEGACY_EXCLUDED_PARTS
 from .sync_core import FileFilter, exclude_path_parts, file_uri, scan_files
 
 MAX_BATCH_FILES = 500
@@ -37,7 +36,7 @@ class LimitError(ValueError):
 def server_filter(flt: FileFilter) -> FileFilter:
     """The caller's rules plus the server-wide guard, which no client setting can remove."""
     return dataclasses.replace(flt, exclude_parts=tuple(dict.fromkeys(
-        (*flt.exclude_parts, *exclude_path_parts(LEGACY_EXCLUDED_PARTS)))))
+        (*flt.exclude_parts, *exclude_path_parts()))))
 
 
 @dataclass

@@ -29,7 +29,7 @@ def stack(tmp_path_factory):
     example = (ROOT / "hippocampus.env.example").read_text()
     text = re.sub(r"^POSTGRES_PASSWORD=.*$", f"POSTGRES_PASSWORD={secrets.token_hex(16)}", example, flags=re.M)
     text = re.sub(r"^HIPPO_PORT=.*$", f"HIPPO_PORT={port}", text, flags=re.M)
-    envfile.write_text(text + "\nHIPPO_CRAWL_DELAY=0\n")
+    envfile.write_text(text + "\nHIPPO_CRAWL_DELAY=0\nHIPPO_EXCLUDE_PATH_PARTS=private-infra\n")
     stk = Stack(engine, f"hippo-e2e-{uuid.uuid4().hex[:8]}", envfile, port)
     try:
         up = ["up", "-d"] + (["--build"] if os.environ.get("HIPPO_E2E_BUILD") == "1" else [])

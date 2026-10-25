@@ -98,6 +98,7 @@ def test_gitignore_rules_last_match_wins():
 
 
 def test_secret_file_names_and_excluded_parts_are_rejected(monkeypatch):
+    monkeypatch.delenv("HIPPO_EXCLUDE_PATH_PARTS", raising=False)
     assert (decide(".env").outcome, decide(".env").reason) == ("rejected", "secret-file-name")
     assert decide("keys/id_rsa").reason == "secret-file-name"
     assert decide("deploy/server.pem.md".replace(".md", "")).reason == "secret-file-name"

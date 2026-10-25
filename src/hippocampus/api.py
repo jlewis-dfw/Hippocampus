@@ -43,11 +43,9 @@ from .files_ingest import (
 )
 from .jobs import Job, JobRegistry
 from .repo_ingest import ingest_pack, parse_pack
-from .sync_core import SOURCE_NAME_RE, FileFilter
+from .sync_core import SOURCE_NAME_RE, FileFilter, exclude_path_parts
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
-# Infra docs must never enter a shared embedding store (specs.md section 1).
-FORBIDDEN_URI_PARTS = ("private-infra",)
 
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
@@ -374,7 +372,7 @@ def create_app(
     @app.post("/v1/ingest/file")
     def ingest_file(req: IngestFileRequest, p: Principal = Depends(current_principal)):
         _check_slug(req.collection)
-        if any(part in req.uri.lower() for part in FORBIDDEN_URI_PARTS):
+        if any(part in req.uri.lower() for part in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
         with store_factory() as store:
             vis = need_write(p, store, req.collection)
@@ -388,7 +386,7 @@ def create_app(
     @app.post("/v1/ingest/repo", status_code=202)
     def ingest_repo(req: IngestRepoRequest, p: Principal = Depends(current_principal)):
         _check_slug(req.collection)
-        if any(part in req.repo.lower() for part in FORBIDDEN_URI_PARTS):
+        if any(part in req.repo.lower() for part in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
         try:
             parse_pack(req.pack)  # reject an unreadable pack up front, not inside the job
@@ -616,7 +614,7 @@ def create_app(
         _check_slug(req.collection)
         if crawler is None:
             raise HTTPException(501, "crawler not available (HIPPO-E03)")
-        if any(p in req.url.lower() for p in FORBIDDEN_URI_PARTS):
+        if any(p in req.url.lower() for p in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
         with store_factory() as store:
             need_write(p, store, req.collection)
