@@ -141,3 +141,18 @@ def test_the_tree_shows_paths_and_why_files_are_left_out_and_nested_boxes_exclud
     tree.locator('tr[data-path="Work/plan.md"] input').check()
     expect(d.page.locator("#fExclude")).to_have_value("")
     assert d.errors == []
+
+
+def test_a_new_drop_defaults_to_a_new_collection(dash, admin, admin_token, vault):
+    existing = f"keep-{uuid.uuid4().hex[:8]}"
+    assert admin.post("/v1/collections", json={"slug": existing, "name": existing}).status_code == 201
+    d = dash(admin_token)
+    d.page.set_input_files("#folderInput", str(vault))
+    expect(d.page.locator("#folderPanel")).to_be_visible()
+    expect(d.page.locator("#fCollection")).to_have_value("__new__")
+    expect(d.page.locator("#fNewSlug")).to_have_value("vault")
+    expect(d.page.locator("#fNewBox")).to_be_visible()
+    d.page.select_option("#fCollection", existing)  # choosing an existing one is still a deliberate act
+    d.page.set_input_files("#folderInput", str(vault))
+    expect(d.page.locator("#fCollection")).to_have_value("__new__")  # and the next drop starts new again
+    assert uris(admin, existing) == []

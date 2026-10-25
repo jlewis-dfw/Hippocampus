@@ -105,7 +105,13 @@ async function loadScan(name, files, state, handle) {
   setFolderStatus(`${plural(files.length, "file")} found in ${name}` + (fs.pruned ? ` (${plural(fs.pruned, "folder")} such as .git or node_modules not read)` : "")
     + (state.truncated ? `. Stopped at ${fmtNum(MAX_SCAN_FILES)} files: pick a smaller folder or exclude more.` : "."));
   $("fGitignoreRow").hidden = !fs.gitignore;
-  if (!fs.source) $("fName").value = slugify(name) || "folder";
+  if (!fs.source) {
+    $("fName").value = slugify(name) || "folder";
+    // A drop starts in "New collection..." so it never lands in an existing collection by accident.
+    $("fCollection").value = NEW;
+    $("fNewBox").hidden = false;
+    $("fNewSlug").value = $("fName").value;
+  }
   $("fPrefix").value = $("fName").value;
   buildTree();
   applyPrefix();
