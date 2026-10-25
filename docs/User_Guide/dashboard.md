@@ -12,19 +12,20 @@ For how it is built, see [../Dashboard/README.md](../Dashboard/README.md). For s
 ```
 ┌ Hippocampus DocuSync  [status pills]            [identity button]  ┐
 │ [banner: errors appear here]                                                        │
-│ [ Collections ] [ Search ] [ Local ] [ Web ] [ Access ]                             │
+│ [ Collections ] [ Search ] [ Local ] [ Web ] [ Access ] [ API ]                      │
 │                                                                                      │
 │ Collections: the collections table, and Sources in <collection> after you click it  │
 │ Search:      the search sandbox                                                      │
 │ Local:       Index a folder (drop zone, tree, rules, preview), and Saved folders    │
 │ Web:         Crawl a site                                                           │
 │ Access:      token, identity and clients                                            │
+│ API:         the API reference (Swagger UI) with Try it out                         │
 │                                                                                      │
 │ Job log                 (below the tabs; appears while or after a job runs)          │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The five tabs split the page by what you are doing. The address keeps the tab (`/ui/#local`), so a reload or a bookmark returns
+The six tabs split the page by what you are doing. The address keeps the tab (`/ui/#local`), so a reload or a bookmark returns
 to it, and the left and right arrow keys, **Home** and **End** move between tabs. The identity button in the header jumps to
 **Access**. The job log is not part of a tab, so a crawl or a resync keeps reporting while you look at another tab.
 
@@ -117,6 +118,12 @@ configured` when that feature is not set up.
 Click **Sources** on a collection to list its documents, most recently indexed first (up to 500): the URI, title,
 status (`indexed`), chunk count, the first 12 characters of the content hash and the time it was indexed. The hash is
 what lets a re-crawl skip pages that did not change.
+
+## API tab
+
+The API reference, drawn by Swagger UI from the service's own `/openapi.json`. Open an endpoint, choose **Try it out**, fill in
+the fields and **Execute**. The requests use the token you entered on the Access tab, so you see exactly what that token may do; with
+no token they run as an anonymous caller. The page loads when you first open the tab and needs no internet access.
 
 ## Search tab
 

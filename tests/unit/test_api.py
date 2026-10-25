@@ -321,6 +321,21 @@ def test_ui_is_served_with_strict_headers():
         assert "https://" not in c.get(f"/ui/{name}").text.replace("https://docs.example.com", "")
 
 
+def test_api_tab_page_allows_inline_styles_only_there_and_is_framable_only_by_the_dashboard():
+    c, _ = make_client()
+    api = c.get("/ui/api.html")
+    csp = api.headers["content-security-policy"]
+    assert api.status_code == 200 and "style-src 'self' 'unsafe-inline'" in csp and "frame-ancestors 'self'" in csp
+    assert "script-src" not in csp and "unsafe-eval" not in csp and "default-src 'self'" in csp
+    other = c.get("/ui/").headers["content-security-policy"]
+    assert "unsafe-inline" not in other and "frame-ancestors 'none'" in other
+    for name in ("api.html", "api.js"):  # vendored: nothing is fetched from another origin
+        assert "https://" not in c.get(f"/ui/{name}").text
+    assert c.get("/ui/vendor/swagger-ui/swagger-ui-bundle.js").status_code == 200
+    assert c.get("/ui/vendor/swagger-ui/swagger-ui.css").status_code == 200
+    assert 'data-tab="api"' in c.get("/ui/").text
+
+
 def test_network_gate_covers_api_but_not_ui():
     from hippocampus.api import parse_networks
     gated = TestClient(create_app(lambda: None, KeywordEmbedder(), allowed_networks=parse_networks("203.0.113.0/24")))

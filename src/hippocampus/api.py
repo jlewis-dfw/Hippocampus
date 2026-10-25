@@ -23,6 +23,11 @@ from .routes.deps import SLUG_RE, Crawler, Deps, StoreFactory  # noqa: F401  (re
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
 UI_CSP = "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+# The API tab frames /ui/api.html (Swagger UI, vendored). Swagger UI writes inline styles, so this one page allows them; it runs
+# no inline script, loads nothing from outside, and may be framed only by the dashboard.
+API_PAGE = "/ui/api.html"
+API_CSP = UI_CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'").replace(
+    "img-src", "style-src 'self' 'unsafe-inline'; img-src")
 
 log = logging.getLogger("hippocampus")
 
@@ -73,7 +78,7 @@ def create_app(
     async def ui_headers(request: Request, call_next):
         response = await call_next(request)
         if request.url.path.startswith("/ui"):
-            response.headers["Content-Security-Policy"] = UI_CSP
+            response.headers["Content-Security-Policy"] = API_CSP if request.url.path == API_PAGE else UI_CSP
             response.headers["Cache-Control"] = "no-cache"
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["Referrer-Policy"] = "no-referrer"
