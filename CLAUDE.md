@@ -27,7 +27,7 @@ scripts/lint.sh --fix                          # ruff, shellcheck, yamllint, mar
 
 ## Layout
 
-- `src/hippocampus/` - `api/` (the REST package; `app.py` holds the routes), `store.py` (the only code that runs SQL), `crawler.py`, `chunker.py`, `diff.py` (incremental indexing),
+- `src/hippocampus/` - `api.py` (routes), `store.py` (the only code that runs SQL), `crawler.py`, `chunker.py`, `diff.py` (incremental indexing),
   `auth.py`, `mcp_server.py`, `admin.py` (CLI), `docs_sync.py`, `repo_ingest.py`, `sync_core.py` (file filter and scan rules), `files_ingest.py` (folder uploads), `jobs.py`, `migrate.py`, `ui/` (the dashboard).
 - `db/migrations/` - numbered SQL files, applied in order. `compose.yaml` and `deploy/` - the stack and its image.
 - `tests/unit`, `tests/integration`, `tests/e2e` - see below. `scripts/` - checks, the throwaway test database, prerequisites.

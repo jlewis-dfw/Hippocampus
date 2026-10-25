@@ -1,6 +1,6 @@
 # Hippocampus API
 
-Technical reference for the HTTP API in `src/hippocampus/api/`: a FastAPI application served by uvicorn. It stores and
+Technical reference for the HTTP API in `src/hippocampus/api.py`: a FastAPI application served by uvicorn. It stores and
 searches embedded documents in PostgreSQL (see [../Database/README.md](../Database/README.md)) and serves the dashboard.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
@@ -72,7 +72,7 @@ repository imports and syncs run in daemon threads owned by the job registry.
 
 ```
 src/hippocampus/
-  api/              — the package: app.py holds the models, routes, middleware and app_from_env
+  api.py            — the application: models, routes, middleware, app_from_env
   auth.py           — Principal, token hashing, grant matching, authenticate()
   store.py          — PgStore: every SQL statement; connect_store()
   diff.py           — content-hash sync of documents into a collection (the shared indexing step)

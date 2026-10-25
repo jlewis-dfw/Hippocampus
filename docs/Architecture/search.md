@@ -1,7 +1,7 @@
 # Search
 
 How `POST /v1/search` runs: what is embedded, the SQL, how scores and filters interact, and what to know about the vector index.
-Source: `api/app.py` (the route) and `store.py` (`PgStore.search`).
+Source: `api.py` (the route) and `store.py` (`PgStore.search`).
 
 ## Steps
 

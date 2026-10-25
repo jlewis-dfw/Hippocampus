@@ -28,7 +28,7 @@ For people who run and use Hippocampus.
 
 ### [Api](Api/README.md)
 
-The REST service, `src/hippocampus/api/`.
+The REST service, `src/hippocampus/api.py`.
 
 | Doc | Covers |
 |---|---|

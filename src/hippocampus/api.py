@@ -17,7 +17,7 @@ from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from ..auth import (
+from .auth import (
     ANONYMOUS,
     CLIENT_NAME_RE,
     PRIVATE_URI_PREFIXES,
@@ -29,10 +29,10 @@ from ..auth import (
     new_token,
     validate_grants,
 )
-from ..diff import Document, sync_collection
-from ..docs_sync import DocsSyncConfig, ForgejoSource, apply_changes, full_resync, plan_push, verify_signature
-from ..embedder import DIMENSIONS, MODEL_NAME, Embedder
-from ..files_ingest import (
+from .diff import Document, sync_collection
+from .docs_sync import DocsSyncConfig, ForgejoSource, apply_changes, full_resync, plan_push, verify_signature
+from .embedder import DIMENSIONS, MODEL_NAME, Embedder
+from .files_ingest import (
     MAX_BATCH_CHARS,
     MAX_BATCH_FILES,
     LimitError,
@@ -42,14 +42,14 @@ from ..files_ingest import (
     preview,
     process_batch,
 )
-from ..jobs import Job, JobRegistry
-from ..observability import client_address, log_requests, setup_logging
-from ..repo_ingest import ingest_pack, parse_pack
-from ..sync_core import SOURCE_NAME_RE, FileFilter, exclude_path_parts
+from .jobs import Job, JobRegistry
+from .observability import client_address, log_requests, setup_logging
+from .repo_ingest import ingest_pack, parse_pack
+from .sync_core import SOURCE_NAME_RE, FileFilter, exclude_path_parts
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
-UI_DIR = Path(__file__).resolve().parents[1] / "ui"
+UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
 UI_CSP = "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
 
@@ -690,10 +690,10 @@ def create_app(
 
 def app_from_env() -> FastAPI:
     """uvicorn --factory hippocampus.api:app_from_env  (HIPPO_DSN from the environment/secret)."""
-    from ..crawler import make_crawler
-    from ..embedder import FastEmbedder
-    from ..store import connect_store
-    from ..workers import check_single_worker
+    from .crawler import make_crawler
+    from .embedder import FastEmbedder
+    from .store import connect_store
+    from .workers import check_single_worker
 
     setup_logging(os.environ)
     check_single_worker()
