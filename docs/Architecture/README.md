@@ -12,6 +12,7 @@ This is a living document. It describes the code as of migration `0003_sync_sour
 - [search.md](search.md) — the search query, scoring and why filtering happens before the limit.
 - [jobs.md](jobs.md) — background jobs and the live log.
 - [security.md](security.md) — the threat model and every control in one place.
+- [design-decisions.md](design-decisions.md) — the unusual choices, why they were made and when to revisit them.
 
 ## The system at a glance
 

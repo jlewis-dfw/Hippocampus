@@ -49,6 +49,7 @@ How it works inside.
 | [search.md](Architecture/search.md) | The query, scores, filters, the vector index |
 | [jobs.md](Architecture/jobs.md) | Background jobs, logs and the live stream |
 | [security.md](Architecture/security.md) | Threat model and defences |
+| [design-decisions.md](Architecture/design-decisions.md) | Why tokens use SHA-256, why one process, why raw SQL, and the other unusual choices |
 
 ### [Database](Database/README.md)
 
