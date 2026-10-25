@@ -166,3 +166,44 @@ def test_unknown_collection_and_admin_count(conn_and_slug):
         assert store.count_admins() == before  # revoked admins do not count
     finally:
         conn.execute("DELETE FROM hippocampus.api_clients WHERE name = %s", (name,))
+
+
+def test_sync_source_lifecycle(conn_and_slug):
+    from hippocampus.store import PgStore
+
+    conn, slug = conn_and_slug
+    store = PgStore(conn)
+    other = f"{slug}-b"
+    conn.execute("INSERT INTO hippocampus.collections (slug, name) VALUES (%s, %s)", (other, other))
+    name = f"src-{slug[-8:]}"
+    settings = {"include": ["Work/"], "folders": ["Work"], "extensions": None}
+    try:
+        assert store.create_sync_source(name, "upload", slug, settings, {"Work": other}, "tester") is True
+        assert store.create_sync_source(name, "upload", slug, {}, {}, "tester") is False  # name taken
+        src = store.get_sync_source(name)
+        assert (src["collection"], src["kind"], src["settings"], src["folder_collections"]) == (
+            slug, "upload", settings, {"Work": other})
+        assert src["last_status"] is None and src["last_run_at"] is None
+        assert name in [s["name"] for s in store.list_sync_sources()]
+
+        assert store.update_sync_source(name, None, {"folders": ["Projects"]}, None) is True
+        assert store.get_sync_source(name)["settings"] == {"folders": ["Projects"]}
+        assert store.get_sync_source(name)["folder_collections"] == {"Work": other}  # untouched
+        assert store.update_sync_source(name, other, None, {}) is True
+        assert store.get_sync_source(name)["collection"] == other
+        assert store.update_sync_source("missing", None, {}, None) is False
+
+        assert store.record_sync_run(name, "ok", {"added": 2}) is True
+        src = store.get_sync_source(name)
+        assert (src["last_status"], src["last_summary"]) == ("ok", {"added": 2}) and src["last_run_at"]
+        assert store.record_sync_run("missing", "ok", {}) is False
+        with pytest.raises(Exception, match="ck_sync_sources_status"):
+            store.record_sync_run(name, "bogus", {})
+
+        conn.execute("DELETE FROM hippocampus.collections WHERE slug = %s", (other,))  # cascades
+        assert store.get_sync_source(name) is None
+        assert store.create_sync_source(name, "upload", slug, {}, {}, "tester") is True
+        assert store.delete_sync_source(name) is True and store.delete_sync_source(name) is False
+    finally:
+        conn.execute("DELETE FROM hippocampus.sync_sources WHERE name = %s", (name,))
+        conn.execute("DELETE FROM hippocampus.collections WHERE slug = %s", (other,))

@@ -177,3 +177,19 @@ def test_scan_files_path_only_pass_for_preview():
 def test_scan_files_rejects_bad_source_names():
     with pytest.raises(ValueError):
         scan_files("../x", [], FileFilter.build())
+
+
+def test_roots_limit_the_top_level_folders():
+    flt = FileFilter.build(roots=["Work", "Café", "."])
+    assert decide("Work/a/b.md", flt).outcome == "indexed"
+    assert decide("README.md", flt).outcome == "indexed"  # "." is the top level
+    assert decide("Café/n.md", flt).outcome == "indexed"  # roots are compared NFC
+    assert decide("Journal/a.md", flt).reason == "not-included"
+    assert decide("workshop/a.md", flt).reason == "not-included"  # whole names, case-sensitive
+    assert decide("a.md", FileFilter.build(roots=["Work"])).reason == "not-included"
+
+
+def test_leading_slash_directory_rule_is_anchored():
+    flt = FileFilter.build(exclude=["/Work/"])
+    assert decide("Work/a.md", flt).reason == "excluded-by-rule"
+    assert decide("sub/Work/a.md", flt).outcome == "indexed"

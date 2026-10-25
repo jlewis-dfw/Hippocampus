@@ -11,6 +11,7 @@ underscores. The numbers must run `0001, 0002, 0003, ...` **without gaps or repe
 |---|---|
 | `0001_init_hippocampus_schema.sql` | Creates the `vector` extension, the `hippocampus` schema, the `collections`, `sources` and `document_chunks` tables, the HNSW index and the helper indexes |
 | `0002_access_control.sql` | Adds `collections.visibility` (default `shared`, with a check constraint) and creates `api_clients` |
+| `0003_sync_sources.sql` | Creates `sync_sources`, the saved folders that are kept in step with a collection |
 
 ## The runner
 

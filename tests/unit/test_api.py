@@ -26,6 +26,7 @@ class MemStore:
     def __init__(self):
         self.collections = {}  # slug -> {uri: (title, sha, chunks)}
         self.visibility = {}  # slug -> shared | restricted
+        self.sync_sources = {}  # name -> dict as returned by get_sync_source
         self.clients = {}  # name -> dict(token_sha256, is_admin, read_grants, write_grants, note, revoked)
 
     def collection_exists(self, slug):
@@ -94,7 +95,43 @@ class MemStore:
         return sum(1 for c in self.clients.values() if c["is_admin"] and not c["revoked"])
 
     def delete_collection(self, slug):
+        for name in [n for n, v in self.sync_sources.items() if v["collection"] == slug]:  # ON DELETE CASCADE
+            del self.sync_sources[name]
         return self.collections.pop(slug, None) is not None
+
+    def list_sync_sources(self):
+        return [dict(v) for _, v in sorted(self.sync_sources.items())]
+
+    def get_sync_source(self, name):
+        return dict(self.sync_sources[name]) if name in self.sync_sources else None
+
+    def create_sync_source(self, name, kind, collection, settings, folder_collections, created_by):
+        if name in self.sync_sources:
+            return False
+        self.sync_sources[name] = {
+            "name": name, "kind": kind, "collection": collection, "settings": settings,
+            "folder_collections": folder_collections, "created_by": created_by, "created_at": "x", "updated_at": "x",
+            "last_run_at": None, "last_status": None, "last_summary": None}
+        return True
+
+    def update_sync_source(self, name, collection, settings, folder_collections):
+        src = self.sync_sources.get(name)
+        if src is None:
+            return False
+        for key, val in (("collection", collection), ("settings", settings), ("folder_collections", folder_collections)):
+            if val is not None:
+                src[key] = val
+        return True
+
+    def delete_sync_source(self, name):
+        return self.sync_sources.pop(name, None) is not None
+
+    def record_sync_run(self, name, status, summary):
+        src = self.sync_sources.get(name)
+        if src is None:
+            return False
+        src.update(last_run_at="2026-01-01T00:00:00+00:00", last_status=status, last_summary=summary)
+        return True
 
     def list_collections(self):
         return [

@@ -82,6 +82,13 @@ class UploadSessions:
             raise SessionError(sid)
         return s
 
+    def abort(self, sid: str, owner: str) -> UploadSession | None:
+        with self._lock:
+            s = self._sessions.get(sid)
+            if s is None or s.owner != owner:
+                return None
+            return self._sessions.pop(sid)
+
     def end(self, sid: str) -> None:
         with self._lock:
             self._sessions.pop(sid, None)

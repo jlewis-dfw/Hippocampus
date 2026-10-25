@@ -117,11 +117,15 @@ class FilterSpec(BaseModel):
     extensions: list[str] | None = Field(None, max_length=100)  # None: the default text extensions
     default_excludes: bool = True
     gitignore: str | None = Field(None, max_length=100_000)
+    folders: list[str] = Field([], max_length=500)  # top-level folders to index ("." = files at the top); empty = all
 
-    def build(self) -> FileFilter:
+    def build(self, roots: list[str] | None = None) -> FileFilter:
         if any(len(g) > 300 for g in (*self.include, *self.exclude)):
             raise HTTPException(422, "a rule is longer than 300 characters")
-        return FileFilter.build(self.include, self.exclude, self.extensions, self.default_excludes, self.gitignore)
+        if any(not f or len(f) > 255 or "/" in f or "\\" in f or f == ".." for f in self.folders):
+            raise HTTPException(422, "folders are top-level folder names")
+        return FileFilter.build(self.include, self.exclude, self.extensions, self.default_excludes, self.gitignore,
+                                self.folders if roots is None else roots)
 
 
 class IngestFilesRequest(BaseModel):
@@ -132,6 +136,20 @@ class IngestFilesRequest(BaseModel):
     session: str | None = None  # from the first batch's reply; later batches of the same run send it back
     final: bool = False  # the last batch: files not sent in this run are removed
     dry_run: bool = False  # decide only, write nothing
+
+
+class SourceCreate(BaseModel):
+    name: str = Field(pattern=SOURCE_NAME_RE.pattern)
+    kind: Literal["upload"] = "upload"  # mount, s3, drive and git arrive with their readers
+    collection: str
+    settings: FilterSpec = FilterSpec()
+    folder_collections: dict[str, str] = Field({}, max_length=500)  # top-level folder -> its own collection
+
+
+class SourceUpdate(BaseModel):
+    collection: str | None = None
+    settings: FilterSpec | None = None
+    folder_collections: dict[str, str] | None = Field(None, max_length=500)
 
 
 class CrawlRequest(BaseModel):
@@ -388,15 +406,37 @@ def create_app(
 
     uploads = UploadSessions()
 
+    def run_filter(src: dict | None, collection: str, requested: FilterSpec) -> FileFilter:
+        """A saved source's rules win over the request's. Folders mapped to their own collection go only there."""
+        if src is None:
+            return requested.build()
+        spec = FilterSpec(**src["settings"])
+        mapping = src["folder_collections"]
+        if collection == src["collection"]:  # everything not sent to a collection of its own
+            return FilterSpec(**{**src["settings"], "exclude": [*spec.exclude, *(f"/{f}/" for f in mapping)]}).build()
+        mapped = [f for f, slug in mapping.items() if slug == collection]
+        roots = [f for f in mapped if not spec.folders or f in spec.folders]
+        return spec.build(roots or ["\x00"])  # empty roots would mean "everything"; this matches nothing
+
+    def saved_source(store, name: str, collection: str) -> dict | None:
+        src = store.get_sync_source(name)
+        if src is not None and collection not in (src["collection"], *src["folder_collections"].values()):
+            raise HTTPException(409, f"{name!r} is a saved source for another collection")
+        return src
+
+    def record(store, name: str, status: str, summary: dict) -> None:
+        store.record_sync_run(name, status, summary)
+
     @app.post("/v1/ingest/files")
     def ingest_files(req: IngestFilesRequest, p: Principal = Depends(current_principal)):
         """One batch of a folder upload. Many batches with one ``session`` make one run; ``final`` closes it and prunes."""
         _check_slug(req.collection)
         if sum(len(f.content or "") for f in req.files) > MAX_BATCH_CHARS:
             raise HTTPException(413, "batch is too large; send fewer files per request")
-        flt = req.filter.build()
         with store_factory() as store:
             need_write(p, store, req.collection)
+            src = saved_source(store, req.source, req.collection)
+            flt = run_filter(src, req.collection, req.filter)
             if req.dry_run:
                 scan = preview(req.source, [(f.path, f.content, f.size) for f in req.files], flt)
                 return {"dry_run": True, "counts": scan.counts(), "files": [d.view() for d in scan.decisions]}
@@ -415,12 +455,111 @@ def create_app(
                 results = process_batch(session, [(f.path, f.content, f.size) for f in req.files], store, embedder)
             except LimitError as exc:
                 raise HTTPException(413, str(exc)) from exc
+            except Exception as exc:  # the index is as it was: pruning only happens on the final batch
+                uploads.end(session.id)
+                if src is not None:
+                    record(store, src["name"], "error", {"collection": req.collection, "error": type(exc).__name__})
+                raise
             removed: list[str] = []
+            job_id = None
             if req.final:
                 removed = finish(session, store)
                 uploads.end(session.id)
+                summary = dict(session.totals)
+                job_id = jobs.submit("sync-files", lambda j: {"source": req.source, "collection": req.collection,
+                                                             **summary}, background=False, owner=p.name).id
+                if src is not None:
+                    record(store, src["name"], "ok", {"collection": req.collection, **summary})
         return {"session": None if req.final else session.id, "source": req.source, "files": results,
-                "removed": removed, "totals": dict(session.totals)}
+                "removed": removed, "totals": dict(session.totals), "job_id": job_id}
+
+    @app.delete("/v1/ingest/files/{session_id}", status_code=204)
+    def abort_ingest_files(session_id: str, reason: str = Query("cancelled", max_length=100),
+                           p: Principal = Depends(current_principal)):
+        """Cancel a run. Nothing is pruned, so the index keeps what it had; a saved source shows why the run stopped."""
+        session = uploads.abort(session_id, p.name)
+        if session is None:
+            raise HTTPException(404, "upload session not found or expired")
+        with store_factory() as store:
+            if store.get_sync_source(session.source) is not None:
+                record(store, session.source, "error", {"collection": session.collection, "error": reason})
+
+    # --- saved sync sources (F4/F5) ---
+
+    def _source_visible(p: Principal, store, src: dict | None) -> dict:
+        if src is None or store.collection_visibility(src["collection"]) is None or not p.can_read(
+                src["collection"], store.collection_visibility(src["collection"])):
+            raise HTTPException(404, "source not found")
+        return src
+
+    def _check_mapping(p: Principal, store, folder_collections: dict[str, str]) -> None:
+        for folder, slug in folder_collections.items():
+            if not folder or "/" in folder or "\\" in folder or folder == "..":
+                raise HTTPException(422, "folder_collections keys are top-level folder names")
+            _check_slug(slug)
+            need_write(p, store, slug)
+
+    @app.get("/v1/sources")
+    def list_sync_sources(p: Principal = Depends(current_principal)):
+        with store_factory() as store:
+            vis = {c["slug"]: c["visibility"] for c in store.list_collections()}
+            return {"sources": [s for s in store.list_sync_sources()
+                                if s["collection"] in vis and p.can_read(s["collection"], vis[s["collection"]])]}
+
+    @app.get("/v1/sources/{name}")
+    def get_sync_source(name: str, p: Principal = Depends(current_principal)):
+        with store_factory() as store:
+            return _source_visible(p, store, store.get_sync_source(name))
+
+    @app.post("/v1/sources", status_code=201)
+    def create_sync_source(req: SourceCreate, p: Principal = Depends(current_principal)):
+        _check_slug(req.collection)
+        req.settings.build()  # validates the rules
+        with store_factory() as store:
+            need_write(p, store, req.collection)
+            _check_mapping(p, store, req.folder_collections)
+            if not store.create_sync_source(req.name, req.kind, req.collection, req.settings.model_dump(),
+                                            req.folder_collections, p.name):
+                raise HTTPException(409, f"source {req.name!r} already exists")
+            return store.get_sync_source(req.name)
+
+    @app.patch("/v1/sources/{name}")
+    def update_sync_source(name: str, req: SourceUpdate, p: Principal = Depends(current_principal)):
+        with store_factory() as store:
+            src = _source_visible(p, store, store.get_sync_source(name))
+            need_write(p, store, src["collection"])
+            if req.collection is not None:
+                _check_slug(req.collection)
+                need_write(p, store, req.collection)
+            if req.settings is not None:
+                req.settings.build()
+            if req.folder_collections is not None:
+                _check_mapping(p, store, req.folder_collections)
+            store.update_sync_source(name, req.collection, req.settings.model_dump() if req.settings else None,
+                                     req.folder_collections)
+            return store.get_sync_source(name)
+
+    @app.delete("/v1/sources/{name}", status_code=204)
+    def delete_sync_source(name: str, purge: bool = False, p: Principal = Depends(current_principal)):
+        """Forget the source. With ``purge`` the files it indexed are removed too; otherwise they stay searchable."""
+        with store_factory() as store:
+            src = _source_visible(p, store, store.get_sync_source(name))
+            need_write(p, store, src["collection"])
+            if purge:
+                for slug in {src["collection"], *src["folder_collections"].values()}:
+                    need_write(p, store, slug)
+                    prefix = f"files://{name}/"
+                    for uri in [u for u in store.source_hashes(slug) if u.startswith(prefix)]:
+                        store.delete_source(slug, uri)
+            store.delete_sync_source(name)
+
+    @app.post("/v1/sources/{name}/sync")
+    def sync_source_now(name: str, p: Principal = Depends(current_principal)):
+        with store_factory() as store:
+            src = _source_visible(p, store, store.get_sync_source(name))
+            need_write(p, store, src["collection"])
+        # Only the server can re-read a source it can reach (mount, S3, Drive, Git); those readers arrive later.
+        raise HTTPException(409, f"{src['kind']} sources are read in your browser: drop the folder again to refresh")
 
     def _docs_collection_exists(cfg: DocsSyncConfig) -> bool:
         with store_factory() as store:

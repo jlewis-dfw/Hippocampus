@@ -145,8 +145,8 @@ class Glob:
         negate = line.startswith("!")
         line = line.removeprefix("!")
         dir_only = line.endswith("/")
-        line = line.strip("/") if dir_only else line.rstrip("/")
-        anchored = "/" in line
+        line = line.rstrip("/")
+        anchored = "/" in line  # a leading "/" or a "/" inside the pattern ties it to the root
         line = line.lstrip("/")
         if not line:
             return None
@@ -205,15 +205,17 @@ class FileFilter:
     extensions: tuple[str, ...] = DEFAULT_EXTENSIONS
     default_excludes: bool = True
     gitignore: tuple[Glob, ...] = ()
+    roots: tuple[str, ...] = ()  # top-level folders to index ("." is the files at the top); empty means all of them
     exclude_parts: tuple[str, ...] = field(default_factory=exclude_path_parts)
 
     @classmethod
     def build(cls, include: Iterable[str] = (), exclude: Iterable[str] = (), extensions: Iterable[str] | None = None,
-              default_excludes: bool = True, gitignore: str | None = None) -> FileFilter:
+              default_excludes: bool = True, gitignore: str | None = None, roots: Iterable[str] = ()) -> FileFilter:
         exts = DEFAULT_EXTENSIONS if extensions is None else tuple(
             "." + e.strip().lower().lstrip(".") for e in extensions if e.strip())
         return cls(parse_globs(include), parse_globs(exclude), exts, default_excludes,
-                   parse_globs((gitignore or "").splitlines()))
+                   parse_globs((gitignore or "").splitlines()),
+                   tuple(unicodedata.normalize("NFC", r) for r in roots))
 
     def check_path(self, raw: str, size: int | None = None) -> Decision:
         """Path-level decision (everything that needs no file content). ``size`` is in bytes when known."""
@@ -235,6 +237,8 @@ class FileFilter:
             return Decision(path, "skipped", "extension")
         if self.gitignore and _ignored(self.gitignore, path):
             return Decision(path, "skipped", "gitignored")
+        if self.roots and (path.split("/")[0] if "/" in path else ".") not in self.roots:
+            return Decision(path, "skipped", "not-included")
         if self.include and not any(g.matches(path) for g in self.include):
             return Decision(path, "skipped", "not-included")
         if self.exclude and any(g.matches(path) for g in self.exclude):
