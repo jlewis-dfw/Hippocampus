@@ -112,7 +112,8 @@ def _split_prose(text: str, limit: int, count: TokenCounter) -> list[str]:
     if count(text) <= limit:
         return [text]
     words = text.split()
-    parts, cur = [], []
+    parts: list[str] = []
+    cur: list[str] = []
     for w in words:
         if cur and count(" ".join([*cur, w])) > limit:
             parts.append(" ".join(cur))
@@ -130,7 +131,8 @@ def _split_code(text: str, limit: int, count: TokenCounter) -> list[str]:
     has_close = len(lines) > 1 and _FENCE_RE.match(lines[-1]) is not None
     close_f = lines[-1] if has_close else open_f.strip()[:3]
     body = lines[1:-1] if has_close else lines[1:]
-    pieces, cur = [], []
+    pieces: list[str] = []
+    cur: list[str] = []
     for ln in body:
         if cur and count("\n".join([open_f, *cur, ln, close_f])) > limit:
             pieces.append("\n".join([open_f, *cur, close_f]))

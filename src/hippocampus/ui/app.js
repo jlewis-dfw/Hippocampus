@@ -391,9 +391,9 @@ function useToken(event) {
   refreshAll();
 }
 
-// --- tabs: Collections, Local, Web, Access ---
+// --- tabs: Collections, Search, Local, Web, Access, API ---
 
-const TABS = ["collections", "search", "local", "web", "access"];
+const TABS = ["collections", "search", "local", "web", "access", "api"];
 
 function showTab(name, focus = false, fromHash = false) {
   if (!TABS.includes(name)) name = "collections";
@@ -403,6 +403,7 @@ function showTab(name, focus = false, fromHash = false) {
     $(`tab-${t}`).setAttribute("aria-selected", String(on));
     $(`tab-${t}`).tabIndex = on ? 0 : -1;
   }
+  if (name === "api" && !$("apiFrame").getAttribute("src")) $("apiFrame").src = "api.html"; // the 1.7 MB bundle loads on first use
   if (focus) $(`tab-${name}`).focus();
   if (!fromHash && location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
 }

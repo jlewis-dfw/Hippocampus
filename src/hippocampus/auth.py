@@ -17,8 +17,8 @@ GRANT_RE = re.compile(r"^[a-z0-9*-]{1,64}$")
 CLIENT_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 # Collections with these slug prefixes hold private story data: they must stay restricted, and anything with a
 # matching URI scheme may only be written into a restricted collection (a guard like FORBIDDEN_URI_PARTS).
-PRIVATE_SLUG_PREFIXES = ("jstories",)
-PRIVATE_URI_PREFIXES = ("jstories://",)
+PRIVATE_SLUG_PREFIXES = ("private",)
+PRIVATE_URI_PREFIXES = ("private://",)
 
 
 def new_token() -> str:

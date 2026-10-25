@@ -23,6 +23,7 @@
       <button id="tab-local" class="tab" role="tab" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-tab="local">Local</button>
       <button id="tab-web" class="tab" role="tab" aria-controls="panel-web" aria-selected="false" tabindex="-1" data-tab="web">Web</button>
       <button id="tab-access" class="tab" role="tab" aria-controls="panel-access" aria-selected="false" tabindex="-1" data-tab="access">Access</button>
+      <button id="tab-api" class="tab" role="tab" aria-controls="panel-api" aria-selected="false" tabindex="-1" data-tab="api">API</button>
     </nav>
     <div id="panel-collections" class="panel" role="tabpanel" aria-labelledby="tab-collections">
     <section>
@@ -272,6 +273,11 @@
       <p class="muted mono" id="jobMeta"></p>
       <pre id="log" class="log" aria-live="polite"></pre>
     </section>
+    <div id="panel-api" class="panel" role="tabpanel" aria-labelledby="tab-api" hidden>
+      <p class="muted">The API reference. <b>Try it out</b> uses the token from the Access tab. Also at
+        <a href="/openapi.json">/openapi.json</a> and <a href="/redoc">/redoc</a>.</p>
+      <iframe id="apiFrame" class="apiframe" title="API reference (Swagger UI)"></iframe>
+    </div>
   </main>
 
   <script src="folder.js"></script>

@@ -12,6 +12,7 @@ This is a living document. It describes the code as of migration `0003_sync_sour
 - [search.md](search.md) — the search query, scoring and why filtering happens before the limit.
 - [jobs.md](jobs.md) — background jobs and the live log.
 - [security.md](security.md) — the threat model and every control in one place.
+- [design-decisions.md](design-decisions.md) — the unusual choices, why they were made and when to revisit them.
 
 ## The system at a glance
 
@@ -38,7 +39,7 @@ This is a living document. It describes the code as of migration `0003_sync_sour
 
 | Component | Where | Role |
 |---|---|---|
-| **API** | `api.py` | REST routes, access rules, background jobs, serves the dashboard |
+| **API** | `api.py`, `routes/` | REST routes, access rules, background jobs, serves the dashboard |
 | **Store** | `store.py` | Every SQL statement; the only code that touches the database |
 | **Auth** | `auth.py` | Tokens, grants, the `Principal` |
 | **Chunker** | `chunker.py` | Cuts Markdown into heading-aware passages |

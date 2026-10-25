@@ -151,7 +151,7 @@ def test_request_validation():
 
 
 def test_oversized_batch_is_refused(monkeypatch):
-    import hippocampus.api as api
+    import hippocampus.routes.uploads as api
     monkeypatch.setattr(api, "MAX_BATCH_CHARS", 10)
     c, _ = setup()
     r = c.post("/v1/ingest/files", json={"collection": "notes", "source": "vault", "files": files(**{"a.md": "x" * 11})})

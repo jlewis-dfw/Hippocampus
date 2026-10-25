@@ -10,19 +10,23 @@ Sources are ``files://<source>/<path>``. The caller is not trusted: every path, 
 from __future__ import annotations
 
 import dataclasses
+import logging
 import threading
 import time
 import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
 
 from .diff import sync_collection
-from .repo_ingest import LEGACY_EXCLUDED_PARTS
-from .sync_core import FileFilter, exclude_path_parts, file_uri, scan_files
+from .embedder import Embedder
+from .sync_core import FileFilter, FileScan, exclude_path_parts, file_uri, scan_files
 
 MAX_BATCH_FILES = 500
 MAX_BATCH_CHARS = 20_000_000
 MAX_SESSION_FILES = 20_000
 SESSION_TTL_SECONDS = 3600
+log = logging.getLogger("hippocampus")
 MAX_SESSIONS = 50
 
 
@@ -37,7 +41,7 @@ class LimitError(ValueError):
 def server_filter(flt: FileFilter) -> FileFilter:
     """The caller's rules plus the server-wide guard, which no client setting can remove."""
     return dataclasses.replace(flt, exclude_parts=tuple(dict.fromkeys(
-        (*flt.exclude_parts, *exclude_path_parts(LEGACY_EXCLUDED_PARTS)))))
+        (*flt.exclude_parts, *exclude_path_parts()))))
 
 
 @dataclass
@@ -94,12 +98,13 @@ class UploadSessions:
             self._sessions.pop(sid, None)
 
 
-def preview(source: str, files, flt: FileFilter):
+def preview(source: str, files: Iterable[tuple[str, str | None, int | None]], flt: FileFilter) -> FileScan:
     """Decisions for ``files`` with nothing written. Content is checked too when the caller sent it."""
     return scan_files(source, files, server_filter(flt))
 
 
-def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
+def process_batch(session: UploadSession, files: list[tuple[str, str | None, int | None]], store: Any,
+                  embedder: Embedder) -> list[dict[str, str]]:
     """Check, diff and index one batch of ``(path, text, size)``. Returns one result per file, in order."""
     with session.lock:
         if session.totals["files"] + len(files) > MAX_SESSION_FILES:
@@ -113,6 +118,8 @@ def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
         for d in scan.decisions:
             uri = file_uri(session.source, d.path)
             row = d.view()
+            if d.outcome == "rejected":
+                log.warning("file rejected: %s (rule %s)", d.path, d.reason, extra={"source": session.source})
             if d.outcome == "indexed":
                 row["action"] = action.get(uri, "skipped")
             elif d.outcome == "rejected" and not (d.reason or "").startswith("invalid-path") and uri in known:
@@ -132,7 +139,7 @@ def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
         return out
 
 
-def finish(session: UploadSession, store) -> list[str]:
+def finish(session: UploadSession, store: Any) -> list[str]:
     """Remove this folder's sources that the run did not keep. Returns the removed paths."""
     with session.lock:
         prefix = file_uri(session.source, "")

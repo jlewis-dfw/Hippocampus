@@ -19,13 +19,13 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.parse import urldefrag, urljoin, urlparse
 
 from .diff import Document, sync_collection
+from .sync_core import exclude_path_parts
 
 USER_AGENT = "Hippocampus-crawler/0.1 (+internal)"
-FORBIDDEN_URL_PARTS = ("private-infra",)
 MAX_BYTES = 2_000_000
 MAX_REDIRECTS = 5
 SKIP_EXTENSIONS = (
@@ -221,7 +221,7 @@ def check_public_url(url: str) -> None:
     parts = urlparse(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
         raise CrawlRefused(f"unsupported URL {url!r}")
-    if any(p in url.lower() for p in FORBIDDEN_URL_PARTS):
+    if any(p in url.lower() for p in exclude_path_parts()):
         raise CrawlRefused("this source is excluded from ingestion")
     host = parts.hostname
     try:
@@ -291,9 +291,9 @@ class BrowserFetcher:
         self._timeout_ms = int(timeout * 1000)
         self._settle_ms = int(settle * 1000)
         self._launch = launch  # test seam: () -> (playwright_or_None, browser)
-        self._pw = None
-        self._browser = None
-        self._context = None
+        self._pw: Any = None  # playwright objects; typed Any because the extra is optional
+        self._browser: Any = None
+        self._context: Any = None
         self._robots = HttpxFetcher(timeout=15.0)
 
     def _ensure(self) -> None:
@@ -446,7 +446,7 @@ def crawl_pages(
             p = urlparse(nxt)
             if (p.scheme not in ("http", "https") or p.netloc != host or nxt in seen
                     or p.path.lower().endswith(SKIP_EXTENSIONS)
-                    or any(x in nxt.lower() for x in FORBIDDEN_URL_PARTS)
+                    or any(x in nxt.lower() for x in exclude_path_parts())
                     or (pattern and not pattern.search(nxt))):
                 continue
             seen.add(nxt)

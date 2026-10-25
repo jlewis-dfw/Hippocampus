@@ -28,7 +28,10 @@ The launcher itself reads one more: `CONTAINER_ENGINE=docker|podman` forces the 
 | `HIPPO_ALLOWED_CIDRS` | `10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,::1/128` | As above. This is the service's built-in default; the local stack sets its own (above). |
 | `HIPPO_REQUIRE_AUTH` | off | Accepts `1`, `true` or `yes` (case-insensitive). |
 | `HIPPO_CRAWL_MAX_PAGES`, `HIPPO_CRAWL_DELAY` | `200`, `0.5` | As above. |
-| `HIPPO_EXCLUDE_PATH_PARTS` | `private-infra` for the repo and docs ingesters and `/v1/ingest/files` | Comma-separated, case-insensitive path fragments that are never indexed. Setting it (even to empty) replaces the default. |
+| `HIPPO_DB_POOL_MIN`, `HIPPO_DB_POOL_MAX`, `HIPPO_DB_POOL_TIMEOUT` | `1`, `5`, `5` | Database connections kept ready, the most allowed, and how many seconds a request waits for a free one before the API answers `503` (`Retry-After: 1`). A request holds one connection while it runs, and a background job holds one while it writes to the index (a crawl holds none while it fetches pages), so allow for both. A bad value stops the service at start. |
+| `HIPPO_LOG_LEVEL`, `HIPPO_LOG_FORMAT` | `INFO`, `text` | Log level, and `json` for one JSON object per line. See [operations](operations.md#logs). |
+| `HIPPO_REQUIRE_SINGLE_WORKER` | `false` | Refuse to start when `WEB_CONCURRENCY` is above 1, instead of only logging a warning. |
+| `HIPPO_EXCLUDE_PATH_PARTS` | none | Comma-separated, case-insensitive path fragments that are never indexed: repository and docs ingesters, file and folder uploads, crawled URLs, `index_doc`. No client setting removes them. |
 | `HIPPO_MIGRATIONS_DIR` | `<repo>/db/migrations` | Where `python -m hippocampus.migrate` reads migrations. The image sets `/app/db/migrations`. |
 
 ### Docs repository sync (optional)

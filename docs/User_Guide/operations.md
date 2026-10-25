@@ -33,8 +33,26 @@ The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and 
 ./hippocampus logs migrate     # what the last migration run did
 ```
 
-The service logs requests and errors to standard output. Job logs (what a crawl fetched, what a sync rejected) are available
-through the API and the dashboard, not in the container log, and are lost on restart.
+The service writes one line per event to standard error, through Python's `logging` module:
+
+- every request: method, path (no query string), status, duration, client address and a request ID. An incoming `X-Request-ID`
+  header (letters, digits, `.`, `_`, `-`, up to 64 characters) is kept; otherwise one is made. The ID is returned in the same header.
+- every failed authentication, with the client address and path (never the token);
+- every rejected file, by path and rule (never content);
+- job start and end, with the status and, for a failure, the exception type only;
+- each migration applied, and the startup settings (no secrets).
+
+Nothing logs a token, a request body, a file's content, a query string or a search query's results. `HIPPO_LOG_LEVEL` (default
+`INFO`) and `HIPPO_LOG_FORMAT` (`text`, the default, or `json`) set the level and format. The detailed job logs (what a crawl fetched)
+are still available through the API and the dashboard, and are lost on restart.
+
+## One worker only
+
+Jobs and folder-upload sessions are held in the memory of the API process, so the service must run as a single worker (the image
+starts uvicorn without `--workers`). With several workers a running upload fails with `404` and job history is split between
+processes. At start the service reads `WEB_CONCURRENCY`; above 1 it logs a warning, and with `HIPPO_REQUIRE_SINGLE_WORKER=true` it
+refuses to start. A `--workers` flag on the uvicorn command line is not visible to this check. Scaling out means moving this state
+into PostgreSQL first ([design-decisions.md](../Architecture/design-decisions.md)).
 
 ## Backups
 

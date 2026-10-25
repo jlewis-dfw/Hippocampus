@@ -168,10 +168,10 @@ dropped again to refresh it.
 
 ## Where the guarded fragments live
 
-A list of path fragments is checked in several places so that documents which must never enter a shared store are refused however they arrive:
-`api.py` (`FORBIDDEN_URI_PARTS`, for file and crawl requests and for repository labels), `crawler.py` (`FORBIDDEN_URL_PARTS`, for
-every URL), `repo_ingest.py` and `docs_sync.py` (`FORBIDDEN_PATH_PARTS`), `files_ingest.py` (the same fragments plus `HIPPO_EXCLUDE_PATH_PARTS`), and `mcp_server.py` (`FORBIDDEN`, for local file paths). They
-are kept in sync by hand; the tests assert each one.
+The operator's list of path fragments (`HIPPO_EXCLUDE_PATH_PARTS`, empty by default) is checked in several places so that documents which
+must never enter a shared store are refused however they arrive: `routes/ingest.py` (file and crawl requests and repository labels), `crawler.py`
+(every URL), `repo_ingest.py`, `docs_sync.py` and `files_ingest.py` (paths), and `mcp_server.py` (local file paths). All read the one
+setting through `sync_core.exclude_path_parts`; the tests assert each one.
 
 ## Tests
 

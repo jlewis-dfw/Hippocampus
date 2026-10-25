@@ -2,7 +2,12 @@
 __pycache__/
 *.egg-info/
 .pytest_cache/
+# Local files: configuration and tokens must never be committed.
 hippocampus.env
+token.env
+*.env
+!hippocampus.env.example
+stage4plan/
 tests/reports/
 evals/
 wip/

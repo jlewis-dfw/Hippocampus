@@ -10,6 +10,8 @@ This is a living document. It describes the code as of migration `0002_access_co
 ```bash
 scripts/prereqs.sh --dev --setup     # checks tools, offers to install what is missing (y/N each), creates .venv with the dev extras
 # Windows: scripts\prereqs.ps1 -Dev -Setup
+# --setup also offers, as separate questions, the optional test tools: playwright with Chromium (browser-crawl and dashboard
+# tests) and fastembed (the embedding model test, which downloads the model and needs HIPPO_RUN_MODEL_TESTS=1)
 ```
 
 Read the script's warning first; it asks you to confirm you have. Without the script:
@@ -41,7 +43,8 @@ for the local stack and, with Podman, for the development database.
 
 | Module | Role |
 |---|---|
-| `api.py` | The FastAPI application: routes, the network gate, dashboard headers, wiring |
+| `api.py` | The FastAPI application: the network gate, dashboard headers, and wiring of the routers |
+| `routes/` | The routes, one module per area; `deps.py` has the shared access checks and `schemas.py` the request bodies |
 | `auth.py` | Tokens, accounts, grants, the access decisions |
 | `store.py` | All SQL: collections, sources, chunks, search, accounts |
 | `chunker.py` | Markdown into chunks ([../Architecture/embedding-and-chunking.md](../Architecture/embedding-and-chunking.md)) |
@@ -72,7 +75,7 @@ Rule of thumb: SQL lives in `store.py`; access decisions in `auth.py`; routes st
 
 ### Add an endpoint
 
-1. Add the route in `api.py`. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
+1. Add the route in the module of `routes/` for its area (a new area is a new module with `build(deps)`, added to `routes/__init__.py`, and a tag in `routes/tags.py`). Give the handler a one-line docstring: it is the description in the API reference, and a test requires it. Take `p: Principal = Depends(current_principal)`, then decide read or write access with the helpers in `auth.py`; do not write the rule inline.
 2. Put new SQL in `store.py` and add the same method to `MemStore` in `tests/unit/test_api.py`, so the unit tests can exercise it.
 3. Test the allowed case, the denied case and the hidden case (`404`) in `tests/unit/test_access.py` or `tests/unit/test_api.py`.
 4. Add the route to [../Api/endpoints.md](../Api/endpoints.md), and to [../Api/authorization.md](../Api/authorization.md) if it changes who may do what.

@@ -4,6 +4,8 @@ A small self-hosted memory service: it stores documents (crawled web pages, push
 pgvector and answers semantic searches. It has a REST API (FastAPI), an MCP server for AI assistants, and a web dashboard. Python 3.12. The
 application is in beta. Start with [README.md](README.md) and [docs/Index.md](docs/Index.md).
 
+Decisions and constraints that the code does not show (deployment scope, repository rules, structure) are in [MEMORY.md](MEMORY.md). Read it first.
+
 ## Slash commands
 
 | Command | What it does |
@@ -27,7 +29,7 @@ scripts/lint.sh --fix                          # ruff, shellcheck, yamllint, mar
 
 ## Layout
 
-- `src/hippocampus/` - `api.py` (routes), `store.py` (the only code that runs SQL), `crawler.py`, `chunker.py`, `diff.py` (incremental indexing),
+- `src/hippocampus/` - `api.py` (wiring) and `routes/` (the routes, one module per area), `store.py` (the only code that runs SQL), `crawler.py`, `chunker.py`, `diff.py` (incremental indexing),
   `auth.py`, `mcp_server.py`, `admin.py` (CLI), `docs_sync.py`, `repo_ingest.py`, `sync_core.py` (file filter and scan rules), `files_ingest.py` (folder uploads), `jobs.py`, `migrate.py`, `ui/` (the dashboard).
 - `db/migrations/` - numbered SQL files, applied in order. `compose.yaml` and `deploy/` - the stack and its image.
 - `tests/unit`, `tests/integration`, `tests/e2e` - see below. `scripts/` - checks, the throwaway test database, prerequisites.

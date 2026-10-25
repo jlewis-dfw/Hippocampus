@@ -2,15 +2,15 @@
 
 How the web dashboard is built. For how to *use* it, see [../User_Guide/dashboard.md](../User_Guide/dashboard.md).
 
-The dashboard is three static files served by the API itself: no build step, no framework, no dependency, and no request to any other
-site. Source: `src/hippocampus/ui/` (`index.html`, `app.js`, `app.css`).
+The dashboard is a few static files served by the API itself: no build step, no framework, and no request to any other site. The one
+third-party file is the vendored Swagger UI for the API tab. Source: `src/hippocampus/ui/`.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
 
 ## How it is served
 
 `api.py` mounts the folder with Starlette's `StaticFiles(directory=UI_DIR, html=True)` at `/ui`, and `GET /` redirects to `/ui/`. The files are
-packaged with the Python package (`package-data` in `pyproject.toml` includes `ui/*`), so they travel in the container image.
+packaged with the Python package (`package-data` in `pyproject.toml` includes `ui/*` and the vendored Swagger UI), so they travel in the container image.
 
 A middleware adds these headers to every response whose path starts with `/ui`:
 
@@ -21,6 +21,10 @@ A middleware adds these headers to every response whose path starts with `/ui`:
 | `X-Content-Type-Options` | `nosniff` | The browser must trust the declared content type |
 | `Referrer-Policy` | `no-referrer` | Nothing leaks in a referrer |
 
+One page is different: `/ui/api.html` (the API tab, below) gets the same policy with `style-src 'self' 'unsafe-inline'` and
+`frame-ancestors 'self'`, because Swagger UI writes inline styles and the dashboard frames it. It still runs no inline script and loads
+nothing from outside.
+
 The dashboard can launch crawls and delete collections, so this policy is part of its safety. Keep it: any change that needs a looser policy
 (an inline `<script>`, a CDN, an inline `style=""`) is the wrong change.
 
@@ -30,10 +34,12 @@ The `/ui` path is **not** covered by the network gate (it holds no data); every 
 
 | File | Role |
 |---|---|
-| `index.html` | The page structure: header, the tab bar (Collections, Search, Local, Web, Access) and its five panels, and the job log |
+| `index.html` | The page structure: header, the tab bar (Collections, Search, Local, Web, Access, API) and its six panels, and the job log |
 | `app.css` | Dark theme with a few CSS variables; responsive grid; badges, pills, the token box |
 | `app.js` | The behaviour of everything except the folder drop, about 400 lines, no modules or dependencies |
 | `sync.js` | The folder drop: reading a dropped or chosen folder, the root-folder tree, the rules, the preview, batched upload with cancel, and the saved folders table. Loaded before `app.js`, which calls `initFolderSync()` |
+| `api.html`, `api.js`, `api.css` | The API tab's page: Swagger UI reading `/openapi.json`, framed by the dashboard, in the dashboard's dark theme (`api.css` overrides the vendored stylesheet with the same colours as `app.css`; Swagger UI has no dark mode of its own). `api.js` adds the dashboard's token (from the shared `sessionStorage`) to requests to this server only, so **Try it out** runs with the access already entered. The iframe loads on first use of the tab |
+| `vendor/swagger-ui/` | `swagger-ui-dist` 5.34.0 from npm, unmodified (`swagger-ui-bundle.js`, `swagger-ui.css`, licence and notice; `VERSION.txt`). To update: `npm pack swagger-ui-dist@<version>` in an empty directory and copy the same files |
 | `folder.js` | The folder rules as pure functions (path normalisation, globs, default excludes, secret patterns), the same decisions as `sync_core.py`. Checked against it by `tests/vectors/filter_vectors.json` |
 
 ## The rules the code follows
@@ -102,6 +108,8 @@ this page.
 
 ## Tests
 
+`tests/unit/test_api.py::test_api_tab_page_allows_inline_styles_only_there_and_is_framable_only_by_the_dashboard` checks the separate policy of `api.html`, that the other pages keep the strict one, and that the vendored files are served.
+
 `tests/unit/test_api.py::test_ui_is_served_with_strict_headers` checks the redirect from `/`, the page title, the CSP, `no-cache`, that the JavaScript and CSS
-are served, and that none of the three files contains an `http://` or `https://` address (apart from example text in a placeholder). There is no
+are served, and that none of the dashboard files contains an `http://` or `https://` address (apart from example text in a placeholder). There is no
 browser test in the default suite (`tests/e2e/test_folder_drop.py` drives the folder drop in Chromium when you run the e2e tests); `scripts/smoke_live.py` and a manual run cover the behaviour of the page against a real instance.

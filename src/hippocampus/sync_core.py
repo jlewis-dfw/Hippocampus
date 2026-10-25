@@ -12,6 +12,7 @@ import re
 import unicodedata
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
 
 from .diff import Document
 
@@ -19,7 +20,7 @@ MAX_FILE_BYTES = 200_000
 MAX_FILES = 5_000
 MAX_PATH_CHARS = 1000
 
-SECRET_RULES: tuple[tuple[str, re.Pattern], ...] = tuple(
+SECRET_RULES: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
     (name, re.compile(rx)) for name, rx in (
         ("aws-access-key-id", r"\b(?:AKIA|ASIA|AGPA|AIDA|AROA)[0-9A-Z]{16}\b"),
         ("aws-secret-access-key", r"(?i)aws.{0,20}secret.{0,20}[:=]\s*['\"]?[A-Za-z0-9/+=]{40}\b"),
@@ -112,7 +113,7 @@ def file_uri(source: str, path: str) -> str:
 
 # --- glob rules (gitignore style: no "/" matches a name at any depth, a "/" anchors to the root, "dir/" is a folder) ---
 
-def _glob_regex(pattern: str) -> re.Pattern:
+def _glob_regex(pattern: str) -> re.Pattern[str]:
     out, i = [], 0
     while i < len(pattern):
         c = pattern[i]
@@ -135,7 +136,7 @@ class Glob:
     negate: bool = False
     dir_only: bool = False
     anchored: bool = False
-    _rx: re.Pattern = field(default=None, repr=False, compare=False)
+    _rx: re.Pattern[str] = field(default=re.compile(""), repr=False, compare=False)  # always set by ``parse``
 
     @classmethod
     def parse(cls, line: str) -> Glob | None:
@@ -191,7 +192,7 @@ class Decision:
     reason: str | None = None
     warning: str | None = None
 
-    def view(self) -> dict:
+    def view(self) -> dict[str, str]:
         return {k: v for k, v in (("path", self.path), ("outcome", self.outcome), ("reason", self.reason),
                                    ("warning", self.warning)) if v is not None}
 
@@ -282,8 +283,8 @@ class FileScan:
             out[d.outcome] += 1
         return out
 
-    def rejected(self) -> list[dict]:
-        return [{"path": d.path, "reasons": d.reason.split(", ")} for d in self.decisions if d.outcome == "rejected"]
+    def rejected(self) -> list[dict[str, Any]]:
+        return [{"path": d.path, "reasons": (d.reason or "").split(", ")} for d in self.decisions if d.outcome == "rejected"]
 
 
 def to_markdown(path: str, content: str) -> str:

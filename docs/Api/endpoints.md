@@ -111,7 +111,7 @@ Response `201`: `{"slug", "name", "description", "visibility"}`.
 | 403 `admin token required` | `visibility: "restricted"` and the caller is not an admin |
 | 403 `this collection name cannot be used` | The slug is taken by a restricted collection the caller cannot see |
 | 409 `collection '<slug>' already exists` | The slug is taken by a collection the caller can see |
-| 422 `collections named jstories* hold private data and must be restricted` | A reserved private prefix with `shared` ([authorization.md](authorization.md#reserved-private-names)) |
+| 422 `collections named private* hold private data and must be restricted` | A reserved private prefix with `shared` ([authorization.md](authorization.md#reserved-private-names)) |
 
 ## `PATCH /v1/collections/{slug}`
 
@@ -168,7 +168,7 @@ Indexes a folder of files. Many requests with one `session` make one run, so a l
 - `filter` is used when the run starts and kept for the whole run. `include` and `exclude` are gitignore-style globs (a name with
   no `/` matches at any depth, a `/` anchors to the root, `dir/` is a folder, `**` crosses folders). `extensions` defaults to
   `md, markdown, txt, rst`; an empty list allows any. The server also applies the guarded path fragments
-  (`HIPPO_EXCLUDE_PATH_PARTS`, and `private-infra`), which no client setting removes.
+  (`HIPPO_EXCLUDE_PATH_PARTS`), which no client setting removes.
 - The first request of a run omits `session`; the reply carries one. Send it back on each later request. `final: true` ends the
   run: this folder's sources that were not sent are removed, and the session is closed (`"session": null` in the reply).
   A session belongs to the account that started it and expires after an hour.

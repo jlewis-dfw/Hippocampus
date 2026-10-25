@@ -207,3 +207,27 @@ def test_sync_source_lifecycle(conn_and_slug):
     finally:
         conn.execute("DELETE FROM hippocampus.sync_sources WHERE name = %s", (name,))
         conn.execute("DELETE FROM hippocampus.collections WHERE slug = %s", (other,))
+
+
+def test_pool_second_caller_waits_and_a_third_times_out():
+    import threading
+    import time
+
+    from hippocampus.store import StoreBusy, connect_store
+
+    factory = connect_store(os.environ["HIPPO_TEST_DSN"], pool=(1, 1, 1.0))
+    holder = factory()
+    first = holder.__enter__()
+    threading.Timer(0.3, lambda: holder.__exit__(None, None, None)).start()
+    started = time.monotonic()
+    with factory() as second:  # waits for the only connection, then gets it
+        assert second.totals([]) == {"collections": 0, "sources": 0, "chunks": 0}
+    assert 0.2 < time.monotonic() - started < 1.0 and first is not None
+
+    short = connect_store(os.environ["HIPPO_TEST_DSN"], pool=(1, 1, 0.3))
+    with short() as _held:
+        with pytest.raises(StoreBusy):
+            with short():
+                pass
+    with short() as again:  # the pool recovers once the connection is returned
+        assert again.totals([]) is not None
