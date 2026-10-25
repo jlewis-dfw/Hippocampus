@@ -1,6 +1,6 @@
 # Background jobs
 
-Crawls, repository imports and docs syncs can take minutes, so they run in the background. `src/hippocampus/jobs.py` provides a small
+Crawls, repository imports, docs syncs and folder uploads can take minutes, so they run in the background. `src/hippocampus/jobs.py` provides a small
 in-process registry; the API returns `202` with a `job_id` and the client polls or streams the log.
 
 ## The model
@@ -12,7 +12,7 @@ Job(id, kind, status, events, result, error, created_at, owner)
 | Field | Meaning |
 |---|---|
 | `id` | A random UUID hex string |
-| `kind` | `crawl`, `ingest-repo`, `docs-sync` (a webhook push) or `docs-resync` (a manual resync) |
+| `kind` | `crawl`, `ingest-repo`, `docs-sync` (a webhook push), `docs-resync` (a manual resync) or `sync-files` (a folder upload) |
 | `status` | `queued` (created), `running`, `done`, `error` |
 | `events` | The log: a list of text lines, appended with `job.log(message)` |
 | `result` | What the runner returned (a dict), set when it finishes |

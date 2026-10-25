@@ -189,8 +189,9 @@ rejected, files}}`. A dry run returns `{"dry_run": true, "counts", "files"}`.
 | 429 | Too many uploads in progress |
 
 When a saved source (below) has this `source` name, its rules replace the request's `filter`, and the request's `collection` must
-be the source's collection or one of its folder collections (`409` otherwise). A run that ends is recorded on the source and as a
-finished job of kind `sync-files` (`job_id` in the reply, with the counts in its `result`). If a batch fails (the embedder is
+be the source's collection or one of its folder collections (`409` otherwise). A run that completes is recorded on the source and as a
+finished job of kind `sync-files` (`job_id` in the final reply, with the counts in its `result`); a cancelled or failed run is recorded
+on the source only. If a batch fails (the embedder is
 down, say), the open run is dropped, nothing is pruned, the index keeps what it had, and the source shows `last_status: "error"`
 with the cause named by type.
 

@@ -32,14 +32,14 @@ token grants.
 | A leaked token | Per-tool accounts with minimal grants, read-only accounts, rotate or revoke | [../User_Guide/collections-and-access.md](../User_Guide/collections-and-access.md) |
 | Using the crawler to reach internal services (server-side request forgery) | Every URL, redirect hop and browser sub-request must resolve only to public addresses | [crawler.md](crawler.md) |
 | Cross-site scripting through crawled or pushed content | The dashboard writes all API data with `textContent`, never HTML; a strict Content-Security-Policy; `X-Content-Type-Options: nosniff` | [../Dashboard/README.md](../Dashboard/README.md) |
-| Secrets ending up in the index | A pre-flight rejects whole files with secret-shaped content or credential-like names before anything is embedded; reports never include the matched text | [ingestion-pipeline.md](ingestion-pipeline.md) |
-| Documents that must never be shared being indexed | Guarded path fragments are refused on every route, in the crawler, the repository ingester, the docs sync and the MCP indexing tool | [ingestion-pipeline.md](ingestion-pipeline.md#where-the-guarded-fragments-live) |
+| Secrets ending up in the index | A pre-flight (`sync_core.py`, repeated on the server for folder uploads) rejects whole files with secret-shaped content or credential-like names before anything is embedded; reports never include the matched text | [ingestion-pipeline.md](ingestion-pipeline.md) |
+| Documents that must never be shared being indexed | Guarded path fragments are refused on every route, in the crawler, the repository ingester, the docs sync, folder uploads and the MCP indexing tool | [ingestion-pipeline.md](ingestion-pipeline.md#where-the-guarded-fragments-live) |
 | Private-by-name material landing in a shared collection | Reserved slug prefixes are always restricted; reserved URI schemes only go into restricted collections | [authorization.md](../Api/authorization.md#reserved-private-names) |
 | Forged webhooks | HMAC-SHA256 of the raw body compared in constant time; a wrong signature is rejected before the body is parsed | `docs_sync.py` |
 | Unauthenticated writes | `HIPPO_REQUIRE_AUTH` (on by default in the local stack) | [../User_Guide/configuration.md](../User_Guide/configuration.md) |
 | Exposure to the network | The published port binds to `127.0.0.1` by default; a network gate by client address; no database port is published | `compose.yaml`, `api.py` |
 | Job logs revealing paths | Job status and logs are visible only to the owner and admins | [jobs.md](jobs.md) |
-| Overly large or hostile inputs | Request field limits; a 20 MB pack cap, 5,000 files and 200,000 bytes per file; a crawl page cap, per-page byte cap, redirect cap and politeness delay | `api.py`, `repo_ingest.py`, `crawler.py` |
+| Overly large or hostile inputs | Request field limits; a 20 MB pack cap, 5,000 files and 200,000 bytes per file; folder uploads capped at 500 files and 20 MB per batch and 20,000 files per run; a crawl page cap, per-page byte cap, redirect cap and politeness delay | `api.py`, `repo_ingest.py`, `files_ingest.py`, `crawler.py` |
 | An assistant obeying text in a search result (prompt injection) | Results are data; the MCP server's instructions say so; read-only MCP mode; no tool executes anything found in a document | [../Mcp/README.md](../Mcp/README.md) |
 | Tampering by an attacker with database access | Out of scope: the database holds everything and the access rules live in the application | below |
 
