@@ -38,7 +38,7 @@ The `/ui` path is **not** covered by the network gate (it holds no data); every 
 | `app.css` | Dark theme with a few CSS variables; responsive grid; badges, pills, the token box |
 | `app.js` | The behaviour of everything except the folder drop, about 400 lines, no modules or dependencies |
 | `sync.js` | The folder drop: reading a dropped or chosen folder, the root-folder tree, the rules, the preview, batched upload with cancel, and the saved folders table. Loaded before `app.js`, which calls `initFolderSync()` |
-| `api.html`, `api.js` | The API tab's page: Swagger UI reading `/openapi.json`, framed by the dashboard. `api.js` adds the dashboard's token (from the shared `sessionStorage`) to requests to this server only, so **Try it out** runs with the access already entered. The iframe loads on first use of the tab |
+| `api.html`, `api.js`, `api.css` | The API tab's page: Swagger UI reading `/openapi.json`, framed by the dashboard, in the dashboard's dark theme (`api.css` overrides the vendored stylesheet with the same colours as `app.css`; Swagger UI has no dark mode of its own). `api.js` adds the dashboard's token (from the shared `sessionStorage`) to requests to this server only, so **Try it out** runs with the access already entered. The iframe loads on first use of the tab |
 | `vendor/swagger-ui/` | `swagger-ui-dist` 5.34.0 from npm, unmodified (`swagger-ui-bundle.js`, `swagger-ui.css`, licence and notice; `VERSION.txt`). To update: `npm pack swagger-ui-dist@<version>` in an empty directory and copy the same files |
 | `folder.js` | The folder rules as pure functions (path normalisation, globs, default excludes, secret patterns), the same decisions as `sync_core.py`. Checked against it by `tests/vectors/filter_vectors.json` |
 

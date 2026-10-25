@@ -329,10 +329,10 @@ def test_api_tab_page_allows_inline_styles_only_there_and_is_framable_only_by_th
     assert "script-src" not in csp and "unsafe-eval" not in csp and "default-src 'self'" in csp
     other = c.get("/ui/").headers["content-security-policy"]
     assert "unsafe-inline" not in other and "frame-ancestors 'none'" in other
-    for name in ("api.html", "api.js"):  # vendored: nothing is fetched from another origin
+    for name in ("api.html", "api.js", "api.css"):  # vendored: nothing is fetched from another origin
         assert "https://" not in c.get(f"/ui/{name}").text
     assert c.get("/ui/vendor/swagger-ui/swagger-ui-bundle.js").status_code == 200
-    assert c.get("/ui/vendor/swagger-ui/swagger-ui.css").status_code == 200
+    assert c.get("/ui/vendor/swagger-ui/swagger-ui.css").status_code == 200 and c.get("/ui/api.css").status_code == 200
     assert 'data-tab="api"' in c.get("/ui/").text
 
 
