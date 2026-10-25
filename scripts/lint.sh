@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Lints everything in the repository: Python (ruff), shell scripts (shellcheck), YAML (yamllint) and Markdown (markdownlint-cli2).
+# Lints everything in the repository: Python (ruff), Python types (mypy), shell scripts (shellcheck), YAML (yamllint) and Markdown (markdownlint-cli2).
 # scripts/check.sh runs this too, and so do both pipelines.
 #
 #   scripts/lint.sh            run every linter; a linter that is not installed is SKIPPED with an install hint
 #   scripts/lint.sh --fix      let ruff fix what it safely can (import order, unused imports, ...), then lint
 #   scripts/lint.sh --ci       strict: a missing linter is a failure, nothing may be skipped
 #   scripts/lint.sh --skip-md  leave out the Markdown linter (it needs node; the CI test image has none, so CI lints Markdown in its own step)
-#   scripts/lint.sh --only md  run one linter only: py, sh, yaml or md
+#   scripts/lint.sh --only md  run one linter only: py, types, sh, yaml or md
 #   scripts/lint.sh --changed [REF]  lint only the files that differ from REF (default origin/main; the merge base, so it matches a pull request),
 #                              including uncommitted ones: a fast early gate. A linter with no changed file of its type is skipped, not failed
 #
-# Tools: ruff, yamllint and shellcheck come with `pip install -e ".[dev]"` (they live in the virtualenv's bin folder);
+# Tools: ruff, mypy, yamllint and shellcheck come with `pip install -e ".[dev]"` (they live in the virtualenv's bin folder);
 # markdownlint-cli2 is fetched on demand by npx (needs node and network access once). Configuration: pyproject.toml ([tool.ruff]),
-# .yamllint.yml, .markdownlint-cli2.jsonc. Exit status 0 = clean.
+# [tool.mypy] (the strict module list lives there), .yamllint.yml, .markdownlint-cli2.jsonc. Exit status 0 = clean.
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
 
@@ -63,6 +63,7 @@ py_lint()    {
   (( CHANGED )) && mapfile -t t < <(sel '\.py$')
   if (( FIX )); then "$exe" check --fix "${t[@]}"; else "$exe" check "${t[@]}"; fi
 }
+type_lint()  { "$1"; }   # mypy reads its files and strictness from pyproject.toml and always checks the whole package
 sh_lint()    {
   local exe=$1 t=(hippocampus scripts/*.sh)
   (( CHANGED )) && mapfile -t t < <(sel '(^hippocampus$|\.sh$)')
@@ -91,6 +92,7 @@ lint() {
   run "$@"
 }
 lint py   '\.py$'               "Python (ruff)"              ruff       'pip install -e ".[dev]"'  py_lint
+lint types '\.py$'             "Python types (mypy)"        mypy       'pip install -e ".[dev]"'  type_lint
 lint sh   '(^hippocampus$|\.sh$)' "Shell scripts (shellcheck)" shellcheck 'pip install -e ".[dev]"'  sh_lint
 lint yaml '\.ya?ml$'            "YAML (yamllint)"            yamllint   'pip install -e ".[dev]"'  yaml_lint
 if want md; then

@@ -12,7 +12,7 @@ scripts/check.sh
 
 The full run starts a throwaway test database in a container (Docker or Podman, removed at the end; see [Test database](#test-database)) and then:
 
-1. Runs the linters (`scripts/lint.sh`).
+1. Runs the linters (`scripts/lint.sh`), including the type checker.
 2. Applies the migrations to a throwaway database from zero and checks the schema is what the code expects (`scripts/migrate_check.py`).
 3. Runs the whole test suite, including the database tests.
 4. Checks that the dashboard JavaScript parses (needs node).
@@ -164,7 +164,7 @@ JavaScript (`folder.js`) must both answer the same way. `tests/unit/test_filter_
 ```bash
 scripts/lint.sh              # everything
 scripts/lint.sh --fix        # apply automatic fixes (ruff, markdownlint)
-scripts/lint.sh --only py    # py | sh | yaml | md
+scripts/lint.sh --only py    # py | types | sh | yaml | md
 scripts/lint.sh --ci         # a missing tool is a failure instead of a skip
 scripts/lint.sh --changed    # only files that differ from origin/main (or --changed REF), including uncommitted ones
 ```
@@ -172,9 +172,23 @@ scripts/lint.sh --changed    # only files that differ from origin/main (or --cha
 | Language | Tool | Configuration |
 |---|---|---|
 | Python | ruff (rules E, F, W, I, B, UP, RUF100; line length is not enforced) | `[tool.ruff]` in `pyproject.toml` |
+| Python types | mypy, always over the whole package (`--changed` only decides whether it runs) | `[tool.mypy]` in `pyproject.toml` |
 | Shell | shellcheck (the `shellcheck-py` package) | defaults |
 | YAML | yamllint | `.yamllint.yml` |
 | Markdown | markdownlint-cli2 (pinned version, run through `npx`) | `.markdownlint-cli2.jsonc` |
+
+### Type checking
+
+mypy checks `src/hippocampus` in `scripts/lint.sh`, so `scripts/check.sh` and both CI pipelines fail on a new type error. It starts
+lenient and tightens module by module:
+
+- **Baseline:** zero errors with `check_untyped_defs`, the pydantic plugin, and the optional extras (`fastembed`, `playwright`,
+  `psycopg_pool`) treated as untyped imports. Bodies of unannotated functions are checked; unannotated functions are allowed.
+- **Strict now:** `sync_core.py`, `files_ingest.py` and `diff.py` (every function annotated, no bare generics, no implicit `Any`
+  returns). The list is the last `[[tool.mypy.overrides]]` block in `pyproject.toml`.
+- **Still lenient:** everything else. Run `mypy --strict src/hippocampus/<module>.py` to see what a module would need, fix it, and
+  add the module to the strict list. Suggested order: `store.py`, `auth.py`, the modules in `routes/`, then `api.py`.
+- A `# type: ignore` needs the error code and a reason; `warn_unused_ignores` removes stale ones.
 
 The Python tools install with `pip install -e ".[dev]"` (or `scripts/prereqs.sh --dev --setup`). A missing tool is reported as **skipped**, and the run says
 `LINT: nothing ran` if everything was skipped; with `--ci` a missing tool fails the run.

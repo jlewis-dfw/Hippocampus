@@ -14,10 +14,13 @@ import logging
 import threading
 import time
 import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
 
 from .diff import sync_collection
-from .sync_core import FileFilter, exclude_path_parts, file_uri, scan_files
+from .embedder import Embedder
+from .sync_core import FileFilter, FileScan, exclude_path_parts, file_uri, scan_files
 
 MAX_BATCH_FILES = 500
 MAX_BATCH_CHARS = 20_000_000
@@ -95,12 +98,13 @@ class UploadSessions:
             self._sessions.pop(sid, None)
 
 
-def preview(source: str, files, flt: FileFilter):
+def preview(source: str, files: Iterable[tuple[str, str | None, int | None]], flt: FileFilter) -> FileScan:
     """Decisions for ``files`` with nothing written. Content is checked too when the caller sent it."""
     return scan_files(source, files, server_filter(flt))
 
 
-def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
+def process_batch(session: UploadSession, files: list[tuple[str, str | None, int | None]], store: Any,
+                  embedder: Embedder) -> list[dict[str, str]]:
     """Check, diff and index one batch of ``(path, text, size)``. Returns one result per file, in order."""
     with session.lock:
         if session.totals["files"] + len(files) > MAX_SESSION_FILES:
@@ -135,7 +139,7 @@ def process_batch(session: UploadSession, files, store, embedder) -> list[dict]:
         return out
 
 
-def finish(session: UploadSession, store) -> list[str]:
+def finish(session: UploadSession, store: Any) -> list[str]:
     """Remove this folder's sources that the run did not keep. Returns the removed paths."""
     with session.lock:
         prefix = file_uri(session.source, "")

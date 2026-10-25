@@ -19,7 +19,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.parse import urldefrag, urljoin, urlparse
 
 from .diff import Document, sync_collection
@@ -291,9 +291,9 @@ class BrowserFetcher:
         self._timeout_ms = int(timeout * 1000)
         self._settle_ms = int(settle * 1000)
         self._launch = launch  # test seam: () -> (playwright_or_None, browser)
-        self._pw = None
-        self._browser = None
-        self._context = None
+        self._pw: Any = None  # playwright objects; typed Any because the extra is optional
+        self._browser: Any = None
+        self._context: Any = None
         self._robots = HttpxFetcher(timeout=15.0)
 
     def _ensure(self) -> None:
