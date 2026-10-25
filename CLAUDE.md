@@ -4,6 +4,8 @@ A small self-hosted memory service: it stores documents (crawled web pages, push
 pgvector and answers semantic searches. It has a REST API (FastAPI), an MCP server for AI assistants, and a web dashboard. Python 3.12. The
 application is in beta. Start with [README.md](README.md) and [docs/Index.md](docs/Index.md).
 
+Decisions and constraints that the code does not show (deployment scope, repository rules, structure) are in [MEMORY.md](MEMORY.md). Read it first.
+
 ## Slash commands
 
 | Command | What it does |
