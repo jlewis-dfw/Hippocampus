@@ -39,7 +39,7 @@ This is a living document. It describes the code as of migration `0003_sync_sour
 
 | Component | Where | Role |
 |---|---|---|
-| **API** | `api.py` | REST routes, access rules, background jobs, serves the dashboard |
+| **API** | `api.py`, `routes/` | REST routes, access rules, background jobs, serves the dashboard |
 | **Store** | `store.py` | Every SQL statement; the only code that touches the database |
 | **Auth** | `auth.py` | Tokens, grants, the `Principal` |
 | **Chunker** | `chunker.py` | Cuts Markdown into heading-aware passages |

@@ -131,8 +131,8 @@ Two constants in `auth.py` protect material that must never end up in a collecti
 An ordinary installation never meets these. They exist for a companion application that keeps private story summaries in
 `private-*` collections. To protect another family of names, add its prefix to the tuples (and a test).
 
-Separately, `FORBIDDEN_URI_PARTS` in `api.py` (and the same idea in `crawler.py`, `repo_ingest.py`, `docs_sync.py` and `mcp_server.py`)
-is a list of path fragments that are **refused as sources** (`403 this source is excluded from ingestion`): a guard so that
+Separately, `HIPPO_EXCLUDE_PATH_PARTS` (checked in `routes/ingest.py`, `crawler.py`, `repo_ingest.py`, `docs_sync.py`,
+`files_ingest.py` and `mcp_server.py`) is a list of path fragments that are **refused as sources** (`403 this source is excluded from ingestion`): a guard so that
 infrastructure documents can never be indexed into a store other tools can read. Change it only together with its tests.
 
 ## Data returned and data hidden
