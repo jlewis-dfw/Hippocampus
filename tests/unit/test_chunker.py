@@ -1,4 +1,4 @@
-from hippocampus.chunker import approx_tokens, chunk_markdown
+from hippocampus.core.chunker import approx_tokens, chunk_markdown
 
 DOC = """# Top
 intro text

@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-hippocampus = ["ui/*", "ui/vendor/swagger-ui/*"]
+"hippocampus.service" = ["ui/*", "ui/vendor/swagger-ui/*"]
 
 [tool.mypy]
 # Starts lenient (the recorded baseline is zero errors) and tightens module by module: the strict list below only grows.
@@ -39,7 +39,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # strict modules: small and pure first; add store.py and the routes next
-module = ["hippocampus.sync_core", "hippocampus.files_ingest", "hippocampus.diff"]
+module = ["hippocampus.ingest.sync_core", "hippocampus.ingest.files_ingest", "hippocampus.core.diff"]
 # what --strict turns on, per module (strict itself is global only)
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

@@ -22,7 +22,7 @@ from html.parser import HTMLParser
 from typing import Any, Protocol
 from urllib.parse import urldefrag, urljoin, urlparse
 
-from .diff import Document, sync_collection
+from ..core.diff import Document, sync_collection
 from .sync_core import exclude_path_parts
 
 USER_AGENT = "Hippocampus-crawler/0.1 (+internal)"

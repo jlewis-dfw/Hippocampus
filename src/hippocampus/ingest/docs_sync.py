@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from urllib.parse import quote
 
-from .diff import Document, sync_collection
+from ..core.diff import Document, sync_collection
 from .repo_ingest import MAX_FILE_BYTES, scan_secrets
 from .sync_core import exclude_path_parts
 

@@ -20,7 +20,7 @@ import psycopg
 from psycopg import conninfo, sql
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from hippocampus.migrate import apply_all
+from hippocampus.storage.migrate import apply_all
 
 # What the application code relies on; extend it when a migration adds something the code reads.
 EXPECTED = {

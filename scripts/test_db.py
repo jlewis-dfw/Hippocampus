@@ -37,7 +37,7 @@ def start() -> tuple[str, str, str]:
     import psycopg
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-    from hippocampus.migrate import apply_all
+    from hippocampus.storage.migrate import apply_all
 
     engine = find_engine()
     if engine is None:

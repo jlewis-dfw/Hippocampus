@@ -9,9 +9,9 @@ from dataclasses import dataclass
 
 from fastapi import HTTPException, Request
 
+from ...core.embedder import Embedder
+from ...ingest.docs_sync import DocsSyncConfig
 from ..auth import ANONYMOUS, AuthError, Principal, authenticate
-from ..docs_sync import DocsSyncConfig
-from ..embedder import Embedder
 from ..jobs import Job, JobRegistry
 from ..observability import client_address
 from .schemas import CrawlRequest

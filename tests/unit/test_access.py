@@ -5,9 +5,9 @@ import pytest
 from fastapi.testclient import TestClient
 from test_api import KeywordEmbedder, MemStore
 
-from hippocampus import auth
-from hippocampus.api import create_app
-from hippocampus.jobs import JobRegistry
+from hippocampus.service import auth
+from hippocampus.service.api import create_app
+from hippocampus.service.jobs import JobRegistry
 
 
 def build(require_auth=False, crawler=None):

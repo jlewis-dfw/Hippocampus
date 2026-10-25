@@ -5,8 +5,8 @@ import time
 
 from fastapi import APIRouter, Depends
 
+from ...core.embedder import DIMENSIONS, MODEL_NAME
 from ..auth import Principal
-from ..embedder import DIMENSIONS, MODEL_NAME
 from .deps import Deps
 from .tags import HEALTH
 

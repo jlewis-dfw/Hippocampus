@@ -5,8 +5,8 @@ import logging
 import pytest
 from test_access import add_client, build
 
-from hippocampus.jobs import JobRegistry
-from hippocampus.observability import setup_logging
+from hippocampus.service.jobs import JobRegistry
+from hippocampus.service.observability import setup_logging
 
 SECRET_TOKEN = "ghp_" + "a" * 36
 BAD_TOKEN = "hip_" + "z" * 40

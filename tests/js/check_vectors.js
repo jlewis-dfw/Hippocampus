@@ -3,7 +3,7 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const F = require("../../src/hippocampus/ui/folder.js");
+const F = require("../../src/hippocampus/service/ui/folder.js");
 const V = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "vectors", "filter_vectors.json"), "utf8"));
 
 let failed = 0, total = 0;

@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from ...core.diff import Document, sync_collection
+from ...ingest.repo_ingest import ingest_pack, parse_pack
+from ...ingest.sync_core import exclude_path_parts
 from ..auth import PRIVATE_URI_PREFIXES, Principal
-from ..diff import Document, sync_collection
-from ..repo_ingest import ingest_pack, parse_pack
-from ..sync_core import exclude_path_parts
 from .deps import Deps, check_slug
 from .schemas import CrawlRequest, IngestFileRequest, IngestRepoRequest
 from .tags import INGEST

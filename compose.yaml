@@ -27,7 +27,7 @@ services:
       args:
         INSTALL_BROWSER: ${HIPPO_INSTALL_BROWSER:-0}
     image: hippocampus-api:local
-    command: ["python", "-m", "hippocampus.migrate"]
+    command: ["python", "-m", "hippocampus.storage.migrate"]
     environment:
       HIPPO_DSN: postgresql://hippocampus:${POSTGRES_PASSWORD}@postgres:5432/hippocampus
     depends_on:
@@ -61,7 +61,7 @@ services:
       migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "python", "-m", "hippocampus.healthcheck"]
+      test: ["CMD", "python", "-m", "hippocampus.cli.healthcheck"]
       interval: 15s
       timeout: 5s
       start_period: 30s

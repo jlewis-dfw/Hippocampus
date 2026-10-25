@@ -6,8 +6,8 @@ import pytest
 from fastapi.testclient import TestClient
 from test_api import KeywordEmbedder
 
-from hippocampus.api import create_app
-from hippocampus.store import StoreBusy, pool_settings
+from hippocampus.service.api import create_app
+from hippocampus.storage.store import StoreBusy, pool_settings
 
 
 def test_pool_defaults_are_small_and_the_environment_overrides_them():

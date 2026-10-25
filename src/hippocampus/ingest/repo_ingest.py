@@ -15,7 +15,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from .diff import Document, sync_collection
+from ..core.diff import Document, sync_collection
 from .sync_core import (  # noqa: F401  (re-exported: the rules live in sync_core)
     MAX_FILE_BYTES,
     MAX_FILES,

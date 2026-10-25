@@ -166,7 +166,7 @@ def test_mcp_search_tool_end_to_end(stack, admin_token):
     from mcp.client.stdio import stdio_client
 
     params = StdioServerParameters(
-        command=sys.executable, args=["-m", "hippocampus.mcp_server"],
+        command=sys.executable, args=["-m", "hippocampus.cli.mcp_server"],
         env={**os.environ, "PYTHONPATH": str(ROOT / "src"), "HIPPO_URL": stack.url, "HIPPO_TOKEN": admin_token})
 
     async def run():

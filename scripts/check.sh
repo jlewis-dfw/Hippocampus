@@ -110,7 +110,7 @@ fi
 if [[ -n $SKIPJS ]]; then
   SKIP+=("dashboard JavaScript (checked in its own CI step)")
 elif command -v node >/dev/null 2>&1; then
-  for js in src/hippocampus/ui/*.js; do step "dashboard JavaScript parses ($(basename "$js"))" node --check "$js"; done
+  for js in src/hippocampus/service/ui/*.js; do step "dashboard JavaScript parses ($(basename "$js"))" node --check "$js"; done
   step "folder rules agree with the server (shared vectors)" node tests/js/check_vectors.js
 else
   [[ $MODE == ci ]] && FAIL+=("node is required in CI for the JavaScript check") || SKIP+=("dashboard JavaScript (node not installed)")

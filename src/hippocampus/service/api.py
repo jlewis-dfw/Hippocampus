@@ -13,14 +13,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .docs_sync import DocsSyncConfig, ForgejoSource
-from .embedder import Embedder
+from ..core.embedder import Embedder
+from ..ingest.docs_sync import DocsSyncConfig, ForgejoSource
+from ..storage.store import StoreBusy
 from .jobs import JobRegistry
 from .observability import client_address, log_requests, setup_logging
 from .routes import ROUTERS
 from .routes.deps import SLUG_RE, Crawler, Deps, StoreFactory  # noqa: F401  (re-exported)
 from .routes.tags import METADATA
-from .store import StoreBusy
 
 UI_DIR = Path(__file__).parent / "ui"
 # The dashboard can launch crawls and delete collections, so it loads nothing from outside its own origin.
@@ -109,9 +109,9 @@ def create_app(
 
 def app_from_env() -> FastAPI:
     """uvicorn --factory hippocampus.api:app_from_env  (HIPPO_DSN from the environment/secret)."""
-    from .crawler import make_crawler
-    from .embedder import FastEmbedder
-    from .store import connect_store
+    from ..core.embedder import FastEmbedder
+    from ..ingest.crawler import make_crawler
+    from ..storage.store import connect_store
     from .workers import check_single_worker
 
     setup_logging(os.environ)
@@ -119,7 +119,7 @@ def app_from_env() -> FastAPI:
     log.info("starting: auth required=%s, networks=%s, crawl max pages=%s, docs sync=%s",
              os.environ.get("HIPPO_REQUIRE_AUTH", "false"), os.environ.get("HIPPO_ALLOWED_CIDRS", "default"),
              os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200"), bool(os.environ.get("HIPPO_FORGEJO_URL")))
-    from .store import pool_settings
+    from ..storage.store import pool_settings
 
     pool = pool_settings(os.environ)
     factory = connect_store(os.environ["HIPPO_DSN"], pool=pool)

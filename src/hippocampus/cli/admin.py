@@ -12,8 +12,8 @@ import argparse
 import os
 import sys
 
-from .auth import CLIENT_NAME_RE, hash_token, is_private_slug, new_token, validate_grants
-from .store import connect_store
+from ..service.auth import CLIENT_NAME_RE, hash_token, is_private_slug, new_token, validate_grants
+from ..storage.store import connect_store
 
 
 def main(argv: list[str] | None = None) -> int:

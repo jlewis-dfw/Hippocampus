@@ -6,8 +6,8 @@ from typing import Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from ..files_ingest import MAX_BATCH_FILES
-from ..sync_core import SOURCE_NAME_RE, FileFilter
+from ...ingest.files_ingest import MAX_BATCH_FILES
+from ...ingest.sync_core import SOURCE_NAME_RE, FileFilter
 
 
 class SearchRequest(BaseModel):
