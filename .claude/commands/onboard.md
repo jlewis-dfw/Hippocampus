@@ -1,6 +1,6 @@
 ---
 description: Onboard a new user - check dependencies, start Hippocampus, set up the MCP server, and learn how to query it and its database
-argument-hint: [optional: a step to start from - deps | start | mcp | query]
+argument-hint: [optional: a step to start from - deps | start | index | mcp | query]
 ---
 
 # Role
@@ -11,40 +11,50 @@ never rush past a failure.
 
 # Task
 
-Walk the user through four steps in order. Finish and verify each step before starting the next. If `$ARGUMENTS` names a step, start there.
+Walk the user through five steps in order. Finish and verify each step before starting the next. If `$ARGUMENTS` names a step, start there.
 
 1. **Dependencies.** Make sure everything needed is in place.
    - Run `scripts/prereqs.sh --dev` (read-only: it only looks). Summarise what is `ok`, `warn` and missing.
    - For each missing item, show the fix and ask before doing anything. To create the virtualenv and install the development tools, offer
-     `scripts/prereqs.sh --dev --setup` (it asks y/N itself). If the user prefers, the manual equivalent is
-     `python3 -m venv .venv && .venv/bin/pip install -e ".[db,api,mcp,dev]"`.
+     `scripts/prereqs.sh --dev --setup`. It makes the person type an acknowledgement phrase and answer y/N, which your shell cannot do, so tell
+     the user to run it themselves at the prompt with a leading `!` (`! scripts/prereqs.sh --dev --setup`). If they prefer, the manual equivalent is
+     `python3 -m venv .venv && .venv/bin/pip install -e ".[db,api,mcp,dev]"`, which you may run once they say yes.
    - Re-run `scripts/prereqs.sh --dev` and confirm `RESULT: ready` before moving on.
 2. **Start the service.**
    - Run `./hippocampus status` first. If Hippocampus is already running (the status call answers), say so and reuse it: skip the start and
-     ask the user which address and port to use. If the prereq check warned that port 8090 is in use by something else, ask whether to set another
-     `HIPPO_PORT` in `hippocampus.env`.
-   - Otherwise run `./hippocampus up`. Warn that the first start builds the image and downloads the embedding model, which takes a few
-     minutes, and that **the first admin token is printed once**. Tell the user to copy it into their password manager now.
-   - Confirm with `./hippocampus status` and tell them the dashboard address (`http://127.0.0.1:<port>/ui/`).
-3. **Set up MCP** so an AI assistant can search Hippocampus.
+     ask the user which address and port to use (export it as `HIPPO_URL` for the scripts below). If the prereq check warned that port 8090 is in
+     use by something else, ask whether to set another `HIPPO_PORT` in `hippocampus.env`.
+   - Otherwise start it **through the token script**, so the first admin token is saved to the git-ignored `token.env` (mode 600) and never shown:
+     `./hippocampus up 2>&1 | scripts/token_env.py capture HIPPO_TOKEN_ADMIN`. Warn that the first start builds the image and downloads the embedding
+     model, which takes a few minutes. Exit status 3 from the script means no token was printed (an admin already existed): ask the user for an
+     existing admin token variable, or make a new admin with
+     `./hippocampus admin create-client --name <name> --admin | scripts/token_env.py capture HIPPO_TOKEN_ADMIN`.
+   - Confirm with `./hippocampus status` and `scripts/verify_setup.py --token-var HIPPO_TOKEN_ADMIN`, and tell them the dashboard address
+     (`http://127.0.0.1:<port>/ui/`). The dashboard asks for the token on its Access tab; the user can read it from `token.env` themselves
+     (you never print it).
+3. **Add something to search.** A new service is empty, so there is nothing to find yet.
+   - Index this repository's own documentation: `scripts/token_env.py run HIPPO_TOKEN_ADMIN -- scripts/index_docs.py --plan` (shows what would be
+     sent), then without `--plan`. It creates the collection `hippocampus-docs` and embeds about 30 files; say that takes a minute or two on the CPU.
+   - Then offer `/crawl` to index a website as well (for example a documentation site). Do not start it unasked.
+4. **Set up MCP** so an AI assistant can search Hippocampus.
    - Follow `docs/Mcp/connecting-assistants.md`. Ensure the server is installed: `.venv/bin/pip install -e ".[mcp]"` (already covered if step 1
      used `--setup`).
-   - Create a dedicated, non-admin, read-only account for the assistant:
-     `./hippocampus admin create-client --name <assistant>-reader --read '<collection or glob>'`. Ask which collections it should see; never use a
-     bare `*`. The token is shown once.
-   - Have the user load the token without echoing it: `read -rs HIPPO_TOKEN && export HIPPO_TOKEN`. Then show the registration command for
-     their assistant (Claude Code: `claude mcp add hippocampus -e HIPPO_URL=... -e HIPPO_TOKEN="$HIPPO_TOKEN" -e HIPPO_MCP_READONLY=1 -- <abs path to .venv/bin/python> -m hippocampus.cli.mcp_server`).
-     Ask before running it yourself.
-   - Verify: `claude mcp list` shows `hippocampus` connected, then run one `hippocampus_search` and show the result.
-4. **Query it.** Show the three ways to get answers, with one working example of each against the user's own service:
-   - **Search by meaning:** the dashboard's Search sandbox; `curl -s http://127.0.0.1:<port>/v1/search -H 'Content-Type: application/json' -d '{"query": "...", "top_k": 5}'`;
+   - Create a dedicated, non-admin, read-only account for the assistant and save its token the same way:
+     `./hippocampus admin create-client --name <assistant>-reader --read '<collection or glob>' | scripts/token_env.py capture HIPPO_TOKEN_READER`.
+     Ask which collections it should see (offer the ones that now exist); never use a bare `*`.
+   - Show the registration with `scripts/register_mcp.py HIPPO_TOKEN_READER --dry-run` (the token is hidden, the server is read-only, the scope is
+     the user's own configuration, and an admin token is refused). Ask before running it without `--dry-run`.
+   - Verify: `scripts/verify_setup.py --token-var HIPPO_TOKEN_READER --collection hippocampus-docs --query "<a question the docs answer>" --mcp`
+     and show its PASS/FAIL lines. A new MCP server may only appear after the assistant is restarted: say so if `--mcp` cannot see it yet.
+5. **Query it.** Show the three ways to get answers, with one working example of each against the user's own service:
+   - **Search by meaning:** the dashboard's Search sandbox; `scripts/verify_setup.py --token-var HIPPO_TOKEN_READER --collection hippocampus-docs --query "..."`;
      or the `hippocampus_search` MCP tool.
    - **Accounts and visibility:** `./hippocampus admin list-clients` and `./hippocampus admin set-visibility SLUG shared|restricted`.
    - **The database directly (read-only SQL):**
      `docker compose --env-file hippocampus.env exec postgres psql -U hippocampus hippocampus` (use `podman compose` if that is the engine), then
      run the starter queries from the "SQL cookbook" in `docs/Database/README.md`. Explain the three tables: `collections` -> `sources` -> `document_chunks`.
-   - End with a short recap of what is now set up and where to read more: `docs/User_Guide/getting-started.md`, `docs/Mcp/README.md`,
-     `docs/Database/README.md`.
+   - End with a short recap of what is now set up and where to read more: `docs/User_Guide/getting-started.md`, `docs/User_Guide/crawl-a-site.md`
+     (and the `/crawl` command), `docs/Mcp/README.md`, `docs/Database/README.md`.
 
 # Context
 
@@ -64,9 +74,9 @@ Walk the user through four steps in order. Finish and verify each step before st
   let the script ask, and let the user answer.
 - Never run `./hippocampus reset`, `compose down -v`, `DROP`, `DELETE`, `UPDATE`, `TRUNCATE` or any other command that deletes or changes data. SQL
   in this walkthrough is `SELECT` only. Never select or display `token_sha256`.
-- Handle tokens as secrets: do not write them to files in the repository, to `.mcp.json` or any shared config, or to the conversation beyond the
-  one-time output the user must copy. Never use `--scope project` for an MCP registration that contains a token. Tell the user to keep any
-  config file that holds a token at mode 600.
+- Handle tokens as secrets. They go into `token.env` only, through `scripts/token_env.py capture`, which saves them with mode 600 and hides them
+  from the output; never print, echo, paste or log one, never write one anywhere else (not `.mcp.json`, not a project config), and never use
+  `--scope project` for an MCP registration. Use `scripts/token_env.py run NAME -- command` or a script's `--token-var` to hand a token to a command.
 - Register MCP read-only (`HIPPO_MCP_READONLY=1`) with a read-only, non-admin account unless the user explicitly asks for indexing.
 - Do not start a second stack next to a running one. Ask before changing ports, editing `hippocampus.env`, or running any command that builds or
   starts containers.

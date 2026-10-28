@@ -31,7 +31,17 @@ Nothing is removed unless a pruning step is described below. The result of an in
 > allow it, respect `robots.txt` and the terms of use, never get around a login or paywall, keep the page cap and depth low, and be careful with personal data.
 > The crawler honours `robots.txt` but **not** `Crawl-delay`, `noindex` or `X-Robots-Tag`; that guide lists exactly what it does and does not do.
 
-Dashboard: **Crawl a site** ([dashboard.md](dashboard.md#crawl-a-site)). API:
+Dashboard: **Crawl a site** ([dashboard.md](dashboard.md#crawl-a-site)). Or from the command line, which checks the site first and suggests
+the settings:
+
+```bash
+scripts/crawl_site.py https://docs.example.com/guide/ --collection example-docs --plan   # probe only; creates and crawls nothing
+scripts/crawl_site.py https://docs.example.com/guide/ --collection example-docs          # probe, confirm, create, crawl, verify
+```
+
+The probe (`POST /v1/crawl/probe`) reads `robots.txt`, the start page and up to two sitemaps, and reports whether the site is allowed, whether it
+needs the `browser` engine, roughly how many pages match (the crawl stops at 200), and a suggested depth and pattern. Details in
+[../Api/endpoints.md](../Api/endpoints.md#post-v1crawlprobe--200). API:
 
 ```bash
 curl -s -X POST http://127.0.0.1:8090/v1/crawl \

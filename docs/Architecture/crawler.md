@@ -114,14 +114,34 @@ runs in a job. It validates the engine (`static` or `browser`), checks the start
 markdown)}`, logs `embedding N pages`, runs `sync_collection(prune=False)` and returns `{"pages", "added", "changed", "unchanged"}`.
 Because it never prunes, pages that vanished from the site remain in the collection.
 
+## The probe (`crawl_probe.py`)
+
+`probe_site(url, match_pattern, fetcher, ...)` looks at a site before it is crawled, with at most four requests made through the same fetcher,
+user agent and public-address check: `robots.txt`, the start page and up to two sitemaps (the `Sitemap:` lines on the same host, those under the start path's first segment first, else
+`/sitemap.xml`). It returns findings (robots rules, `Crawl-delay`, `Content-Signal`, the start page's status, final URL, word count, same-host
+links, `noindex`/`X-Robots-Tag` directives, sitemap size) and a `suggest` block (engine, depth, pattern, page estimate) with `warnings`.
+The rules are plain heuristics, all in one place:
+
+| Finding | Rule |
+|---|---|
+| Needs the browser engine | Under 100 words of text on the start page, and either an app root (`id="root"`, `__next`, `app`, `__nuxt`) or `<noscript>` in the HTML, or no links |
+| Browser engine recommended | Only when it is needed **and** Playwright is installed in the image; otherwise `static` with a warning |
+| Pattern | The one you gave; else the start path (`/docs/en/`) if links under it exist; the site root gets a "whole host" warning |
+| Depth | With a sitemap, 2 if 90% of the matching URLs are one segment below the start path, else 3; without one, 2. Never above 3 |
+| Pages | The number of matching sitemap URLs, capped at `HIPPO_CRAWL_MAX_PAGES`; a warning when the sitemap lists more |
+
+The sitemap is read with a regular expression for `<loc>`, not an XML parser, so a hostile file cannot expand entities; a sitemap index is
+reported but not followed (the request budget). It is served by `POST /v1/crawl/probe` and used by `scripts/crawl_site.py`. Nothing is stored.
+
 ## Limits and non-goals
 
-- No authentication to the target site, no cookies, no form submission, no sitemap reading, no PDF handling.
+- No authentication to the target site, no cookies, no form submission, no PDF handling. The crawl does not read sitemaps (only the probe does).
 - One host per crawl; no politeness beyond the fixed delay and robots.txt (set `HIPPO_CRAWL_DELAY` higher for fragile sites).
 - Not a general scraper: it extracts readable text and links, and drops navigation and page furniture.
 
 ## Tests
 
-`tests/unit/test_crawler.py` covers the HTML extractor, URL normalisation, the crawl loop with a fake fetcher (depth, host, pattern, robots,
+`tests/unit/test_crawl_probe.py` covers the probe (robots, redirects, `noindex`, script-built pages, sitemap size and index, depth and pattern
+suggestions) and the endpoint (access, bad pattern, private address). `tests/unit/test_crawler.py` covers the HTML extractor, URL normalisation, the crawl loop with a fake fetcher (depth, host, pattern, robots,
 cap, errors), the address guard (private, loopback, link-local, VPN and metadata addresses, redirects), the browser fetcher with a fake
 browser, and the API integration. The test that needs a real Chromium is skipped when Playwright's browser is not installed.

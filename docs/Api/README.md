@@ -43,7 +43,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 
 ## Architecture
 
-`create_app(store_factory, embedder, jobs, crawler, allowed_networks, docs_sync, require_auth)` builds the application. It takes
+`create_app(store_factory, embedder, jobs, crawler, allowed_networks, docs_sync, require_auth, prober)` builds the application. It takes
 its collaborators as arguments, so the tests run the whole API against in-memory fakes ([../Testing/README.md](../Testing/README.md)).
 `app_from_env()` is the production factory (`uvicorn --factory hippocampus.service.api:app_from_env`): it reads the environment
 ([../User_Guide/configuration.md](../User_Guide/configuration.md)), connects to the database, creates the embedder and the crawler,
@@ -55,6 +55,7 @@ and optionally the docs sync.
 | `embedder` | `FastEmbedder`: the embedding model on CPU, loaded lazily on first use. Shared by all requests |
 | `JobRegistry` | In-memory registry of background jobs (crawls, imports, syncs) with a replayable log; see [../Architecture/jobs.md](../Architecture/jobs.md) |
 | `crawler` | The callable that runs a crawl job ([../Architecture/crawler.md](../Architecture/crawler.md)); `None` makes `/v1/crawl` answer 501 |
+| `prober` | The callable behind `POST /v1/crawl/probe` (`make_prober`); `None` makes it answer 501 |
 | `allowed_networks` | CIDR list for the network gate; `None` turns it off |
 | `docs_sync` | The optional docs-repository sync configuration; `None` makes its routes answer 501 |
 | `require_auth` | Whether writes to shared collections also need a write grant |
@@ -88,6 +89,7 @@ src/hippocampus/
     migrate.py      — the migration runner
   ingest/
     crawler.py      — HTML to Markdown, the crawl loop, the static and browser fetchers, the public-address check
+    crawl_probe.py  — the pre-crawl probe behind POST /v1/crawl/probe (robots, size, suggested settings)
     repo_ingest.py  — Repomix pack parsing and the secret pre-flight
     docs_sync.py    — Forgejo push-webhook sync of a docs repository
     sync_core.py    — the file filter and scan rules; files_ingest.py — folder uploads

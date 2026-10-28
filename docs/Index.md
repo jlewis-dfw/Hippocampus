@@ -24,6 +24,7 @@ For people who run and use Hippocampus.
 | [operations.md](User_Guide/operations.md) | Health, logs, backups, upgrades, resource use, security checklist |
 | [troubleshooting.md](User_Guide/troubleshooting.md) | Symptoms, causes and fixes |
 | [walkthrough.md](User_Guide/walkthrough.md) | A worked example with screenshots: index the docs, crawl a site, search both |
+| [crawl-a-site.md](User_Guide/crawl-a-site.md) | Step by step with screenshots: probe, crawl and index a documentation site, then search it |
 | [legal-and-ethics.md](User_Guide/legal-and-ethics.md) | Responsible web crawling: what the crawler does and does not honour, a checklist, removal requests |
 
 ### [Api](Api/README.md)

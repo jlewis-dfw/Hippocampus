@@ -1,14 +1,17 @@
 """Single-document, repository and crawl ingestion."""
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from ...core.diff import Document, sync_collection
+from ...ingest.crawler import CrawlRefused
 from ...ingest.repo_ingest import ingest_pack, parse_pack
 from ...ingest.sync_core import exclude_path_parts
 from ..auth import PRIVATE_URI_PREFIXES, Principal
 from .deps import Deps, check_slug
-from .schemas import CrawlRequest, IngestFileRequest, IngestRepoRequest
+from .schemas import CrawlRequest, IngestFileRequest, IngestRepoRequest, ProbeRequest
 from .tags import INGEST
 
 
@@ -18,6 +21,7 @@ def build(d: Deps) -> APIRouter:
     embedder = d.embedder
     jobs = d.jobs
     crawler = d.crawler
+    prober = d.prober
     current_principal = d.current_principal
     need_write = d.need_write
 
@@ -69,5 +73,24 @@ def build(d: Deps) -> APIRouter:
             need_write(p, store, req.collection)
         job = jobs.submit("crawl", lambda j: crawler(j, req), owner=p.name)
         return {"job_id": job.id, "status": job.status}
+
+    @router.post("/v1/crawl/probe")
+    def crawl_probe(req: ProbeRequest, p: Principal = Depends(current_principal)):
+        """Check a site before crawling it: robots.txt, whether it needs the browser engine, its size, and a suggested depth and pattern. Makes at most four requests."""
+        if prober is None:
+            raise HTTPException(501, "crawler not available (HIPPO-E03)")
+        if d.require_auth and p.anonymous:
+            raise HTTPException(403, "probing a site needs a token")
+        if any(part in req.url.lower() for part in exclude_path_parts()):
+            raise HTTPException(403, "this source is excluded from ingestion")
+        if req.match_pattern is not None:
+            try:
+                re.compile(req.match_pattern)
+            except re.error as exc:
+                raise HTTPException(422, f"invalid match_pattern: {exc}") from exc
+        try:
+            return prober(req)
+        except CrawlRefused as exc:
+            raise HTTPException(422, str(exc)) from exc
 
     return router

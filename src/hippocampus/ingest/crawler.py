@@ -205,6 +205,7 @@ class FetchResult:
     status: int
     content_type: str
     text: str
+    x_robots_tag: str = ""  # the X-Robots-Tag response header, if any (reported by the probe; the crawler does not act on it)
 
 
 class Fetcher(Protocol):
@@ -254,6 +255,10 @@ class HttpxFetcher:
         res = self._get(url, ("text/plain",))
         return res.text if res.status == 200 else None
 
+    def fetch_sitemap(self, url: str) -> str | None:
+        res = self._get(url, ("application/xml", "text/xml", "text/plain"))
+        return res.text if res.status == 200 else None
+
     def _get(self, url: str, accepted: tuple[str, ...]) -> FetchResult:
         for _ in range(MAX_REDIRECTS + 1):
             check_public_url(url)
@@ -262,15 +267,16 @@ class HttpxFetcher:
                     url = urljoin(url, resp.headers["location"])
                     continue
                 ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
+                tag = resp.headers.get("x-robots-tag", "")
                 if ctype not in accepted:
-                    return FetchResult(url, resp.status_code, ctype, "")
+                    return FetchResult(url, resp.status_code, ctype, "", tag)
                 body = bytearray()
                 for chunk in resp.iter_bytes():
                     body += chunk
                     if len(body) > MAX_BYTES:
                         break
                 text = bytes(body[:MAX_BYTES]).decode(resp.encoding or "utf-8", errors="replace")
-                return FetchResult(url, resp.status_code, ctype, text)
+                return FetchResult(url, resp.status_code, ctype, text, tag)
         raise CrawlRefused("too many redirects")
 
 

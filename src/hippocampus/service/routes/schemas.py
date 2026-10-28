@@ -105,6 +105,11 @@ class SourceUpdate(BaseModel):
     folder_collections: dict[str, str] | None = Field(None, max_length=500)
 
 
+class ProbeRequest(BaseModel):
+    url: str = Field(min_length=1, max_length=1024)
+    match_pattern: str | None = None
+
+
 class CrawlRequest(BaseModel):
     url: str = Field(min_length=1, max_length=1024)
     collection: str

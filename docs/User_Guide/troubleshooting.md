@@ -43,6 +43,7 @@ Symptoms, causes and fixes. API errors are JSON of the form `{"detail": "..."}`;
 | Crawl log: `skip (robots.txt) <url>` | The site's `robots.txt` disallows the crawler for that path. |
 | Crawl log: `skip (404 ...)`, `skip (200 application/pdf ...)`, `skip (empty)` | Not an HTML page, not found, or the page had no text after cleaning. Only HTML is indexed. |
 | The crawl finishes with 1 page although you asked for depth 3 | Links are followed only on the start host and only if they match `match_pattern`; a JavaScript-only site shows few links to the static engine. Try the `browser` engine. |
+| `503 the database is busy` on every request, and the API log says `failed to resolve host 'postgres'` | Podman's container DNS (`aardvark-dns`) has gone stale, so the API cannot find the database although it is healthy. Run `./hippocampus down`, stop the stale `aardvark-dns` process (Podman starts a fresh one), then `./hippocampus up`. Your data is kept: only `reset` deletes it. Note that the helper is shared by every Podman network of your user. |
 | Job error `engine 'browser' needs the 'browser' extra (playwright) and Chromium` | Rebuild with `HIPPO_INSTALL_BROWSER=1` in `hippocampus.env` and `./hippocampus up`. |
 | `403 this source is excluded from ingestion` | The address or path contains a guarded fragment (a deliberate block on indexing internal documents). |
 | `422 unrecognised pack format (use repomix --style xml or --style markdown)` | The pack is not a Repomix xml or markdown file. |

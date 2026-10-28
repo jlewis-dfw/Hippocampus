@@ -12,6 +12,7 @@ Decisions and constraints that the code does not show (deployment scope, reposit
 |---|---|
 | `/onboard` | Checks dependencies, starts the service, sets up the MCP server, and shows how to search and query the database |
 | `/test` | Asks whether to run **unit**, **integration** or **all** tests, runs them and summarises the report |
+| `/crawl` | Checks a site's `robots.txt`, creates or picks a collection, crawls and indexes the site, watches the job and proves it with a search |
 
 The commands live in `.claude/commands/` and are written as Role, Task, Context, Constraints.
 

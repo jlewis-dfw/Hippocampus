@@ -19,7 +19,7 @@ from ..storage.store import StoreBusy
 from .jobs import JobRegistry
 from .observability import client_address, log_requests, setup_logging
 from .routes import ROUTERS
-from .routes.deps import SLUG_RE, Crawler, Deps, StoreFactory  # noqa: F401  (re-exported)
+from .routes.deps import SLUG_RE, Crawler, Deps, Prober, StoreFactory  # noqa: F401  (re-exported)
 from .routes.tags import METADATA
 
 UI_DIR = Path(__file__).parent / "ui"
@@ -57,6 +57,7 @@ def create_app(
     allowed_networks: list | None = None,
     docs_sync: DocsSyncConfig | None = None,
     require_auth: bool = False,
+    prober: Prober | None = None,
 ) -> FastAPI:
     """``allowed_networks``: clients outside these CIDRs get 403 on /v1/*. None disables the check.
 
@@ -84,7 +85,7 @@ def create_app(
                 return JSONResponse({"detail": "client network not allowed"}, status_code=403)
             return await call_next(request)
 
-    deps = Deps(store_factory, embedder, jobs or JobRegistry(), crawler, docs_sync, require_auth)
+    deps = Deps(store_factory, embedder, jobs or JobRegistry(), crawler, docs_sync, require_auth, prober)
     for module in ROUTERS:
         app.include_router(module.build(deps))
 
@@ -110,6 +111,7 @@ def create_app(
 def app_from_env() -> FastAPI:
     """uvicorn --factory hippocampus.service.api:app_from_env  (HIPPO_DSN from the environment/secret)."""
     from ..core.embedder import FastEmbedder
+    from ..ingest.crawl_probe import make_prober
     from ..ingest.crawler import make_crawler
     from ..storage.store import connect_store
     from .workers import check_single_worker
@@ -136,6 +138,10 @@ def app_from_env() -> FastAPI:
         allowed_networks=parse_networks(os.environ.get("HIPPO_ALLOWED_CIDRS", DEFAULT_ALLOWED_CIDRS)),
         docs_sync=_docs_sync_from_env(),
         require_auth=os.environ.get("HIPPO_REQUIRE_AUTH", "").lower() in ("1", "true", "yes"),
+        prober=make_prober(
+            max_pages=int(os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200")),
+            delay=float(os.environ.get("HIPPO_CRAWL_DELAY", "0.5")),
+        ),
     )
 
 
