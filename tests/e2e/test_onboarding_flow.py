@@ -44,7 +44,8 @@ def saved_admin(stack, run):
     assert res.returncode == 0, res.stderr
     token = out.split("store it in the vault): ")[1].strip()
     assert token not in res.stdout + res.stderr
-    return token
+    yield token
+    stack.admin("revoke-client", "onb-admin")  # the stack is shared: a second admin would break the last-admin tests
 
 
 @pytest.fixture(scope="module")
