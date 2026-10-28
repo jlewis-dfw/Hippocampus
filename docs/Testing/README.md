@@ -31,7 +31,10 @@ It prints a summary of what passed, failed and was **skipped**; a skipped step i
 | `--all` | Run unit, integration and end-to-end tests in **one** pytest run, so they share one report. Needs Docker or Podman with compose for the end-to-end part; without it that part is skipped (a failure with `--ci`) and the rest still runs |
 | `--e2e` | Also run `tests/e2e/` as a second, separate run after the test suite (its own report) (needs Docker or Podman with compose; skipped, or a failure with `--ci`, when neither is found) |
 
-Environment: `PY` (the Python to use; default `.venv/bin/python`, else `python3`) and `HIPPO_TEST_DSN` (use your own disposable database instead of the throwaway one; its name must contain `test` or `dev`).
+`scripts/check.sh` only starts `scripts/check.py` (as `lint.sh` starts `lint.py`): the logic is plain Python, so it runs the same on macOS, Linux and
+Windows (`python scripts/check.py`), and it works with the bash 3.2 that macOS ships. Options are listed by `scripts/check.py --help`.
+
+Environment: `PY` (the Python to use; default `.venv/bin/python` or `.venv\Scripts\python.exe`, else the Python running the script), `CONTAINER_ENGINE` (`docker` or `podman`; default the first whose compose and daemon work) and `HIPPO_TEST_DSN` (use your own disposable database instead of the throwaway one; its name must contain `test` or `dev`).
 
 ## The test suite
 
@@ -53,6 +56,10 @@ Unit tests (`tests/unit/`), all with fakes, no database and no model:
 | `test_ops_modules.py` | `migrate`, `healthcheck`, the embedder wrapper and the admin tool against an in-memory store |
 | `test_prereqs.py` | The prerequisite checker (Linux only): risk gate, dry run, per-item confirmation |
 | `test_repo_ingest.py` | Repomix parsing, secret pre-flight, whole-file rejection |
+| `test_hooks.py` | The Claude Code hooks ([claude-code-hooks.md](../Development/claude-code-hooks.md)): what each denies, asks or allows, using the commands `/onboard`, `/crawl` and `/search` really run |
+| `test_hippo_report.py` | The run report records a module that skips or fails at import |
+| `test_report_latest.py` | `tests/reports/latest` is a real folder with this machine's paths masked |
+| `test_system_specs.py` | `scripts/system_specs.py` writes versions and sizes only and refuses a file git does not ignore |
 
 Integration tests (`tests/integration/`), which use a real database or the real model:
 
@@ -80,7 +87,8 @@ End-to-end tests (`tests/e2e/`) are described below.
 
 It reuses the `hippocampus-api:local` image when it exists (the first run builds it); `HIPPO_E2E_BUILD=1` rebuilds it from the working tree first.
 It never touches a running instance: it uses its own project name, a free port and a generated password, and removes its containers and volume
-afterwards. Without a container engine every test in it is skipped. It covers authentication, indexing and finding a document by meaning,
+afterwards. Without a container engine every test in it is skipped. An engine counts only if both `<engine> compose version` and `<engine> info` work, so a Docker
+whose daemon is stopped is passed over for a running Podman (`CONTAINER_ENGINE` forces one; `scripts/check.py` exports the one it found). It covers authentication, indexing and finding a document by meaning,
 incremental re-indexing, restricted collections and scoped clients, token rotation and revocation, the last-admin rule, the crawler's address
 guard and job ownership, the MCP search tool over stdio, and that data survives an API restart.
 
@@ -93,7 +101,9 @@ confirmation, and that hostile titles and content are shown as text and never ru
 .venv/bin/pip install -e ".[browser]" && .venv/bin/playwright install chromium
 ```
 
-Without them the dashboard tests are skipped and the rest of `tests/e2e/` still runs.
+Without them the dashboard tests (`test_dashboard.py`, `test_folder_drop.py`) are skipped as whole modules and the rest of `tests/e2e/` still runs.
+The report shows them as skipped for a missing need, so the decision is CONCERNS until they are installed. `/onboard` offers the install, and
+`scripts/system_specs.py` records whether it is present.
 
 `tests/e2e/test_onboarding_flow.py` covers the new-user path: what the `/onboard` and `/crawl` commands stand on, and the commands themselves. It has
 three layers, cheapest first:
@@ -181,7 +191,11 @@ folder); a run of one file is judged on its tests and shows coverage for informa
 containers rather than this process. This is not the TEA quality score: TEA reviews the test code and traces requirements, while this report
 summarises a run.
 
-Coverage needs the `coverage` package (part of the `dev` extra). `tests/reports/` is git-ignored. Settings: `HIPPO_REPORT=0` turns the report off,
+Coverage needs the `coverage` package (part of the `dev` extra). `tests/reports/latest/` is a **real folder** (not a link) holding a copy of the
+newest run, with this machine's repository and home paths replaced by `<repo>` and `~`; its `report.html` and `results.json` are tracked in git so a
+reviewer can see the last result, `junit.xml` and the timestamped run folders are git-ignored. Any run refreshes it (even a run of one file: check the
+`scope` line before committing), so commit a refresh on purpose. A module that skips or fails while pytest imports it (for example the dashboard tests
+without Playwright) appears as **one** skipped or errored entry with its reason; the number of tests inside it is not known. Settings: `HIPPO_REPORT=0` turns the report off,
 `HIPPO_COVERAGE=0` leaves coverage out, `HIPPO_COVERAGE_TARGET` and `HIPPO_COVERAGE_FLOOR` change the percentages, and `--junitxml=PATH` still
 overrides the JUnit file. The code is `tests/hippo_report.py`, registered by `tests/conftest.py`.
 
@@ -208,6 +222,10 @@ scripts/lint.sh --only py    # py | types | sh | yaml | md
 scripts/lint.sh --ci         # a missing tool is a failure instead of a skip
 scripts/lint.sh --changed    # only files that differ from origin/main (or --changed REF), including uncommitted ones
 ```
+
+`scripts/lint.sh` only starts `scripts/lint.py`, which holds the logic and needs nothing but Python (it finds the tools in `.venv/bin` or
+`.venv\Scripts`), so on Windows run `python scripts/lint.py` with the same options. Shell scripts are linted with shellcheck; the Python entry
+points are covered by ruff and mypy like the rest.
 
 | Language | Tool | Configuration |
 |---|---|---|

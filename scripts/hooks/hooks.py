@@ -50,10 +50,23 @@ SQL_CONTEXT = re.compile(r"psql|\b(?:exec|run)\s")
 DESTRUCTIVE_SQL = re.compile(r"\b(?:DROP\s+(?:DATABASE|SCHEMA|TABLE)|TRUNCATE\s)", re.I)
 
 
+# text that is data, not a command: a here-document body and the message of a commit or pull request (-m "...", --body "...")
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n.*?\n\s*\2\b", re.S)
+MESSAGE_FLAG = re.compile(r"""(?:^|\s)(?:-m|--message|--body|-b|--title|--notes)(?:\s+|=)(?:"[^"]*"|'[^']*')""")
+# `bash -c "..."` and friends run their quoted argument as a command line
+SHELL_C = re.compile(r"""\b(?:ba|z|da)?sh\s+-\w*c\s+(["'])(.*?)\1""", re.S)
+
+
+def strip_literals(cmd: str) -> str:
+    """The command line without here-document bodies and commit or pull-request messages, which may name a file without touching it."""
+    return MESSAGE_FLAG.sub(" ", HEREDOC.sub("<<", cmd))
+
+
 def destructive(call: dict) -> None:
     cmd = call.get("tool_input", {}).get("command") or ""
-    reason = next((why for pattern, why in DESTRUCTIVE if pattern.search(cmd)), None)
-    if reason is None and SQL_CONTEXT.search(cmd) and DESTRUCTIVE_SQL.search(cmd):
+    texts = [strip_literals(cmd), *(m.group(2) for m in SHELL_C.finditer(cmd))]
+    reason = next((why for text in texts for pattern, why in DESTRUCTIVE if pattern.search(text)), None)
+    if reason is None and any(SQL_CONTEXT.search(t) and DESTRUCTIVE_SQL.search(t) for t in texts):
         reason = "destructive SQL against a database"
     if reason:
         decide("deny", f"Blocked: {reason}. CLAUDE.md forbids touching a real Hippocampus database unless explicitly asked; "
@@ -100,7 +113,7 @@ def secrets(call: dict) -> None:
     if tool != "Bash":
         return
 
-    clean = args.get("command") or ""
+    clean = strip_literals(args.get("command") or "")
     for pattern in SANCTIONED:  # the sanctioned uses of the config file and the example files are not accesses
         clean = pattern.sub("", clean)
     ask = ""

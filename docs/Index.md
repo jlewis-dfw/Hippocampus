@@ -91,6 +91,11 @@ The test suite, the checks and linters, the smoke test and CI.
 
 Setup, code layout, conventions, recipes for common changes, documentation rules and the public copy.
 
+| Doc | Covers |
+|---|---|
+| [README](Development/README.md) | Setup, layout, conventions (including the multi-OS rule), recipes, commits and reviews |
+| [claude-code-hooks.md](Development/claude-code-hooks.md) | The Claude Code hooks for this repository: what each blocks or checks, how to switch one off, how they are tested |
+
 ## Search these docs with Hippocampus
 
 You can index this folder into your own instance and ask questions of it:

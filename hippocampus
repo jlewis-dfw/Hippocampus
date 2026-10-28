@@ -22,9 +22,10 @@ say() { echo "==> $*"; }
 
 detect_engine() {
   if [[ -n ${CONTAINER_ENGINE:-} ]]; then echo "$CONTAINER_ENGINE"; return; fi
-  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then echo docker; return; fi
-  if command -v podman >/dev/null 2>&1 && podman compose version >/dev/null 2>&1; then echo podman; return; fi
-  die "neither 'docker compose' nor 'podman compose' was found. Install Docker (https://docs.docker.com/get-docker/) or Podman."
+  # `info` too: the compose plugin answers `compose version` even when Docker's daemon (or Podman's machine) is not running
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && docker info >/dev/null 2>&1; then echo docker; return; fi
+  if command -v podman >/dev/null 2>&1 && podman compose version >/dev/null 2>&1 && podman info >/dev/null 2>&1; then echo podman; return; fi
+  die "no running 'docker compose' or 'podman compose' was found. Install Docker (https://docs.docker.com/get-docker/) or Podman, and start it (Docker Desktop, or 'podman machine start')."
 }
 ENGINE=$(detect_engine)
 compose() { "$ENGINE" compose --env-file "$ENVFILE" "$@"; }

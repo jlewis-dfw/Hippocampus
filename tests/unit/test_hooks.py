@@ -53,6 +53,8 @@ DESTRUCTIVE_DENIED = [
     "podman system prune --volumes",
     "docker compose exec postgres psql -U hippocampus -c 'DROP DATABASE hippocampus'",
     "psql -c 'truncate chunks'",
+    'bash -c "./hippocampus reset"',
+    "sh -c 'docker compose down -v'",
 ]
 DESTRUCTIVE_ALLOWED = [
     "./hippocampus up 2>&1 | scripts/token_env.py capture HIPPO_TOKEN_ADMIN",
@@ -104,6 +106,15 @@ SECRETS_ALLOWED_BASH = [
     "git check-ignore token.env",
     "git add -A",
     "env FOO=1 scripts/check.sh",
+    # a commit or pull-request message may name the files without touching them
+    "git add -A && git commit -m \"$(cat <<'EOF'\nnotes about hippocampus.env and token.env\nEOF\n)\"",
+    'git commit -m "document token.env and hippocampus.env handling"',
+    'gh pr create --title "x" --body "never commit token.env"',
+]
+SECRETS_DENIED_BASH += [  # but a real access next to a message is still caught
+    'git commit -m "x" && cat token.env',
+    'cat "token.env"',
+    'bash -c "cat token.env"',
 ]
 
 

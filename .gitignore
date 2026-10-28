@@ -16,3 +16,5 @@ tests/reports/latest/junit.xml
 evals/
 wip/
 system-specs.md
+# Personal Claude Code settings (the shared hooks are in .claude/settings.json)
+.claude/settings.local.json
