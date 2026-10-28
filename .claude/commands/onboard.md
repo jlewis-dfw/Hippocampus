@@ -19,6 +19,14 @@ Walk the user through five steps in order. Finish and verify each step before st
      `scripts/prereqs.sh --dev --setup`. It makes the person type an acknowledgement phrase and answer y/N, which your shell cannot do, so tell
      the user to run it themselves at the prompt with a leading `!` (`! scripts/prereqs.sh --dev --setup`). If they prefer, the manual equivalent is
      `python3 -m venv .venv && .venv/bin/pip install -e ".[db,api,mcp,dev]"`, which you may run once they say yes.
+   - The browser tests are optional (`prereqs.sh` warns about playwright and Chromium). Without them `/test` skips the dashboard end-to-end tests and the
+     decision is CONCERNS. If the user wants the full run, offer `.venv/bin/pip install -e ".[browser]" && .venv/bin/playwright install chromium`
+     (about 150 MB, needs internet), or the same offer inside `scripts/prereqs.sh --dev --setup`. Ask first; do not install it unprompted.
+   - Record the machine: run `.venv/bin/python scripts/system_specs.py` (`python3` before the `.venv` exists; `python` on Windows). It writes the git-ignored
+     `system-specs.md` (OS, memory, disk, Python, node, container engines and whether each one is running, optional test tools; versions and sizes
+     only, never a path, user name or token; it refuses to write if git would not ignore the file). Summarise it in two or three lines and name the
+     **Container engine to use**. If that is not the one a script would pick by default (for example Docker is installed but stopped), tell the user to
+     set `CONTAINER_ENGINE=<engine>` for the stack and the tests.
    - Re-run `scripts/prereqs.sh --dev` and confirm `RESULT: ready` before moving on.
 2. **Start the service.**
    - Run `./hippocampus status` first. If Hippocampus is already running (the status call answers), say so and reuse it: skip the start and

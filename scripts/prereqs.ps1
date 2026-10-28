@@ -478,7 +478,7 @@ if ($Dev -and $Setup -and $pythonCmd.Count -gt 0) {
             & $exe @($extra + @('-m', 'venv', '.venv'))
             if ($LASTEXITCODE -eq 0) {
                 & '.venv\Scripts\pip.exe' install -q -e '.[db,api,mcp,dev]'
-                if ($LASTEXITCODE -eq 0) { Write-Host '      done. Next, from Git Bash or WSL: scripts/check.sh --no-db' }
+                if ($LASTEXITCODE -eq 0) { Write-Host '      done. Next: .venv\Scripts\python.exe scripts\check.py --no-db' }
             }
         }
     } else { Write-Host '      skipped' }

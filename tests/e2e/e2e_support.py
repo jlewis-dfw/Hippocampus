@@ -20,7 +20,9 @@ START_TIMEOUT = 600  # seconds; the first start loads the embedding model
 def find_engine() -> str | None:
     wanted = os.environ.get("CONTAINER_ENGINE")
     for name in ([wanted] if wanted else ["docker", "podman"]):
-        if shutil.which(name) and subprocess.run([name, "compose", "version"], capture_output=True).returncode == 0:
+        # `info` too: the compose plugin answers `compose version` even when the engine's daemon or machine is not running
+        if shutil.which(name) and all(subprocess.run([name, *cmd], capture_output=True).returncode == 0
+                                      for cmd in (["compose", "version"], ["info"])):
             return name
     return None
 

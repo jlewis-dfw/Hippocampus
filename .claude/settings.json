@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v python3 >/dev/null 2>&1; then exec python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" destructive; else exec python \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" destructive; fi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v python3 >/dev/null 2>&1; then exec python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" secrets; else exec python \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" secrets; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v python3 >/dev/null 2>&1; then exec python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" stop; else exec python \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" stop; fi",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v python3 >/dev/null 2>&1; then exec python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" lint; else exec python \"$CLAUDE_PROJECT_DIR/scripts/hooks/hooks.py\" lint; fi",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

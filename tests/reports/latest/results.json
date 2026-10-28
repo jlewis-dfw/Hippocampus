@@ -1,0 +1,4262 @@
+{
+  "run_id": "20261028164133",
+  "scope": "unit + integration + e2e",
+  "started": "2026-10-28T16:41:33",
+  "duration_seconds": 35.52,
+  "python": "3.14.7",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "command": "pytest -q tests/unit tests/integration tests/e2e",
+  "git": {
+    "branch": "hooks-and-python-tooling",
+    "commit": "8e08d32",
+    "dirty": true
+  },
+  "exit_status": 0,
+  "target": 95.0,
+  "floor": 80.0,
+  "decision": {
+    "verdict": "CONCERNS",
+    "evidence": [
+      "497 tests: 484 passed, 0 failed, 0 errors, 13 skipped",
+      "line coverage of src/hippocampus: 99.2% (target 95%, floor 80%)"
+    ],
+    "gaps": [
+      "10 test(s) were skipped because something they need is missing (see Skipped)"
+    ]
+  },
+  "tiers": {
+    "unit": {
+      "total": 445,
+      "passed": 435,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 10,
+      "duration": 8.78
+    },
+    "integration": {
+      "total": 9,
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 1,
+      "duration": 0.76
+    },
+    "e2e": {
+      "total": 43,
+      "passed": 41,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 2,
+      "duration": 10.98
+    }
+  },
+  "coverage": {
+    "percent": 99.21,
+    "statements": 2535,
+    "missed": 20,
+    "modules": [
+      {
+        "path": "src/hippocampus/cli/admin.py",
+        "statements": 71,
+        "missed": 1,
+        "missing": "87",
+        "percent": 98.59
+      },
+      {
+        "path": "src/hippocampus/cli/healthcheck.py",
+        "statements": 7,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/cli/mcp_server.py",
+        "statements": 68,
+        "missed": 1,
+        "missing": "109",
+        "percent": 98.53
+      },
+      {
+        "path": "src/hippocampus/core/chunker.py",
+        "statements": 135,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/core/diff.py",
+        "statements": 46,
+        "missed": 1,
+        "missing": "74",
+        "percent": 97.83
+      },
+      {
+        "path": "src/hippocampus/core/embedder.py",
+        "statements": 24,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/ingest/crawl_probe.py",
+        "statements": 133,
+        "missed": 3,
+        "missing": "37-38, 105",
+        "percent": 97.74
+      },
+      {
+        "path": "src/hippocampus/ingest/crawler.py",
+        "statements": 369,
+        "missed": 3,
+        "missing": "259-260, 359",
+        "percent": 99.19
+      },
+      {
+        "path": "src/hippocampus/ingest/docs_sync.py",
+        "statements": 135,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/ingest/files_ingest.py",
+        "statements": 107,
+        "missed": 1,
+        "missing": "70",
+        "percent": 99.07
+      },
+      {
+        "path": "src/hippocampus/ingest/repo_ingest.py",
+        "statements": 64,
+        "missed": 2,
+        "missing": "64, 73",
+        "percent": 96.88
+      },
+      {
+        "path": "src/hippocampus/ingest/sync_core.py",
+        "statements": 211,
+        "missed": 4,
+        "missing": "125-127, 153",
+        "percent": 98.1
+      },
+      {
+        "path": "src/hippocampus/service/api.py",
+        "statements": 83,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/auth.py",
+        "statements": 57,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/jobs.py",
+        "statements": 59,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/observability.py",
+        "statements": 50,
+        "missed": 1,
+        "missing": "39",
+        "percent": 98.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/__init__.py",
+        "statements": 2,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/access.py",
+        "statements": 64,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/collections.py",
+        "statements": 65,
+        "missed": 1,
+        "missing": "36",
+        "percent": 98.46
+      },
+      {
+        "path": "src/hippocampus/service/routes/deps.py",
+        "statements": 55,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/docs.py",
+        "statements": 54,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/health.py",
+        "statements": 24,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/ingest.py",
+        "statements": 76,
+        "missed": 1,
+        "missing": "85",
+        "percent": 98.68
+      },
+      {
+        "path": "src/hippocampus/service/routes/jobs.py",
+        "statements": 36,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/schemas.py",
+        "statements": 84,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/search.py",
+        "statements": 27,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/sources.py",
+        "statements": 73,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/tags.py",
+        "statements": 4,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/routes/uploads.py",
+        "statements": 85,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/service/workers.py",
+        "statements": 20,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      },
+      {
+        "path": "src/hippocampus/storage/migrate.py",
+        "statements": 63,
+        "missed": 1,
+        "missing": "88",
+        "percent": 98.41
+      },
+      {
+        "path": "src/hippocampus/storage/store.py",
+        "statements": 184,
+        "missed": 0,
+        "missing": "",
+        "percent": 100.0
+      }
+    ]
+  },
+  "tests": [
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_admin_edits_grants_through_prompts",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.18003974999737693,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_admin_manages_a_client_end_to_end",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.3380429169992567,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_admin_only_controls_are_hidden_from_other_clients",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.09909837499435525,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_admin_restricts_shares_and_deletes_a_collection",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.38959358400461497,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_anonymous_crawl_is_refused_in_a_banner",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.15184129100089194,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_anonymous_dashboard_loads_clean",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.2347766659950139,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_bad_token_shows_an_error_banner",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.16487279199645855,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_collection_row_shows_counts_and_lists_sources",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.18786179200105835,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_collection_search_button_opens_the_search_tab_scoped_to_it",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.12781995900149923,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_crawl_form_creates_a_collection_and_reports_the_failed_job",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.23963320800248766,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_declining_a_confirmation_changes_nothing",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.16442766599357128,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_form_rejects_a_bare_wildcard_with_a_banner",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.16875104200153146,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_hostile_content_is_shown_as_text_not_run",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.23232212499715388,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_root_redirects_to_the_dashboard",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.06757808299880708,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_search_sandbox_finds_by_meaning",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.24679483299405547,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.4302604159965995,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_dashboard.py::test_token_panel_signs_in_and_out",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.2704371660001925,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_folder_drop.py::test_a_new_drop_defaults_to_a_new_collection",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.1570451250008773,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_folder_drop.py::test_choose_a_folder_preview_and_index_it",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.3170498750041588,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_folder_drop.py::test_one_collection_per_folder",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.6276594579976518,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_folder_drop.py::test_second_run_and_unticking_a_folder_removes_its_files",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.49205795799935004,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_folder_drop.py::test_the_tree_shows_paths_and_why_files_are_left_out_and_nested_boxes_exclude",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.411282041000959,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_a_reader_cannot_crawl_and_the_probe_refuses_a_private_address",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.12854095800139476,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_crawl_the_requests_docs_with_the_script",
+      "tier": "e2e",
+      "outcome": "skipped",
+      "duration": 5.3750001825392246e-05,
+      "message": "set HIPPO_RUN_NETWORK_TESTS=1 to crawl requests.readthedocs.io (public docs)",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_index_docs_through_token_run_then_a_reader_finds_it",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.5448932919971412,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_mcp_registration_is_read_only_and_refuses_an_admin",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.45629112500319025,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_onboard_then_crawl_commands_get_a_new_user_going",
+      "tier": "e2e",
+      "outcome": "skipped",
+      "duration": 2.7583999326452613e-05,
+      "message": "set HIPPO_RUN_ONBOARDING_E2E=1 to run /onboard and /crawl in headless Claude Code (costs money, 20-40 min)",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_onboarding_flow.py::test_the_saved_admin_token_verifies_and_is_never_in_the_output",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.12294824999844423,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_admin_cli_token_authenticates",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.0014817089977441356,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_anonymous_can_not_write",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.0031447919973288663,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_bad_token_is_rejected_not_treated_as_anonymous",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.00463737500103889,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_crawl_of_a_private_address_fails_the_job",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.005777417005447205,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_dashboard_is_served_with_a_strict_policy",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.0028689999962807633,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_data_survives_an_api_restart",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 3.443837708000501,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_excluded_sources_are_refused",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.002026750000368338,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_index_then_find_by_meaning",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.04026658400107408,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_job_belongs_to_its_owner",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.004337416001362726,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_mcp_search_tool_end_to_end",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.4183126670031925,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_reindexing_is_incremental",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.011719000001903623,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_restricted_collection_is_invisible_without_a_grant",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.07434508299775189,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_sources_and_status_counts",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.004744041994854342,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_status_reports_database_and_model",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.003317374998005107,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/e2e/test_stack.py::test_the_last_admin_can_not_be_removed",
+      "tier": "e2e",
+      "outcome": "passed",
+      "duration": 0.005141084002389107,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_admin_cli.py::test_cli_roundtrip",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.06410845799837261,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_embedder_model.py::test_fastembed_384_dim_cpu",
+      "tier": "integration",
+      "outcome": "skipped",
+      "duration": 4.545800038613379e-05,
+      "message": "downloads the model; set HIPPO_RUN_MODEL_TESTS=1",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_api_read_surface",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.008302000002004206,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_client_lifecycle",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.008166207997419406,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_pool_second_caller_waits_and_a_third_times_out",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.6340989579985035,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_restricted_filtering_happens_before_limit",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.012105665999115445,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_sync_source_lifecycle",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.012478415999794379,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_unchanged_changed_deleted",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.01194829199812375,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/integration/test_store_integration.py::test_unknown_collection_and_admin_count",
+      "tier": "integration",
+      "outcome": "passed",
+      "duration": 0.004003041998657864,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_an_admin_can_rotate_their_own_token",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0062536249970435165,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_bad_missing_scheme_and_revoked_tokens_are_401_not_anonymous",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00886950000131037,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_client_admin_endpoints_need_admin",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015481333000934683,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_create_client_shows_the_token_once_and_it_works",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010105749999638647,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_creating_a_name_that_exists_as_hidden_does_not_confirm_it",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.005001083998649847,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_deleting_a_restricted_collection_needs_admin",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0043447090065455996,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_grant_globs_are_exact_about_the_prefix",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00014733300486113876,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_granted_client_and_admin_can_read_it",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0069573330038110726,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_jobs_belong_to_their_owner",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.022824458006653003,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_listing_and_status_counts_respect_the_principal",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.009949584004061762,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_named_restricted_collection_looks_missing_without_a_grant",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.006699625002511311,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_only_admins_create_restricted_or_change_visibility",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00900579200242646,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_private_collections_must_be_restricted",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.003232999995816499,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_private_uris_cannot_be_indexed_into_a_shared_collection",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0016582079988438636,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_require_auth_makes_shared_writes_need_a_grant",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01701541699731024,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_restricted_writes_need_a_write_grant",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.006989583001995925,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_rotate_gives_a_new_token_and_kills_the_old_one",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010667165995982941,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_rotate_unknown_or_revoked_client_is_404",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0032615000018267892,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_tokens_are_random_and_only_the_hash_is_stored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00017370799469063058,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_unscoped_search_never_returns_restricted_chunks_even_when_they_are_the_best_match",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.002564082999015227,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_update_and_revoke_client_and_last_admin_is_protected",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.011393791995942593,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_validate_grants_refuses_a_bare_wildcard_and_junk",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00013833300181431696,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_whoami",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.002842000001692213,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_access.py::test_x_hippo_token_wins_over_a_proxy_authorization_header",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0028365000034682453,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_api_tab_page_allows_inline_styles_only_there_and_is_framable_only_by_the_dashboard",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031852666004851926,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_collection_crud",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01536558399675414,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_crawl_501_without_crawler",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010676166995835956,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_crawl_job_status_and_sse",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01968716600094922,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_every_operation_is_tagged_and_described_for_the_api_reference",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02244191700447118,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_failed_job_reports_error",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.014717167003254872,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_ingest_and_search_ranking",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02353695800411515,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_ingest_guards",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.014145291002932936,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_list_sources",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0175647499927436,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_network_gate",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02487033399665961,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_network_gate_covers_api_but_not_ui",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010978124999382999,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_status",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.005969124998955522,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_api.py::test_ui_is_served_with_strict_headers",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03537066699936986,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_header_paths_nested",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.270800076890737e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_headers_inside_fences_ignored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.51249977434054e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_large_code_block_split_and_rewrapped",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0021747920036432333,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_no_overlap_after_code_or_across_sections",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.875000402331352e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_overlap_between_prose_chunks_of_one_section",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00013383300392888486,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_small_code_block_atomic",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.7999997807201e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_unterminated_fence_and_empty_input",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9500002458225936e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_chunker.py::test_zero_overlap",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 8.15840030554682e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_disallowed_start_page_is_not_fetched",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.529199501732364e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_endpoint_501_without_prober",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.008845124997606035,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_endpoint_needs_a_token_when_auth_is_required",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.020474332995945588,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_endpoint_rejects_a_bad_pattern_and_a_private_address",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01009558400255628,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_reads_the_listed_sitemap_that_covers_the_start_path",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0002843750044121407,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_reports_meta_robots_and_redirect_host",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0003743330016732216,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_reports_robots_and_suggests_settings",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0007451659985235892,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_script_built_page_suggests_browser_only_when_installed",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00018987499788636342,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_sitemap_over_cap_and_index",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0004724160025944002,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_warns_when_the_sitemap_has_nothing_under_the_pattern",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0002184999975725077,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawl_probe.py::test_probe_without_sitemap_defaults_depth_and_flags_site_root",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00020937500084983185,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_browser_fetcher_renders_js_and_blocks_private_subrequests",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 1.8846147500007646,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_allows_public_literal",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.025000089313835e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[file:///etc/passwd]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.500000457279384e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[ftp://example.com/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.879200085066259e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://10.0.0.11:8090/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.379200254334137e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://100.64.0.5/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.783300053328276e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://127.0.0.1/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.2040995797142386e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://169.254.169.254/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9332997403107584e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://[::1]/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.320800457615405e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[http://localhost/]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.007510915995226242,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_check_public_url_refuses[https://docs.example/private-infra/docs]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.0666003769729286e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_delay_between_requests",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00022970900317886844,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_depth_one_fetches_only_start",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00018770799943013117,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_depth_two_filters_domain_extensions_fragments_and_infra",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0002623750042403117,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_make_crawler_browser_engine_uses_factory_and_closes",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00023299999884329736,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_make_crawler_indexes_pages_and_is_incremental",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00047774999984540045,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_make_crawler_refuses_private_start",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.2374998631421477e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_match_pattern_and_max_pages",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0005234159980318509,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_normalize",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.120800440432504e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_parse_html_markdown_and_links",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00022166700364323333,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler.py::test_robots_disallow_is_respected",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00041487500129733235,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_fetcher_close_survives_errors",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.003235249998397194,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_fetcher_needs_playwright",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0032565000001341105,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_fetcher_non_html_and_no_response",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.007948250000481494,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_fetcher_refuses_private_final_url",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0037448340008268133,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_fetcher_renders_and_closes",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.004440084005182143,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_route[image-https://93.184.216.34/-False-abort]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.9207995946053416e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_route[script-http://10.0.0.1/-True-abort]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.466700193006545e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_browser_route[script-https://93.184.216.34/-False-continue]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.1375002183485776e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_check_public_url_resolves_names",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0004019999978481792,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_check_public_url_unresolvable",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00016604200209258124,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_crawl_robots_fetch_failure_means_allowed",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00014191700029186904,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_crawl_survives_refusals_errors_and_empty_pages",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00032416699832538143,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_crawl_without_robots_support_or_with_custom_getter",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00013349999790079892,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_default_client_builds",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.006097875004343223,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_follows_redirects_and_caps_them",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.001189165996038355,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_html_and_robots",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.000904791995708365,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_redirect_hops_are_checked",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00026149999757763,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_robots_missing_and_wrong_type",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00036050000198883936,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_httpx_fetcher_truncates_large_bodies",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0008632079989183694,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_make_crawler_rejects_unknown_engine",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00010720800491981208,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_crawler_fetchers.py::test_parse_html_lists_tables_and_inline_markup",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0005263339990051463,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_diff.py::test_embed_failure_leaves_old_vectors",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.612499757669866e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_diff.py::test_prune_false_keeps_missing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.333400233415887e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_diff.py::test_unchanged_skipped_changed_reembedded_deleted_purged",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00015949999942677096,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_file_with_a_secret_is_rejected_and_unindexed",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.014204874998540618,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_incremental_reindexes_only_affected_files",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02361604099860415,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_infrastructure_docs_are_never_fetched_or_embedded",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015219415996398311,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_infrastructure_docs_are_never_ingested_by_full_resync",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.013227667004684918,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[../etc/passwd.md-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9083999581635e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[/abs.md-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9749997085891664e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[README.MD-True]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.012499994132668e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[a/b.txt-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.0708997403271496e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[img/x.png-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.695800114655867e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[private-infra/docs/a.md-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.679200017359108e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[private-infra/docs/runbook.md-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.8042002415750176e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[team/plans/x.md-True]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.93340043653734e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_is_indexable[x/PRIVATE-INFRA/docs/a.md-False]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.6666999221779406e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_large_push_falls_back_to_full_resync",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015670583001337945,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_last_action_on_a_path_wins",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.741700053680688e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_not_configured_is_501",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.016526333005458582,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_other_repo_or_branch_is_ignored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010533542001212481,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_removed_file_leaves_the_collection",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.017259167005249765,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_resync_prunes_sources_that_left_the_branch",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01848704099393217,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_docs_sync.py::test_signature_is_required_and_checked",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010561957999016158,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_app_from_env_wires_everything",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01034908300061943,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_apply_changes_drops_missing_and_oversized_files",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015387790997920092,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_call_needs_a_base_url",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 8.558300032746047e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_call_reports_http_errors",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00020908300211885944,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_crawl_refuses_excluded_urls",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.008791000000201166,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_docs_sync_from_env",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0025854589985101484,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_event_stream_waits_for_a_running_job",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.41889879100199323,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_failed_foreground_job_records_the_error",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00015729200094938278,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_forgejo_source_lists_all_pages_of_the_tree",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.002791916995192878,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_forgejo_source_reads_files",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0028077919996576384,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_index_doc_refuses_large_files",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00044962500396650285,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_index_doc_reports_states",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0017832079975050874,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_main_runs_the_server",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.0582999140024185e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_overlap_ratio_is_validated",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.1583002358675e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_oversized_paragraph_is_split_on_words",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.000806791998911649,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_registry_evicts_the_oldest_finished_job",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00048345799586968496,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_search_with_no_hits",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.270900535630062e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_sources_of_a_missing_collection_is_404",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010038667001936119,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_tools_turn_api_errors_into_text",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.17762924999988172,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_update_client_errors",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.011883875005878508,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_edge_cases.py::test_webhook_payload_problems",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.05664691700076219,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_a_file_that_gains_a_secret_is_removed_and_reported",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015074791997903958,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_a_session_belongs_to_the_account_that_started_it",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.012301333001232706,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_a_thousand_files_in_ten_batches_then_a_second_run_changes_one_and_removes_one",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.05577833300048951,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_anonymous_cannot_write_when_auth_is_required",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.012791791006748099,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_changing_the_rules_and_syncing_again_removes_files_no_longer_included",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01368062499386724,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_content_is_required_outside_a_dry_run",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.013547417001973372,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_dry_run_writes_nothing_and_accepts_paths_without_content",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.011569750000489876,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_filter_rules_and_extensions",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.011869458001456223,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_many_batches_one_run_prunes_only_on_the_final_batch",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02293762499903096,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_oversized_batch_is_refused",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010902209003688768,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_read_only_account_is_denied_and_hidden_collection_is_404",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01723666599718854,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_request_validation",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.018503667000913993,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_run_size_limit",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.010479500000656117,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_second_run_only_changes_what_changed_and_crlf_does_not_count",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015594417003740091,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_server_applies_the_private_infra_guard_whatever_the_client_says",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.014519249998556916,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_single_batch_final_indexes_and_reports_each_file",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015158415997575503,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_sources_do_not_touch_each_other",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015833042001759168,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_too_many_runs_in_progress",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.013895500000216998,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_files_ingest.py::test_unsafe_paths_are_rejected_not_stored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.011743124996428378,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content[\"Password: 'not-a-secret-but-qu\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.4083001082763076e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['  \\\\n']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.191599873593077e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['# Hello\\\\nbody']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.2333995224907994e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['-----BEGIN RSA PRIVATE KEY----']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.4292002965230495e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['Authorization: Bearer abcdefgh']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.420800203457475e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['eyJhbGciOiJIUzI1.eyJzdWIiOiIxM']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.4249998861923814e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['key AKIAABCDEFGHIJKLMNOP']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.504200140014291e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['password = \"hunter2hunter2\"']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.279100201325491e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['t ghp_aaaaaaaaaaaaaaaaaaaaaaaa']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.47500026691705e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['the password is stored elsewhe']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.375000233063474e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['token = ${TOKEN_FROM_ENV}']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.199999628122896e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['x\\\\x00y']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.445900074439123e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_content['xoxb-1234567890-abcdefghij']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9749997085891664e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[..\\\\..\\\\x.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.825000021606684e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[.Trash-1000/a.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.837500116787851e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[.env|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.2166997445747256e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[.git/x.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.2583000322338194e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[.hidden|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.916699643013999e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[.obsidian/n.md|{'default_excludes': False}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.5709002481307834e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[A.MD|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.066599649377167e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[C:\\\\x.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.6541998269967735e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Caf\\xe9/n.md|{'roots': ['Cafe\\u0301']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.558400542009622e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Journal/a.md|{'include': ['Work/']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.658399848267436e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Journal/a.md|{'roots': ['Work', '.']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.7167002523783594e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Projects/x/y/z.md|{'include': ['Projects/**/*.md']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 8.550000347895548e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[README.md|{'roots': ['Work', '.']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.62079988210462e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Thumbs.db|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.6666999221779406e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/.obsidian/app.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.7999998312443495e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/Clients/x.md|{'include': ['Work/'], 'exclude': ['Work/Clients/']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.349999603116885e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/a.md|{'exclude': ['/Work/']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.1250004617031664e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/a.md|{'include': ['Work/'], 'exclude': ['Work/Clients/']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.816599878016859e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/a/b.md|{'roots': ['Work', '.']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 8.024999988265336e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[Work/deep/a.draft.md|{'exclude': ['*.draft.md']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 8.983400039141998e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[a.bin|{'extensions': []}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.1833998693618923e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[a.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.712500231107697e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[a.md|{'gitignore': '# c\\\\n*.md\\\\n!keep.md\\\\n'}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.300000237999484e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[a.py|{'extensions': ['py', '.PY']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.1457999031990767e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[big.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.570800228975713e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[build-notes/a.txt|{'gitignore': 'build-notes/\\\\n'}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.229199789231643e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[docs/old/a.md|{'exclude': ['docs/old']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.995900184847414e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[keep.md|{'gitignore': '# c\\\\n*.md\\\\n!keep.md\\\\n'}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.1500006520655006e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[keys/id_rsa|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.6542001655325294e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[noext|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9667000237386674e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[ok.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.612500197254121e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[pic.png|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9957994886208326e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[sub/Work/a.md|{'exclude': ['/Work/']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.912500298814848e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[sub/top.md|{'exclude': ['/top.md']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.64590048068203e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[top.md|{'exclude': ['/top.md']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.7666999055072665e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[workshop/a.md|{'roots': ['Work']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.283399903215468e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[x/PRIVATE-INFRA/a.md|{'exclude_parts': ['private-infra']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.883300087181851e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[x/docs/old/a.md|{'exclude': ['docs/old']}]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.954200267093256e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_check_path[~$report.md|None]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.691700112540275e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_fixture_vault_gives_the_same_indexed_paths",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00041379100002814084,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.07910003256984e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['../a.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.812499537365511e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['./a//b.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.179200575686991e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['/etc/passwd']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.9583002692088485e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['C:\\\\\\\\Users\\\\\\\\a.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.845800140174106e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['Cafe\\u0301/n.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.583299596561119e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['\\\\\\\\\\\\\\\\server\\\\\\\\share\\\\\\\\a.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.754100180231035e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a/CON']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.975000047124922e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a/b.']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.912499960279092e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a/b.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.97080002585426e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a\\\\\\\\..\\\\\\\\b.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.508400550344959e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a\\\\\\\\b\\\\\\\\c.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.137499879812822e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['a\\\\x00b.md']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.9166003009304404e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_path['nul.txt']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.579199983505532e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_text['\\\\ufeff# T']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.14170029014349e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_filter_vectors.py::test_normalize_text['a\\\\r\\\\nb\\\\rc\\\\n']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.0999995942693204e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hippo_report.py::test_a_collection_error_is_recorded_as_an_error_with_its_cause",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.516599826980382e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hippo_report.py::test_a_module_skipped_at_import_is_recorded_as_one_skip",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.533299943432212e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hippo_report.py::test_a_skipped_module_counts_as_a_gap_in_the_decision",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.895799793303013e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hippo_report.py::test_passing_reports_and_non_module_nodes_are_ignored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.3208998502232134e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_changing_hippocampus_env_asks[echo HIPPO_PORT=9000 >> hippocampus.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03217837500415044,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_changing_hippocampus_env_asks[sed -i 's/8090/8091/' hippocampus.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.033930875004443806,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[./hippocampus reset]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.05217091699887533,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[bash -c \"./hippocampus reset\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031957084000168834,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[cd /x && ./hippocampus reset]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03224395899451338,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[docker compose --env-file hippocampus.env down -v]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0322042909974698,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[docker compose exec postgres psql -U hippocampus -c 'DROP DATABASE hippocampus']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03462654200120596,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[docker volume rm hippocampus_pgdata]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.035878708004020154,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[podman compose down --volumes]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03439941699616611,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[podman system prune --volumes]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03553783399547683,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[psql -c 'truncate chunks']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03383633400517283,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_destructive_commands_are_denied[sh -c 'docker compose down -v']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03125554199505132,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[./hippocampus down]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031172333998256363,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[./hippocampus status]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03089820800232701,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[./hippocampus up 2>&1 | scripts/token_env.py capture HIPPO_TOKEN_ADMIN]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03242708300240338,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[docker compose --env-file hippocampus.env exec postgres psql -U hippocampus hippocampus]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03130941699782852,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[echo 'docker volume rm x']",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03191287499794271,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[git commit -m \"never run ./hippocampus reset or compose down -v\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031860666000284255,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_everyday_commands_are_not_blocked[scripts/check.sh --all]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031876291999651585,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Edit-/repo/hippocampus.env-ask]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03201391699985834,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Edit-/repo/other.env-deny]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031031332997372374,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Edit-/repo/src/hippocampus/core/chunker.py-allow]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03191504099959275,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Read-/repo/hippocampus.env-allow]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03141204200073844,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Read-/repo/token.env-deny]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031628500000806525,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Read-/repo/token.txt-deny]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03176141600124538,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Write-/repo/hippocampus.env-ask]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03170324999518925,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Write-/repo/hippocampus.env.example-allow]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03232916699926136,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_file_tools[Write-/repo/token.env-deny]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03196124999521999,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_lint_edit_reports_ruff_findings_and_stays_quiet_when_clean",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.17393854200054193,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[. ./token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03179233300033957,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[bash -c \"cat token.env\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03166854199662339,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[cat \"token.env\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03224070800206391,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[cat token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.036165915997116826,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[cp hippocampus.env token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.031847917001869064,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[echo $HIPPO_TOKEN]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03185279099852778,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[echo hip_x >> token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03285725000023376,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[env | sort]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03296616699662991,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[git add -f hippocampus.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.032236459002888296,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[git add -f token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03263366700412007,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[git add token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03204433299833909,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[git commit -m \"x\" && cat token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03247062499576714,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[grep HIPPO_TOKEN token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.032336707998183556,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[printenv]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03269337499659741,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_secret_access_in_bash_is_denied[source token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03167816599307116,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_stop_can_skip_the_tests_for_red_first_work",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0019375420015421696,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_stop_does_not_recurse_into_its_own_test_run",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.07714487499470124,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_stop_does_nothing_when_no_python_file_was_edited",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.033285999998042826,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_stop_reports_lint_once_and_rechecks_after_a_further_edit",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.18049025000073016,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_stop_runs_pytest_without_writing_a_report",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00016766699991421774,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[cat hippocampus.env.example]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03128420899884077,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[cmd2]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0329109999947832,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[docker compose --env-file hippocampus.env exec postgres psql -U hippocampus hippocampus]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.033181082995724864,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[env FOO=1 scripts/check.sh]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03239670799666783,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[gh pr create --title \"x\" --body \"never commit token.env\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03142366700194543,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[git add -A && git commit -m \"$(cat <<'EOF'\\nnotes about hippocampus.env and token.env\\nEOF\\n)\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.032079875003546476,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[git add -A]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03171408299385803,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[git check-ignore token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03213858300296124,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[git commit -m \"document token.env and hippocampus.env handling\"]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.034563332999823615,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[ls -l token.env]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.032979167001030874,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[podman compose --env-file hippocampus.env ps]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03230941600486403,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[scripts/register_mcp.py HIPPO_TOKEN_READER --dry-run]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03222745800303528,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[scripts/token_env.py list]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03179791699949419,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[scripts/token_env.py run HIPPO_TOKEN_ADMIN -- scripts/index_docs.py --plan]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03208091599663021,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_hooks.py::test_the_commands_own_invocations_are_allowed[scripts/verify_setup.py --token-var HIPPO_TOKEN_READER --collection hippocampus-docs --query x --mcp]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03221829199901549,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_a_failed_login_is_logged_without_the_token",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.008306333002110478,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_a_rejected_file_logs_path_and_rule_never_content",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01086366699746577,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_a_request_logs_one_line_with_the_request_id",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.007852041999285575,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_an_unsafe_request_id_is_replaced",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.006722375001118053,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_job_start_and_end_are_logged_and_an_error_logs_only_its_type",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00014150000060908496,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_logging.py::test_json_format_and_level_come_from_the_environment",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00013812499673804268,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_index_doc",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.005422292000730522,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_index_doc_refuses_infra_and_missing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0036347919958643615,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_readonly_mode_leaves_out_the_indexing_tool",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0032411670035799034,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_search_formats_results",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0046107500020298176,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_token_is_sent_only_when_configured",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0026027920030173846,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_tools_registered",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0029673329991055652,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_mcp.py::test_unreachable_api",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0005562500009546056,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_admin_create_validates_input",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0015249589996528812,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_admin_requires_dsn",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0009220840001944453,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_admin_rotate_revoke_list_and_visibility",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.003242332997615449,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_apply_all_skips_recorded_migrations",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0027821249968837947,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_fast_embedder_loads_lazily_once",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00011220799933653325,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_fast_embedder_rejects_wrong_dimensions",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.562500104540959e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_healthcheck_exit_codes",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0005649999948218465,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_migrate_main_applies_and_reports",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0023154579976107925,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_migrate_main_requires_dsn",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.07389283300290117,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_migrate_main_retries_then_gives_up",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.291600144933909e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_migration_files_validates_names_and_numbers",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.004815542000869755,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_ops_modules.py::test_migrations_dir_from_env_or_checkout",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00020466699788812548,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_an_exhausted_pool_is_a_503_with_retry_after_and_a_log_line",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01511058300093282,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_bad_pool_settings_fail_at_start_with_a_clear_message[env0]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.987499753246084e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_bad_pool_settings_fail_at_start_with_a_clear_message[env1]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.8541002140846103e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_bad_pool_settings_fail_at_start_with_a_clear_message[env2]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.745800495380536e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_bad_pool_settings_fail_at_start_with_a_clear_message[env3]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9500002458225936e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_pool.py::test_pool_defaults_are_small_and_the_environment_overrides_them",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.6666999221779406e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_checking_changes_nothing_and_needs_no_acknowledgement",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.566599869169295e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_dry_run_needs_no_acknowledgement_and_runs_nothing",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.2916996385902166e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_every_item_is_a_separate_question_and_only_yes_runs",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.2958993213251233e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_help_starts_with_the_warning",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 5.841699748998508e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_install_needs_the_exact_phrase[I HAVE READ THIS SCRIPT AND UNDERSTAND THE RISK please]",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.2499996703118086e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_install_needs_the_exact_phrase[]",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.4583998310845345e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_install_needs_the_exact_phrase[i have read this script and understand the risk]",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.2416999854613096e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_install_needs_the_exact_phrase[yes]",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.3791006242390722e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_the_flag_gives_the_acknowledgement_without_typing_it",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 2.6500005333218724e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_prereqs.py::test_unknown_option_is_refused",
+      "tier": "unit",
+      "outcome": "skipped",
+      "duration": 3.033299435628578e-05,
+      "message": "runs the Linux (apt) branch of the script",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_api_endpoint_runs_job_and_validates",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.024679582995304372,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_clean_pack_is_ingested_and_incremental",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.445799514651299e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_code_with_backticks_is_fenced_safely",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.604199784807861e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_deleted_and_newly_flagged_files_are_removed_but_other_sources_kept",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0004089170033694245,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_infra_paths_and_repo_are_excluded",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.8582995077595115e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_parse_both_formats[md_pack]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.733299672603607e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_parse_both_formats[xml_pack]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.01670001540333e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_scan_detects_secret_shapes[-----BEGIN RSA PRIVATE KEY-----\\nMIIfake\\n-----END RSA PRIVATE KEY------pem-private-key]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.6082994483876973e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_scan_detects_secret_shapes[Authorization: Bearer abcdef0123456789abcdef0123456789-bearer-token]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.316700167488307e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_scan_detects_secret_shapes[key = AKIAIOSFODNN7EXAMPLE-aws-access-key-id]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.8124999264255166e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_scan_detects_secret_shapes[password = \"hunter2hunter2\"-credential-assignment]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.295799979241565e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_scan_ignores_ordinary_code",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.504200140014291e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_secret_file_never_reaches_the_embedder",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.001747791000525467,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_repo_ingest.py::test_unknown_format_is_rejected",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.704099799506366e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_report_latest.py::test_an_old_symlink_or_old_copy_is_replaced",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.008555666005122475,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_report_latest.py::test_latest_is_a_real_folder_with_the_runs_files_and_no_local_paths",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015217166001093574,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_a_failed_run_leaves_the_index_and_shows_why",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0627424579943181,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_a_mapped_collection_with_its_folder_unticked_gets_nothing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015422040996782016,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_a_run_is_recorded_on_the_source_and_as_a_job",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.023413458999129944,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_abort_cancels_a_run_without_pruning_and_records_it",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.024250750000646804,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_an_empty_final_batch_releases_a_collection_the_source_no_longer_uses",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.024703709001187235,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_another_account_cannot_abort_a_run",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.017757583998900373,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_creating_a_source_needs_write_and_a_hidden_collection_looks_missing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.021024374997068662,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_delete_with_purge_removes_the_indexed_files_and_without_it_they_stay",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0275756669943803,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_deleting_the_collection_removes_its_sources",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.018461665997165255,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_edit_run_and_delete_are_denied_to_readers_and_hidden_from_strangers",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.03748479100613622,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_every_folder_collection_needs_write_too",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.015208207994874101,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_per_folder_collections_keep_each_folder_in_its_own_collection",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.020812249997106846,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_purge_needs_write_on_every_collection_it_touches",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.016949917000602,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_source_lifecycle",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.029484999999112915,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_source_validation",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.026111833001777995,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_sources_are_hidden_from_accounts_that_cannot_read_the_collection",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.025465791004535276,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_sync_now_says_to_drop_the_folder_again_for_an_upload_source",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.01704441699985182,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sources.py::test_the_saved_rules_win_over_the_request_and_unticking_a_folder_removes_its_files",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.02011099999799626,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_anchored_and_unanchored_globs",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.012499554548413e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_case_collisions",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.1459003114141524e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_content_checks_name_the_rule_not_the_content",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.833299605408683e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_crlf_and_lf_give_the_same_document",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.624999514315277e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[$RECYCLE.BIN/a.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.700000524986535e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[.Trash-1000/a.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.5707998904399574e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[.git/config.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.695800453191623e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[.trash/old.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.208399670664221e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[Thumbs.db]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.612500586314127e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[Work/.obsidian/app.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.195799556327984e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[a/.DS_Store]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.837500116787851e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[desktop.ini]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.80830024369061e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[node_modules/x/README.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.466699465410784e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[p/__pycache__/a.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.7582998629659414e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes[~$report.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.7500001781154424e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_default_excludes_can_be_turned_off",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.741699765669182e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_exclude_path_parts_default_and_override",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.5458004276733845e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_extensions_default_and_custom",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.212500011315569e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_gitignore_rules_last_match_wins",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.03340013185516e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_include_and_exclude_globs",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.866699838312343e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_leading_slash_directory_rule_is_anchored",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 5.220800085226074e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_ok[./a//b.md-a/b.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.274999471614137e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_ok[Caf\\xe9/n.md-Caf\\xe9/n.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.566600207705051e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_ok[Cafe\\u0301/n.md-Caf\\xe9/n.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.399999695830047e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_ok[a/b.md-a/b.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.9332997403107584e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_ok[a\\\\b\\\\c.md-a/b/c.md]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.766699956031516e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[-empty-path]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.920799983665347e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[.-empty-path]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.783300053328276e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[../a.md-path-traversal]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.762499545700848e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[/etc/passwd-absolute-path]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.833299706457183e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[C:\\\\Users\\\\a.md-drive-letter]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.8583006244152784e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[\\\\\\\\server\\\\share\\\\a.md-absolute-path]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.51249982486479e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a/../../b.md-path-traversal]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.62089995178394e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a/CON-windows-reserved-name]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.737500082934275e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a/b. -windows-reserved-name]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.025000089313835e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a/b.-windows-reserved-name]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.78339973394759e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a\\\\..\\\\b.md-path-traversal]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.529099922161549e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[a\\x00b.md-control-character]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.774999640882015e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[c:/a.md-drive-letter]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.108400025870651e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[nul.txt-windows-reserved-name]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.295899998396635e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[raw15-path-too-long]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.279100100276992e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_path_refused[x/com1.md-windows-reserved-name]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.825000021606684e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_normalize_text_line_endings_and_bom",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.366700548212975e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_roots_limit_the_top_level_folders",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.416600419674069e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_scan_files_collects_documents_and_reasons",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 9.545800276100636e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_scan_files_non_markdown_becomes_a_fenced_document",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.816699947696179e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_scan_files_path_only_pass_for_preview",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.391599941300228e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_scan_files_rejects_bad_source_names",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.858299896819517e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_secret_file_names_and_excluded_parts_are_rejected",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 7.945900142658502e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_size_limit",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 4.36670015915297e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_sync_core.py::test_traversal_and_windows_paths_are_rejected_with_the_rule",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.7750003684777766e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_system_specs.py::test_it_refuses_a_file_git_does_not_ignore",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.008558916997571941,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_system_specs.py::test_print_mode_writes_nothing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00012829099432565272,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_system_specs.py::test_the_text_has_no_user_host_or_path",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.912374457999249,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_capture_refuses_a_file_git_does_not_ignore_and_a_bad_name",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.11570995800138917,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_capture_saves_the_token_hides_it_and_sets_mode_600",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.14751637500012293,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_capture_twice_keeps_other_names_and_replaces_the_same_name",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.2015599580045091,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_capture_without_a_token_passes_text_through_and_exits_3",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.08392037500016158,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_crawl_site_uses_the_named_token_file_not_the_repository_one",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.05734425000264309,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_crawl_site_without_any_token_exits_cleanly_instead_of_crashing",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.08356824999646051,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_register_dry_run_shows_a_read_only_command_without_the_token",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.14063058300234843,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_register_refuses_an_admin_token_project_scope_and_a_missing_variable",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.2645191249976051,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_run_gives_the_command_the_token_without_printing_it",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.1501124999995227,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_token_scripts.py::test_scripts_are_executable",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.0004285830000299029,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_a_second_worker_logs_a_warning_naming_the_consequence",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.005037416995037347,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_one_worker_is_silent",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00011612500384217128,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_the_guard_can_refuse_to_start",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 0.00014341699716169387,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_worker_count[env0-1]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 6.812500214437023e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_worker_count[env1-1]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.120800101896748e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_worker_count[env2-4]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.0125003831926733e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_worker_count[env3-1]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 3.8958001823630184e-05,
+      "message": "",
+      "detail": ""
+    },
+    {
+      "nodeid": "tests/unit/test_workers.py::test_worker_count[env4-1]",
+      "tier": "unit",
+      "outcome": "passed",
+      "duration": 2.9124996217433363e-05,
+      "message": "",
+      "detail": ""
+    }
+  ]
+}

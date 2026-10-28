@@ -7,7 +7,7 @@ Symptoms, causes and fixes. API errors are JSON of the form `{"detail": "..."}`;
 
 | Symptom | Cause and fix |
 |---|---|
-| `neither 'docker compose' nor 'podman compose' was found` | Install Docker with the compose plugin or Podman with compose, or set `CONTAINER_ENGINE`. Check with `docker compose version`. |
+| `no running 'docker compose' or 'podman compose' was found` | Install Docker with the compose plugin or Podman with compose, **and start it** (Docker Desktop, or `podman machine start`): an engine whose daemon does not answer is skipped. Check with `docker compose version` and `docker info`, or set `CONTAINER_ENGINE`. |
 | The build fails while downloading the model or packages | The first build needs internet access once (Python packages and the embedding model). Retry; check proxy settings; make sure there is disk space (`df -h`). |
 | `the service did not become healthy in time` | The first start loads the embedding model, which can take a few minutes on a slow disk. See `./hippocampus logs api`. A crash loop usually shows a database or configuration error there. |
 | `variable is not set: run ./hippocampus up, which creates hippocampus.env` | You ran `docker compose` by hand without the env file. Use the launcher, or pass `--env-file hippocampus.env`. |

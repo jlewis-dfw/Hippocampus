@@ -121,7 +121,9 @@ scripts/check.sh --no-db    # unit tests only
 scripts/smoke_live.py       # end-to-end check of a running instance (asks for an admin token, leaves nothing behind)
 ```
 
-`.github/workflows/ci.yml` runs the same checks on every push and pull request.
+`scripts/check.sh` and `scripts/lint.sh` only start `scripts/check.py` and `scripts/lint.py`; on Windows run `python scripts/check.py` instead.
+`.github/workflows/ci.yml` runs the same checks on every push and pull request. Claude Code users: the repository ships hooks that guard the local
+data and the token files and check each edit ([docs](docs/Development/claude-code-hooks.md)).
 
 ## Contributing
 

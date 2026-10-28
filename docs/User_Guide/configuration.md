@@ -58,7 +58,10 @@ Off unless the first three are all set. See [ingesting.md](ingesting.md#keeping-
 | `HIPPO_DSN` | `python -m hippocampus.cli.admin`, `python -m hippocampus.storage.migrate` | Database to talk to |
 | `HIPPO_TEST_DSN` | `scripts/check.sh`, the database tests | A pgvector database the tests may use. Use a throwaway one |
 | `HIPPO_RUN_MODEL_TESTS` | the test suite | `1` runs the tests that download the real embedding model |
-| `PY` | `scripts/check.sh` | The Python to use (default `.venv/bin/python`, else `python3`) |
+| `PY` | `scripts/check.sh`, `scripts/lint.sh` | The Python to use (default `.venv/bin/python` or `.venv\Scripts\python.exe`, else the Python running the script) |
+| `CONTAINER_ENGINE` | `./hippocampus`, `scripts/check.sh`, the end-to-end tests | `docker` or `podman`. Default: the first whose compose and daemon both answer |
+| `HIPPO_REPORT` | the test suite | `0` writes no test report (and leaves `tests/reports/latest` alone) |
+| `HIPPO_HOOK_STOP_TESTS` | the Claude Code Stop hook | `0` skips the unit-test step of the hook (ruff still runs): for red-first work. See [Claude Code hooks](../Development/claude-code-hooks.md) |
 
 ## The network gate
 

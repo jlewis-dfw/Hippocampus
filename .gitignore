@@ -9,7 +9,12 @@ token.txt
 *.env
 !hippocampus.env.example
 stage4plan/
-tests/reports/
+# Test reports: every run's own folder stays local; only the sanitized copy of the newest run is committed (see tests/hippo_report.py)
+tests/reports/*
+!tests/reports/latest/
+tests/reports/latest/junit.xml
 evals/
 wip/
 system-specs.md
+# Personal Claude Code settings (the shared hooks are in .claude/settings.json)
+.claude/settings.local.json

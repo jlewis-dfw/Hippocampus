@@ -10,7 +10,8 @@ scripts/check.sh              # migrations from zero, the test suite, the dashbo
 scripts/smoke_live.py         # optional: end-to-end check of the running stack (asks for an admin token, leaves nothing behind)
 ```
 
-`scripts/check.sh --no-db` runs the unit tests only. A new feature needs a test; a bug fix should come with the test that
+`scripts/check.sh --no-db` runs the unit tests only. Everything must work on macOS, Linux and Windows: new tooling is written in Python, not bash
+(`scripts/check.sh` just starts `scripts/check.py`; on Windows run `python scripts/check.py`). A new feature needs a test; a bug fix should come with the test that
 would have caught it. Keep the Python style of the surrounding code and keep the dashboard free of external requests and
 `innerHTML` (everything from the API is data, shown as text).
 

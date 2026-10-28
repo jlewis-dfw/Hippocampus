@@ -58,7 +58,7 @@ Sizes (measured): about 660 MB without Chromium, about 1.7 GB with it; the datab
 
 | Piece | What it does |
 |---|---|
-| `detect_engine` | `CONTAINER_ENGINE` if set; else `docker` when `docker compose version` works; else `podman` when `podman compose version` works; else exits with advice |
+| `detect_engine` | `CONTAINER_ENGINE` if set; else `docker` when `docker compose version` and `docker info` both work; else `podman` when `podman compose version` and `podman info` both work; else exits with advice. The `info` check skips an engine that is installed but not running |
 | `compose` | `<engine> compose --env-file hippocampus.env ...` |
 | `ensure_env` | If `hippocampus.env` is missing, copies the example with a random 32-character password (letters and digits only, so it is safe inside a connection URL), created with mode 600 |
 | `port` | Reads `HIPPO_PORT` from the env file |

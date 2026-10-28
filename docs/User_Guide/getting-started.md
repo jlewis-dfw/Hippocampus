@@ -41,8 +41,8 @@ From the repository root:
 
 The launcher (`hippocampus`, a bash script) does the following, in order:
 
-1. Picks an engine: `docker compose` if available, otherwise `podman compose`. Set `CONTAINER_ENGINE=docker|podman` to
-   force one.
+1. Picks an engine: `docker compose` if it is available **and running**, otherwise `podman compose` (an engine that is installed but
+   stopped is skipped). Set `CONTAINER_ENGINE=docker|podman` to force one.
 2. Creates `hippocampus.env` from `hippocampus.env.example` if it does not exist, with a random 32-character database
    password. The file is created with mode 600 and is git-ignored.
 3. Builds the image (`deploy/api.Dockerfile`) and starts three services: `postgres` (PostgreSQL 16 with pgvector),

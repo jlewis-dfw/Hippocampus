@@ -22,6 +22,10 @@ python3 -m venv .venv
 scripts/check.sh
 ```
 
+On Windows run the checks as `python scripts/check.py` (the `.sh` files are launchers). To record what the machine offers (OS, memory, disk, container
+engines and whether each is running, optional test tools) run `python scripts/system_specs.py`: it writes the git-ignored `system-specs.md`, with
+versions and sizes only, and `/onboard` does the same.
+
 Needs Python 3.12 or newer. Node 18 or newer is used only for the dashboard syntax check and the Markdown linter. A container engine (Docker or Podman) is needed
 for the local stack and, with Podman, for the development database.
 
@@ -72,6 +76,10 @@ Rule of thumb: SQL lives in `storage/store.py`; access decisions in `service/aut
 - Everything from outside is untrusted: crawled text, API input, search results. Write to the dashboard with `textContent`.
 - A migration is additive and never edited after it has been applied anywhere.
 - Formatting is checked by `scripts/lint.sh`; run `scripts/lint.sh --fix` before committing.
+- **Multi-OS.** Everything must work on macOS, Linux and Windows. New tooling, hooks and helper scripts are written in Python (already required), not bash or
+  `jq`; use `pathlib` and `sys.executable`, not hard-coded `/` separators or `.venv/bin` paths (the virtualenv's folder is `Scripts` on Windows). The
+  existing shell scripts stay as they are; `scripts/check.sh` and `scripts/lint.sh` are launchers for `scripts/check.py` and `scripts/lint.py`.
+- Claude Code hooks guard the local data and the token files and check each edit: see [claude-code-hooks.md](claude-code-hooks.md).
 
 ## Recipes
 
