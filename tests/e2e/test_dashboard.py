@@ -173,7 +173,8 @@ def test_hostile_content_is_shown_as_text_not_run(dash, admin):
 def test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys(dash, library):
     d = dash()
     page = d.page
-    panels = {"Collections": "#panel-collections", "Search": "#panel-search", "Local": "#panel-local", "Web": "#panel-web", "Access": "#panel-access"}
+    panels = {"Collections": "#panel-collections", "Search": "#panel-search", "Local": "#panel-local", "Web": "#panel-web", "Access": "#panel-access",
+              "API": "#panel-api"}
 
     def only(shown):
         for name, sel in panels.items():
@@ -197,10 +198,12 @@ def test_tabs_switch_panels_keep_the_hash_and_move_with_the_arrow_keys(dash, lib
     page.get_by_role("tab", name="Web").focus()
     page.keyboard.press("ArrowRight")
     only("Access")
+    page.keyboard.press("ArrowRight")
+    only("API")  # the last tab
     page.keyboard.press("ArrowRight")  # wraps around
     only("Collections")
     page.keyboard.press("End")
-    only("Access")
+    only("API")
     page.keyboard.press("Home")
     only("Collections")
     page.locator("#openAccess").click()  # the name in the header is a shortcut to the Access tab

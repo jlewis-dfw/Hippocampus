@@ -3,7 +3,8 @@
     tests/reports/20261023103015/report.html   the report: decision, evidence and gaps, tiers, coverage, failures, skips
     tests/reports/20261023103015/results.json  the same facts for machines (the gate decision is `decision`)
     tests/reports/20261023103015/junit.xml     for CI viewers (pytest's own --junitxml)
-    tests/reports/latest                       a link to the newest run folder
+    tests/reports/latest/                      a copy of the newest run's files, with this machine's paths masked (report.html and
+                                               results.json are committed; junit.xml is git-ignored)
 
 The gate decision follows the TEA vocabulary (PASS / CONCERNS / FAIL), derived from fixed rules (see ``decide``) that the
 report prints. Coverage of src/hippocampus is measured when the ``coverage`` package is installed (the ``dev`` extra) and the run
@@ -19,6 +20,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import time
 import warnings
@@ -203,6 +205,23 @@ class Reporter:
                 errs = [ln[1:].strip() for ln in text.splitlines() if ln.startswith("E ")]
                 r.message = errs[0] if errs else (text.strip().splitlines() or [""])[-1]
 
+    def pytest_collectreport(self, report) -> None:
+        """A module that skips or fails while it is being imported (``pytest.importorskip`` at its top, a missing import) never reaches
+        ``pytest_runtest_logreport``, so none of its tests would appear anywhere. Record the module itself as one result, so the skip
+        or the error shows up in the totals and the decision. The number of tests it hides is not known: the message says so."""
+        if not report.nodeid.endswith(".py") or not (report.skipped or report.failed):
+            return
+        r = self.results.setdefault(report.nodeid, Result(report.nodeid, tier_of(report.nodeid)))
+        if report.skipped:
+            lr = report.longrepr
+            reason = (lr[2] if isinstance(lr, tuple) else str(lr)).removeprefix("Skipped: ")
+            r.outcome, r.message = "skipped", f"{reason} (the whole module was skipped; its tests are not counted)"
+        else:
+            text = report.longreprtext or ""
+            errs = [ln[1:].strip() for ln in text.splitlines() if ln.startswith("E ")]
+            r.outcome, r.detail = "error", text
+            r.message = f"collection error: {errs[0] if errs else (text.strip().splitlines() or [''])[-1]}"
+
     def collect_coverage(self) -> Coverage | None:
         if self.cov is None:
             return None
@@ -249,14 +268,34 @@ class Reporter:
                 "percent": round(coverage.percent, 2), "statements": coverage.statements, "missed": coverage.missed,
                 "modules": [asdict(m) | {"percent": round(m.percent, 2)} for m in coverage.modules]},
             "tests": [asdict(r) | {"detail": r.detail[:4000]} for r in results]}, indent=2), encoding="utf-8")
-        latest = REPORTS / "latest"
         try:
-            if latest.is_symlink() or latest.exists():
-                latest.unlink()
-            latest.symlink_to(self.dir.name, target_is_directory=True)
-        except OSError:  # no symlinks (some Windows setups): the timestamped folder is still there
+            publish_latest(self.dir)
+        except OSError:  # the timestamped folder is still there
             pass
         return self.dir / "report.html"
+
+
+def publish_latest(run_dir: Path, reports: Path = REPORTS) -> Path:
+    """Make ``reports/latest`` a real folder holding a copy of this run's files, so it can be committed (a link would dangle in a clone and
+    needs special rights on Windows). The copy replaces this machine's repository and home paths by ``<repo>`` and ``~``: tracebacks hold
+    them, and the repository is public. The run's own folder keeps the originals."""
+    latest = reports / "latest"
+    if latest.is_symlink() or latest.is_file():
+        latest.unlink()
+    elif latest.is_dir():
+        shutil.rmtree(latest)
+    latest.mkdir()
+    swaps = []
+    for private, mask in ((ROOT, "<repo>"), (Path.home(), "~")):  # the longer path first: the repository sits inside the home folder
+        for form in {str(private), private.as_posix(), json.dumps(str(private))[1:-1]}:
+            swaps.append((form, mask))
+    for name in ("report.html", "results.json", "junit.xml"):
+        if (run_dir / name).is_file():
+            text = (run_dir / name).read_text(encoding="utf-8")
+            for form, mask in swaps:
+                text = text.replace(form, mask)
+            (latest / name).write_text(text, encoding="utf-8")
+    return latest
 
 
 def _count(rs: list[Result], *outcomes: str) -> int:

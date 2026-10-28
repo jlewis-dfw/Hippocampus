@@ -10,6 +10,9 @@ This is a living document. It describes the code as of migration `0002_access_co
 scripts/check.sh
 ```
 
+`scripts/check.sh` (and `scripts/lint.sh`) only start `scripts/check.py` (and `scripts/lint.py`), which hold the logic and need nothing but Python,
+so on Windows run `python scripts/check.py`. All options: `scripts/check.py --help`.
+
 The full run starts a throwaway test database in a container (Docker or Podman, removed at the end; see [Test database](#test-database)) and then:
 
 1. Runs the linters (`scripts/lint.sh`), including the type checker.
@@ -157,7 +160,7 @@ tests/reports/20261023103928/
   report.html     the report: open it in a browser (a single self-contained file, light and dark, readable on a phone)
   results.json    the same facts for tools: run, scope, git commit, the gate decision, per-tier counts, coverage, every test
   junit.xml       for CI viewers
-tests/reports/latest -> 20261023103928     a link to the newest run
+tests/reports/latest/                      a real copy of the newest run (paths masked); report.html and results.json are tracked in git
 ```
 
 The layout follows the [BMAD Test Architect](https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise) reports: a gate decision

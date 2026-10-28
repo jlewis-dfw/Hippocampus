@@ -10,6 +10,8 @@ import uuid
 from pathlib import Path
 
 import pytest
+
+pytest.importorskip("playwright")  # without the 'browser' extra this module skips instead of failing the whole collection
 from playwright.sync_api import expect
 from test_dashboard import Dashboard, browser, dash  # noqa: F401
 
