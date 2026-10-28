@@ -18,9 +18,11 @@ scope. Keep it short; when an entry stops being true, change or delete it.
 
 ## Structure decisions
 
-- `src/hippocampus/api.py` stays one file and only wires the application. The routes live in `src/hippocampus/routes/`, one
-  `APIRouter` module per area, with shared checks in `deps.py`, request bodies in `schemas.py` and API reference groups in
-  `tags.py`. `auth.py`, `observability.py` and `workers.py` stay beside `api.py`, not inside a package.
+- `src/hippocampus/` is grouped by layer: `core/` (chunker, diff, embedder), `ingest/`, `storage/` (`store.py` is the only SQL),
+  `service/` and `cli/`. Imports point downwards only. `service/api.py` stays one file and only wires the application; the routes live
+  in `service/routes/`, one `APIRouter` module per area, with shared checks in `deps.py`, request bodies in `schemas.py` and API
+  reference groups in `tags.py`. `auth.py`, `jobs.py`, `observability.py` and `workers.py` sit beside `api.py` inside `service/`.
+  Entry points: `hippocampus.service.api:app_from_env`, `hippocampus.storage.migrate`, `hippocampus.cli.healthcheck`, `.admin`, `.mcp_server`.
 - A refactor changes no behaviour: the generated OpenAPI document is compared before and after, and only tags and descriptions
   may differ.
 - Every route has a tag and a one-line docstring (a test requires both).

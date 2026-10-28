@@ -21,6 +21,7 @@ Examples use `$T` for a token and `http://127.0.0.1:8090` for the service. All r
 | `POST /v1/sources` | write on the collection and on each folder collection | Save a folder source |
 | `PATCH /v1/sources/{name}`, `DELETE /v1/sources/{name}` | write | Edit the rules, or forget it (`?purge=true` also removes its files) |
 | `POST /v1/sources/{name}/sync` | write | Re-sync now (`409` for an upload source: drop the folder again) |
+| `POST /v1/crawl/probe` | any token (anonymous too when `HIPPO_REQUIRE_AUTH` is off) | Check a site before crawling it |
 | `POST /v1/crawl` | write | Crawl a site (job) |
 | `POST /v1/sync/docs` | write on the docs collection | Full resync of the docs repository (job) |
 | `POST /v1/webhooks/forgejo` | HMAC signature | Forgejo push webhook (job) |
@@ -248,6 +249,35 @@ Details: [../User_Guide/ingesting.md](../User_Guide/ingesting.md#indexing-a-repo
 
 Address problems (non-public hosts, unsupported schemes) are reported **inside the job**, not as an HTTP error, because the
 check runs when the crawl starts and again on every redirect.
+
+## `POST /v1/crawl/probe` — `200`
+
+```json
+{"url": "https://docs.example.com/guide/", "match_pattern": "/guide/"}
+```
+
+Looks at a site before a crawl, with at most four requests (`robots.txt`, the start page, up to two sitemaps) through the crawler's own fetcher,
+user agent and public-address check. It stores nothing and needs no collection. `match_pattern` is optional. The answer:
+
+```json
+{"url": "https://docs.example.com/guide/",
+ "robots": {"found": true, "allowed": true, "crawl_delay": null, "content_signal": null, "sitemaps": ["https://docs.example.com/sitemap.xml"]},
+ "start_page": {"fetched": true, "status": 200, "final_url": "https://docs.example.com/guide/", "content_type": "text/html",
+                "words": 2002, "same_host_links": 58, "robots_directives": null},
+ "sitemap": {"found": true, "url": "https://docs.example.com/sitemap.xml", "index": false, "urls": 2713, "matching": 227},
+ "suggest": {"engine": "static", "depth": 3, "depth_basis": "sitemap URL depth", "match_pattern": "/guide/",
+             "pages_estimate": 200, "fetch_seconds": 100, "max_pages": 200},
+ "warnings": ["the sitemap lists 227 matching pages and the cap is 200: ..."]}
+```
+
+The suggestions are estimates from the start page and the sitemap only; the rules are in [../Architecture/crawler.md](../Architecture/crawler.md#the-probe-crawl_probepy).
+
+| Status | When |
+|---|---|
+| 403 `probing a site needs a token` | `HIPPO_REQUIRE_AUTH` is on and the caller is anonymous |
+| 403 `this source is excluded from ingestion` | The URL contains a guarded fragment |
+| 422 | An invalid `match_pattern`, an unsupported scheme, or a non-public address |
+| 501 `crawler not available` | The application was created without a prober |
 
 ## `POST /v1/sync/docs` — `202`
 

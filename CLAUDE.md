@@ -12,6 +12,7 @@ Decisions and constraints that the code does not show (deployment scope, reposit
 |---|---|
 | `/onboard` | Checks dependencies, starts the service, sets up the MCP server, and shows how to search and query the database |
 | `/test` | Asks whether to run **unit**, **integration** or **all** tests, runs them and summarises the report |
+| `/crawl` | Checks a site's `robots.txt`, creates or picks a collection, crawls and indexes the site, watches the job and proves it with a search |
 
 The commands live in `.claude/commands/` and are written as Role, Task, Context, Constraints.
 
@@ -29,8 +30,12 @@ scripts/lint.sh --fix                          # ruff, shellcheck, yamllint, mar
 
 ## Layout
 
-- `src/hippocampus/` - `api.py` (wiring) and `routes/` (the routes, one module per area), `store.py` (the only code that runs SQL), `crawler.py`, `chunker.py`, `diff.py` (incremental indexing),
-  `auth.py`, `mcp_server.py`, `admin.py` (CLI), `docs_sync.py`, `repo_ingest.py`, `sync_core.py` (file filter and scan rules), `files_ingest.py` (folder uploads), `jobs.py`, `migrate.py`, `ui/` (the dashboard).
+- `src/hippocampus/` is grouped by layer; imports point downwards only (`cli` and `service` -> `ingest` and `storage` -> `core`):
+  - `core/` - `chunker.py`, `diff.py` (incremental indexing), `embedder.py`.
+  - `ingest/` - `sync_core.py` (file filter and scan rules), `crawler.py`, `repo_ingest.py`, `docs_sync.py`, `files_ingest.py` (folder uploads).
+  - `storage/` - `store.py` (the only code that runs SQL), `migrate.py`.
+  - `service/` - `api.py` (wiring), `routes/` (one module per area), `auth.py`, `jobs.py`, `observability.py`, `workers.py`, `ui/` (the dashboard).
+  - `cli/` - `admin.py`, `mcp_server.py`, `healthcheck.py`.
 - `db/migrations/` - numbered SQL files, applied in order. `compose.yaml` and `deploy/` - the stack and its image.
 - `tests/unit`, `tests/integration`, `tests/e2e` - see below. `scripts/` - checks, the throwaway test database, prerequisites.
 - `docs/` - living documentation. Update the relevant page when you change behaviour.

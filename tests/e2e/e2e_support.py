@@ -55,7 +55,7 @@ class Stack:
         raise RuntimeError(f"stack did not become ready ({last})\n{logs}")
 
     def admin(self, *args: str) -> str:
-        res = self.compose("run", "--rm", "--no-deps", "-T", "api", "python", "-m", "hippocampus.admin", *args)
+        res = self.compose("run", "--rm", "--no-deps", "-T", "api", "python", "-m", "hippocampus.cli.admin", *args)
         if res.returncode != 0:
             raise RuntimeError(f"admin {args} failed: {res.stderr or res.stdout}")
         return res.stdout

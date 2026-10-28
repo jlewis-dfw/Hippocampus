@@ -7,9 +7,9 @@ import pytest
 from fastapi.testclient import TestClient
 from test_api import KeywordEmbedder, MemStore
 
-from hippocampus.api import create_app
-from hippocampus.docs_sync import DocsSyncConfig, is_indexable, plan_push
-from hippocampus.jobs import JobRegistry
+from hippocampus.ingest.docs_sync import DocsSyncConfig, is_indexable, plan_push
+from hippocampus.service.api import create_app
+from hippocampus.service.jobs import JobRegistry
 
 SECRET = "hook-secret"
 FAKE_AWS = "AKIA" + "IOSFODNN7EXAMPLE"

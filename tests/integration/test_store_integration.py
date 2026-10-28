@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from hippocampus.diff import Document, sync_collection
+from hippocampus.core.diff import Document, sync_collection
 
 pytestmark = pytest.mark.usefixtures("database")  # a throwaway database unless HIPPO_TEST_DSN names one (see conftest.py)
 
@@ -37,7 +37,7 @@ def _chunk_count(conn, slug):
 
 
 def test_unchanged_changed_deleted(conn_and_slug):
-    from hippocampus.store import PgStore
+    from hippocampus.storage.store import PgStore
 
     conn, slug = conn_and_slug
     store, emb = PgStore(conn), FakeEmbedder()
@@ -61,7 +61,7 @@ def test_unchanged_changed_deleted(conn_and_slug):
 
 def test_api_read_surface(conn_and_slug):
     """list_collections / search / totals against real pgvector (HIPPO-E04-F1-S01)."""
-    from hippocampus.store import PgStore
+    from hippocampus.storage.store import PgStore
 
     class Emb:
         def embed(self, texts):
@@ -91,7 +91,7 @@ def test_restricted_filtering_happens_before_limit(conn_and_slug):
     """A hidden collection that out-ranks everything must not shrink or leak into a visible result set."""
     import uuid
 
-    from hippocampus.store import PgStore
+    from hippocampus.storage.store import PgStore
 
     class Emb:
         def embed(self, texts):
@@ -118,8 +118,8 @@ def test_restricted_filtering_happens_before_limit(conn_and_slug):
 
 
 def test_client_lifecycle(conn_and_slug):
-    from hippocampus import auth
-    from hippocampus.store import PgStore
+    from hippocampus.service import auth
+    from hippocampus.storage.store import PgStore
 
     conn, slug = conn_and_slug
     store = PgStore(conn)
@@ -150,8 +150,8 @@ def test_client_lifecycle(conn_and_slug):
 
 
 def test_unknown_collection_and_admin_count(conn_and_slug):
-    from hippocampus import auth
-    from hippocampus.store import PgStore
+    from hippocampus.service import auth
+    from hippocampus.storage.store import PgStore
 
     conn, slug = conn_and_slug
     store = PgStore(conn)
@@ -169,7 +169,7 @@ def test_unknown_collection_and_admin_count(conn_and_slug):
 
 
 def test_sync_source_lifecycle(conn_and_slug):
-    from hippocampus.store import PgStore
+    from hippocampus.storage.store import PgStore
 
     conn, slug = conn_and_slug
     store = PgStore(conn)
@@ -213,7 +213,7 @@ def test_pool_second_caller_waits_and_a_third_times_out():
     import threading
     import time
 
-    from hippocampus.store import StoreBusy, connect_store
+    from hippocampus.storage.store import StoreBusy, connect_store
 
     factory = connect_store(os.environ["HIPPO_TEST_DSN"], pool=(1, 1, 1.0))
     holder = factory()

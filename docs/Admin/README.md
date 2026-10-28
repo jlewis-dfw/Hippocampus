@@ -1,7 +1,7 @@
 # The admin tool
 
-`python -m hippocampus.admin` manages accounts and collection visibility **directly in the database**. It needs only database access, so it works
-before any admin account exists and is the way to recover from a lost admin token. Source: `src/hippocampus/admin.py`.
+`python -m hippocampus.cli.admin` manages accounts and collection visibility **directly in the database**. It needs only database access, so it works
+before any admin account exists and is the way to recover from a lost admin token. Source: `src/hippocampus/cli/admin.py`.
 
 This is a living document. It describes the code as of migration `0002_access_control`; update it alongside the source.
 
@@ -10,7 +10,7 @@ This is a living document. It describes the code as of migration `0002_access_co
 | Setup | Command |
 |---|---|
 | Local stack | `./hippocampus admin <command> ...` (runs the tool in the API container, which already knows the database) |
-| Any environment | `HIPPO_DSN=postgresql://user:pass@host:5432/hippocampus python -m hippocampus.admin <command> ...` (needs the package installed, `pip install -e ".[db]"`) |
+| Any environment | `HIPPO_DSN=postgresql://user:pass@host:5432/hippocampus python -m hippocampus.cli.admin <command> ...` (needs the package installed, `pip install -e ".[db]"`) |
 
 Without `HIPPO_DSN` the tool prints `HIPPO_DSN is not set` and exits with status 2.
 

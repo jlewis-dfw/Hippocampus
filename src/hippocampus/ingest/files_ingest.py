@@ -18,8 +18,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
-from .diff import sync_collection
-from .embedder import Embedder
+from ..core.diff import sync_collection
+from ..core.embedder import Embedder
 from .sync_core import FileFilter, FileScan, exclude_path_parts, file_uri, scan_files
 
 MAX_BATCH_FILES = 500

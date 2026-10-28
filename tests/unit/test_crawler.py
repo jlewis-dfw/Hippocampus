@@ -1,7 +1,7 @@
 import pytest
 from test_api import KeywordEmbedder, MemStore
 
-from hippocampus.crawler import (
+from hippocampus.ingest.crawler import (
     CrawlOptions,
     CrawlRefused,
     FetchResult,
@@ -11,7 +11,7 @@ from hippocampus.crawler import (
     normalize,
     parse_html,
 )
-from hippocampus.jobs import Job
+from hippocampus.service.jobs import Job
 
 HOME = """<html><head><title>Home  Docs</title><style>x{}</style></head><body>
 <nav><a href="/nav-only">Nav</a></nav>
@@ -207,7 +207,7 @@ def test_browser_fetcher_renders_js_and_blocks_private_subrequests(monkeypatch):
     import http.server
     import threading
 
-    from hippocampus import crawler as c
+    from hippocampus.ingest import crawler as c
 
     class H(http.server.BaseHTTPRequestHandler):
         def log_message(self, *a):

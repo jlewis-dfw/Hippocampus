@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from hippocampus.workers import check_single_worker, worker_count
+from hippocampus.service.workers import check_single_worker, worker_count
 
 
 @pytest.mark.parametrize("env,n", [({}, 1), ({"WEB_CONCURRENCY": "1"}, 1), ({"WEB_CONCURRENCY": "4"}, 4),

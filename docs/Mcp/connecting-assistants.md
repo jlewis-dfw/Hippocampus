@@ -33,7 +33,7 @@ The assistant's configuration file will still hold the token in plain text. Keep
 ```bash
 claude mcp add hippocampus \
   -e HIPPO_URL=http://127.0.0.1:8090 -e HIPPO_TOKEN="$HIPPO_TOKEN" -e HIPPO_MCP_READONLY=1 \
-  -- /path/to/hippocampus/.venv/bin/python -m hippocampus.mcp_server
+  -- /path/to/hippocampus/.venv/bin/python -m hippocampus.cli.mcp_server
 claude mcp list
 ```
 
@@ -45,7 +45,7 @@ that is meant to be shared: **do not use `project` scope with a token in it**. I
 ```bash
 opencode mcp add --global \
   --env HIPPO_URL=http://127.0.0.1:8090 --env HIPPO_TOKEN="$HIPPO_TOKEN" --env HIPPO_MCP_READONLY=1 \
-  hippocampus -- /path/to/hippocampus/.venv/bin/python -m hippocampus.mcp_server
+  hippocampus -- /path/to/hippocampus/.venv/bin/python -m hippocampus.cli.mcp_server
 opencode mcp list
 ```
 
@@ -58,7 +58,7 @@ session first.
 ```bash
 agy mcp add \
   --env HIPPO_URL=http://127.0.0.1:8090 --env HIPPO_TOKEN="$HIPPO_TOKEN" --env HIPPO_MCP_READONLY=1 \
-  hippocampus /path/to/hippocampus/.venv/bin/python -m hippocampus.mcp_server
+  hippocampus /path/to/hippocampus/.venv/bin/python -m hippocampus.cli.mcp_server
 agy mcp list
 ```
 
@@ -80,7 +80,7 @@ so write the entry in a config file (this is the schema in Devin's documentation
   "mcpServers": {
     "hippocampus": {
       "command": "/path/to/hippocampus/.venv/bin/python",
-      "args": ["-m", "hippocampus.mcp_server"],
+      "args": ["-m", "hippocampus.cli.mcp_server"],
       "env": {
         "HIPPO_URL": "http://127.0.0.1:8090",
         "HIPPO_TOKEN": "hip_...",

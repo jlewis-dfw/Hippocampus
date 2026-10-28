@@ -9,12 +9,12 @@ from dataclasses import dataclass
 
 from fastapi import HTTPException, Request
 
+from ...core.embedder import Embedder
+from ...ingest.docs_sync import DocsSyncConfig
 from ..auth import ANONYMOUS, AuthError, Principal, authenticate
-from ..docs_sync import DocsSyncConfig
-from ..embedder import Embedder
 from ..jobs import Job, JobRegistry
 from ..observability import client_address
-from .schemas import CrawlRequest
+from .schemas import CrawlRequest, ProbeRequest
 
 log = logging.getLogger("hippocampus")
 
@@ -22,6 +22,7 @@ SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
 StoreFactory = Callable[[], AbstractContextManager]
 Crawler = Callable[[Job, CrawlRequest], dict | None]
+Prober = Callable[[ProbeRequest], dict]
 
 
 def check_slug(slug: str) -> None:
@@ -37,6 +38,7 @@ class Deps:
     crawler: Crawler | None = None
     docs_sync: DocsSyncConfig | None = None
     require_auth: bool = False
+    prober: Prober | None = None
 
     # --- access control (HIPPO-E06-F0) ---
 

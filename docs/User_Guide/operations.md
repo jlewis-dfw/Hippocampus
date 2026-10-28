@@ -9,7 +9,7 @@ The local stack has three compose services (`compose.yaml`, project name `hippoc
 | Service | What it is | Lifetime |
 |---|---|---|
 | `postgres` | PostgreSQL 16 with the pgvector extension; data in the named volume `pgdata` | long-running; no host port |
-| `migrate` | Runs `python -m hippocampus.migrate` once and exits | one-shot at every `up` |
+| `migrate` | Runs `python -m hippocampus.storage.migrate` once and exits | one-shot at every `up` |
 | `api` | The service and dashboard (uvicorn, port 8090 in the container) | long-running; waits for `migrate` |
 
 The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and `pgvector/pgvector:pg16`.
@@ -19,7 +19,7 @@ The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and 
 - `./hippocampus status` shows the containers and the status JSON.
 - `GET /v1/status` returns the database round-trip time, the number of running jobs, the embedding model and the totals for
   what the caller may read. It is the best single check.
-- The `api` container has a built-in health check (`python -m hippocampus.healthcheck`, every 15 seconds) that requests the
+- The `api` container has a built-in health check (`python -m hippocampus.cli.healthcheck`, every 15 seconds) that requests the
   interactive API page (`/docs`) from inside the container. `docker compose ps` shows `healthy` when it passes.
 - `GET /openapi.json` is the machine-readable API description; `/docs` and `/redoc` are the interactive pages. (The interactive
   pages load their scripts from a public CDN, so they need internet access in the browser; `/openapi.json` does not.)

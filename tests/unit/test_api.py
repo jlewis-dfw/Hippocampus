@@ -3,8 +3,8 @@ from contextlib import contextmanager
 
 from fastapi.testclient import TestClient
 
-from hippocampus.api import create_app
-from hippocampus.jobs import JobRegistry
+from hippocampus.service.api import create_app
+from hippocampus.service.jobs import JobRegistry
 
 
 class KeywordEmbedder:
@@ -273,7 +273,7 @@ def test_status():
 def test_network_gate():
     import ipaddress
 
-    from hippocampus.api import parse_networks
+    from hippocampus.service.api import parse_networks
 
     mem = MemStore()
 
@@ -347,7 +347,7 @@ def test_every_operation_is_tagged_and_described_for_the_api_reference():
 
 
 def test_network_gate_covers_api_but_not_ui():
-    from hippocampus.api import parse_networks
+    from hippocampus.service.api import parse_networks
     gated = TestClient(create_app(lambda: None, KeywordEmbedder(), allowed_networks=parse_networks("203.0.113.0/24")))
     assert gated.get("/v1/status").status_code == 403
     assert gated.get("/ui/").status_code == 200

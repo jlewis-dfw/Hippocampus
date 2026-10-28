@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from hippocampus.sync_core import FileFilter, PathError, normalize_path, normalize_text
+from hippocampus.ingest.sync_core import FileFilter, PathError, normalize_path, normalize_text
 
 VECTORS = json.loads((Path(__file__).parents[1] / "vectors" / "filter_vectors.json").read_text(encoding="utf-8"))
 
@@ -44,7 +44,7 @@ def test_check_content(case):
 
 
 def test_fixture_vault_gives_the_same_indexed_paths():
-    from hippocampus.sync_core import scan_files
+    from hippocampus.ingest.sync_core import scan_files
 
     vault = json.loads((Path(__file__).parents[1] / "vectors" / "vault_paths.json").read_text(encoding="utf-8"))
     scan = scan_files("v", [(p, t, None) for p, t in vault["files"].items()], FileFilter.build())

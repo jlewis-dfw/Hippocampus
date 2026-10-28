@@ -6,8 +6,8 @@ from typing import Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from ..files_ingest import MAX_BATCH_FILES
-from ..sync_core import SOURCE_NAME_RE, FileFilter
+from ...ingest.files_ingest import MAX_BATCH_FILES
+from ...ingest.sync_core import SOURCE_NAME_RE, FileFilter
 
 
 class SearchRequest(BaseModel):
@@ -103,6 +103,11 @@ class SourceUpdate(BaseModel):
     collection: str | None = None
     settings: FilterSpec | None = None
     folder_collections: dict[str, str] | None = Field(None, max_length=500)
+
+
+class ProbeRequest(BaseModel):
+    url: str = Field(min_length=1, max_length=1024)
+    match_pattern: str | None = None
 
 
 class CrawlRequest(BaseModel):

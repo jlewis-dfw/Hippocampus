@@ -14,7 +14,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
-from .diff import Document
+from ..core.diff import Document
 
 MAX_FILE_BYTES = 200_000
 MAX_FILES = 5_000

@@ -56,7 +56,7 @@ wait_healthy() {
   die "the service did not become healthy in time (see the log above)"
 }
 
-admin() { compose run --rm --no-deps -T api python -m hippocampus.admin "$@"; }
+admin() { compose run --rm --no-deps -T api python -m hippocampus.cli.admin "$@"; }
 
 has_admin() { admin list-clients 2>/dev/null | grep -q "active .*admin=True"; }
 

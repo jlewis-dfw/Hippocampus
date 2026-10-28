@@ -151,7 +151,7 @@ def test_request_validation():
 
 
 def test_oversized_batch_is_refused(monkeypatch):
-    import hippocampus.routes.uploads as api
+    import hippocampus.service.routes.uploads as api
     monkeypatch.setattr(api, "MAX_BATCH_CHARS", 10)
     c, _ = setup()
     r = c.post("/v1/ingest/files", json={"collection": "notes", "source": "vault", "files": files(**{"a.md": "x" * 11})})
@@ -159,7 +159,7 @@ def test_oversized_batch_is_refused(monkeypatch):
 
 
 def test_run_size_limit(monkeypatch):
-    import hippocampus.files_ingest as fi
+    import hippocampus.ingest.files_ingest as fi
     monkeypatch.setattr(fi, "MAX_SESSION_FILES", 2)
     c, _ = setup()
     r = c.post("/v1/ingest/files", json={"collection": "notes", "source": "vault",
@@ -168,7 +168,7 @@ def test_run_size_limit(monkeypatch):
 
 
 def test_too_many_runs_in_progress(monkeypatch):
-    import hippocampus.files_ingest as fi
+    import hippocampus.ingest.files_ingest as fi
     monkeypatch.setattr(fi, "MAX_SESSIONS", 1)
     c, _ = setup()
     body = {"collection": "notes", "source": "vault", "files": []}

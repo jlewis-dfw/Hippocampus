@@ -62,7 +62,7 @@ answers 404. Create one in the dashboard (admin token) or with `POST /v1/collect
 
 ```bash
 pip install -e ".[mcp]"   # in a virtualenv
-HIPPO_URL=http://127.0.0.1:8090 HIPPO_TOKEN=<a token with read access> HIPPO_MCP_READONLY=1 python -m hippocampus.mcp_server
+HIPPO_URL=http://127.0.0.1:8090 HIPPO_TOKEN=<a token with read access> HIPPO_MCP_READONLY=1 python -m hippocampus.cli.mcp_server
 ```
 
 `HIPPO_MCP_READONLY=1` leaves out the indexing tool, which reads local files; use it wherever a model chooses the tools.

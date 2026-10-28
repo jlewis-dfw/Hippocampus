@@ -9,7 +9,8 @@ pytestmark = pytest.mark.usefixtures("database")  # a throwaway database unless 
 def test_cli_roundtrip(monkeypatch, capsys):
     import psycopg
 
-    from hippocampus import admin, auth
+    from hippocampus.cli import admin
+    from hippocampus.service import auth
 
     dsn = os.environ["HIPPO_TEST_DSN"]
     monkeypatch.setenv("HIPPO_DSN", dsn)

@@ -1,4 +1,4 @@
-"""Container health probe: ``python -m hippocampus.healthcheck`` (exit 0 if the API answers on :8090)."""
+"""Container health probe: ``python -m hippocampus.cli.healthcheck`` (exit 0 if the API answers on :8090)."""
 import sys
 import urllib.request
 

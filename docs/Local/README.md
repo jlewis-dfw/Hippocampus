@@ -15,10 +15,10 @@ convention (`hippocampus-api-1`, `hippocampus_pgdata`, `hippocampus_default`).
 | Service | Image | Role | Lifetime |
 |---|---|---|---|
 | `postgres` | `docker.io/pgvector/pgvector:pg16` | The database. Data in the named volume `pgdata`. **No published port.** Health check: `pg_isready` every 3 s, 20 retries | long-running, `restart: unless-stopped` |
-| `migrate` | built from `deploy/api.Dockerfile`, tagged `hippocampus-api:local` | Runs `python -m hippocampus.migrate`, then exits | one-shot, `restart: "no"`; starts when `postgres` is healthy |
+| `migrate` | built from `deploy/api.Dockerfile`, tagged `hippocampus-api:local` | Runs `python -m hippocampus.storage.migrate`, then exits | one-shot, `restart: "no"`; starts when `postgres` is healthy |
 | `api` | `hippocampus-api:local` (`pull_policy: never`: it is built by `migrate`'s build section) | The service and dashboard on port 8090 inside the container | long-running, `restart: unless-stopped`; starts when `postgres` is healthy **and** `migrate` completed successfully |
 
-The `api` health check is `python -m hippocampus.healthcheck` (it requests the interactive API page from inside the container) every 15 s with a 30 s start
+The `api` health check is `python -m hippocampus.cli.healthcheck` (it requests the interactive API page from inside the container) every 15 s with a 30 s start
 period and 5 retries.
 
 ### Wiring
@@ -63,7 +63,7 @@ Sizes (measured): about 660 MB without Chromium, about 1.7 GB with it; the datab
 | `ensure_env` | If `hippocampus.env` is missing, copies the example with a random 32-character password (letters and digits only, so it is safe inside a connection URL), created with mode 600 |
 | `port` | Reads `HIPPO_PORT` from the env file |
 | `wait_healthy` | Polls `/v1/status` on `127.0.0.1:<port>` every 3 s for up to 6 minutes (with `curl`, else `python3`); on timeout prints the last 40 log lines and fails |
-| `admin` | `compose run --rm --no-deps -T api python -m hippocampus.admin ...`: runs the admin tool in a throwaway API container |
+| `admin` | `compose run --rm --no-deps -T api python -m hippocampus.cli.admin ...`: runs the admin tool in a throwaway API container |
 | `has_admin` | Runs `list-clients` and looks for an active admin account |
 
 ### Commands

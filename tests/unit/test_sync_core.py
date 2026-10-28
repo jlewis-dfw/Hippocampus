@@ -1,6 +1,6 @@
 import pytest
 
-from hippocampus.sync_core import (
+from hippocampus.ingest.sync_core import (
     FileFilter,
     PathError,
     case_collisions,

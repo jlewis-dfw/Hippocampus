@@ -51,7 +51,9 @@ The launcher (`hippocampus`, a bash script) does the following, in order:
    minute or two.
 5. If no active admin account exists, creates one named `admin` and **prints its token once**.
 
-Copy that token now. A line such as this is printed:
+Copy that token now. (If you use the `/onboard` command, it starts the service through `scripts/token_env.py capture`, which saves the token to the
+git-ignored `token.env` with mode 600 and keeps it out of the output; then `scripts/token_env.py run HIPPO_TOKEN_ADMIN -- <command>` hands it to a
+command, and `scripts/token_env.py list` shows the names saved.) A line such as this is printed:
 
 ```
 token (shown once, store it in the vault): hip_...

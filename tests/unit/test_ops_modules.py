@@ -7,7 +7,9 @@ from contextlib import contextmanager
 import pytest
 from test_api import MemStore
 
-from hippocampus import admin, embedder, migrate
+from hippocampus.cli import admin
+from hippocampus.core import embedder
+from hippocampus.storage import migrate
 
 # --- migrate
 
@@ -117,14 +119,14 @@ def test_healthcheck_exit_codes(monkeypatch, capsys):
             pass
 
     monkeypatch.setattr("urllib.request.urlopen", lambda *a, **k: Resp())
-    runpy.run_module("hippocampus.healthcheck", run_name="__main__")  # answers: falls through, exit 0
+    runpy.run_module("hippocampus.cli.healthcheck", run_name="__main__")  # answers: falls through, exit 0
 
     def down(*a, **k):
         raise OSError("refused")
 
     monkeypatch.setattr("urllib.request.urlopen", down)
     with pytest.raises(SystemExit) as exc:
-        runpy.run_module("hippocampus.healthcheck", run_name="__main__")
+        runpy.run_module("hippocampus.cli.healthcheck", run_name="__main__")
     assert exc.value.code == 1 and "refused" in capsys.readouterr().err
 
 

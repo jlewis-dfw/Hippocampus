@@ -1,7 +1,7 @@
 """Postgres/pgvector store for the ``hippocampus`` schema (needs the ``db`` extra)."""
 from __future__ import annotations
 
-from .diff import EmbeddedChunk
+from ..core.diff import EmbeddedChunk
 
 
 def _vec(v: list[float]) -> str:

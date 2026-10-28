@@ -1,7 +1,7 @@
 import pytest
 from test_api import KeywordEmbedder, MemStore, make_client
 
-from hippocampus.repo_ingest import ingest_pack, parse_pack, scan_pack, scan_secrets
+from hippocampus.ingest.repo_ingest import ingest_pack, parse_pack, scan_pack, scan_secrets
 
 # Fake secrets are assembled at runtime so this file itself holds no secret-shaped literal.
 FAKE_AWS = "AKIA" + "IOSFODNN7EXAMPLE"

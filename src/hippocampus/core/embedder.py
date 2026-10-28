@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol
+from typing import Any, Protocol
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
 DIMENSIONS = 384
@@ -18,7 +18,7 @@ class FastEmbedder:
     def __init__(self, model_name: str = MODEL_NAME, cache_dir: str | None = None):
         self._model_name = model_name
         self._cache_dir = cache_dir
-        self._model = None
+        self._model: Any = None
 
     def _load(self):
         if self._model is None:

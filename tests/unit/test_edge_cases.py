@@ -14,10 +14,13 @@ from test_access import add_client, build
 from test_api import KeywordEmbedder, MemStore, make_client
 from test_docs_sync import FakeSource, finished, push, setup
 
-from hippocampus import api, chunker, docs_sync, mcp_server
-from hippocampus.api import create_app
-from hippocampus.docs_sync import DocsSyncConfig, ForgejoSource
-from hippocampus.jobs import JobRegistry
+from hippocampus.cli import mcp_server
+from hippocampus.core import chunker
+from hippocampus.ingest import docs_sync
+from hippocampus.ingest.docs_sync import DocsSyncConfig, ForgejoSource
+from hippocampus.service import api
+from hippocampus.service.api import create_app
+from hippocampus.service.jobs import JobRegistry
 
 # --- api
 
@@ -76,8 +79,8 @@ def test_webhook_payload_problems():
 
 
 def test_app_from_env_wires_everything(monkeypatch):
-    from hippocampus import embedder as embedder_mod
-    from hippocampus import store as store_mod
+    from hippocampus.core import embedder as embedder_mod
+    from hippocampus.storage import store as store_mod
 
     mem = MemStore()
 

@@ -55,7 +55,7 @@ would make us change it. Short on purpose: the topic pages have the detail.
 
 ## The dashboard has no framework
 
-- **Decision.** `src/hippocampus/ui/` is plain HTML, CSS and a few static scripts, with no bundler and no build step.
+- **Decision.** `src/hippocampus/service/ui/` is plain HTML, CSS and a few static scripts, with no bundler and no build step.
 - **Why.** It is a small admin surface; static files keep the image simple, let the CSP forbid inline script, and leave nothing to rebuild or patch.
 - **Considered.** React or Vue with a bundler (a toolchain and a dependency tree larger than the dashboard).
 - **Code and test.** `ui/`; the Chromium tests in `tests/e2e`.

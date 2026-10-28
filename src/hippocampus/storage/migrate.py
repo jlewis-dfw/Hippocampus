@@ -1,6 +1,6 @@
 """Applies the SQL migrations in db/migrations to the database in HIPPO_DSN (needs the ``db`` extra).
 
-    python -m hippocampus.migrate
+    python -m hippocampus.storage.migrate
 
 Pending files are applied in order, each in a transaction, and recorded in ``public.schema_migrations`` (the table
 scripts/dev-db.sh and the homelab migrate step also use), so running it again does nothing. The folder comes from
@@ -23,7 +23,7 @@ def migrations_dir() -> Path:
     env = os.environ.get("HIPPO_MIGRATIONS_DIR")
     if env:
         return Path(env)
-    return Path(__file__).resolve().parents[2] / "db" / "migrations"
+    return Path(__file__).resolve().parents[3] / "db" / "migrations"
 
 
 def migration_files(folder: Path | None = None) -> list[Path]:
@@ -63,7 +63,7 @@ def main() -> int:
 
     import psycopg
 
-    from .observability import setup_logging
+    from ..service.observability import setup_logging
 
     setup_logging(os.environ)
     dsn = os.environ.get("HIPPO_DSN")

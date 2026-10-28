@@ -5,8 +5,8 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from ...ingest.docs_sync import DocsSyncConfig, apply_changes, full_resync, plan_push, verify_signature
 from ..auth import Principal
-from ..docs_sync import DocsSyncConfig, apply_changes, full_resync, plan_push, verify_signature
 from .deps import Deps
 from .tags import DOCS
 

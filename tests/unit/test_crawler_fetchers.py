@@ -7,8 +7,8 @@ import pytest
 from test_api import KeywordEmbedder
 from test_crawler import FakeFetcher
 
-from hippocampus import crawler as c
-from hippocampus.crawler import (
+from hippocampus.ingest import crawler as c
+from hippocampus.ingest.crawler import (
     BrowserFetcher,
     CrawlOptions,
     CrawlRefused,
@@ -19,7 +19,7 @@ from hippocampus.crawler import (
     make_crawler,
     parse_html,
 )
-from hippocampus.jobs import Job
+from hippocampus.service.jobs import Job
 
 PUBLIC = "https://93.184.216.34/"
 

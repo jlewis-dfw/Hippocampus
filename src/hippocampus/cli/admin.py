@@ -1,8 +1,8 @@
 """Admin CLI for access control, talking straight to Postgres (so the first admin needs no API token).
 
-    HIPPO_DSN=... python -m hippocampus.admin create-client --name root --admin
-    HIPPO_DSN=... python -m hippocampus.admin create-client --name private-kobold --read 'private-*' --write 'private-*'
-    HIPPO_DSN=... python -m hippocampus.admin list-clients | rotate-client NAME | revoke-client NAME | set-visibility SLUG restricted
+    HIPPO_DSN=... python -m hippocampus.cli.admin create-client --name root --admin
+    HIPPO_DSN=... python -m hippocampus.cli.admin create-client --name private-kobold --read 'private-*' --write 'private-*'
+    HIPPO_DSN=... python -m hippocampus.cli.admin list-clients | rotate-client NAME | revoke-client NAME | set-visibility SLUG restricted
 
 The token is printed once and never stored (only its SHA-256 is).
 """
@@ -12,12 +12,12 @@ import argparse
 import os
 import sys
 
-from .auth import CLIENT_NAME_RE, hash_token, is_private_slug, new_token, validate_grants
-from .store import connect_store
+from ..service.auth import CLIENT_NAME_RE, hash_token, is_private_slug, new_token, validate_grants
+from ..storage.store import connect_store
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="hippocampus.admin", description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(prog="hippocampus.cli.admin", description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("create-client", help="create a client and print its token once")
     c.add_argument("--name", required=True)

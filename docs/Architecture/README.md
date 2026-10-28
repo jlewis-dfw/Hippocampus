@@ -39,21 +39,21 @@ This is a living document. It describes the code as of migration `0003_sync_sour
 
 | Component | Where | Role |
 |---|---|---|
-| **API** | `api.py`, `routes/` | REST routes, access rules, background jobs, serves the dashboard |
-| **Store** | `store.py` | Every SQL statement; the only code that touches the database |
-| **Auth** | `auth.py` | Tokens, grants, the `Principal` |
-| **Chunker** | `chunker.py` | Cuts Markdown into heading-aware passages |
-| **Embedder** | `embedder.py` | Turns text into 384-number vectors on the CPU |
-| **Diff/sync** | `diff.py` | The one indexing step all sources share: skip unchanged, embed, replace |
-| **Crawler** | `crawler.py` | Fetches sites (static HTTP or headless Chromium) and converts them to Markdown |
-| **Repository ingester** | `repo_ingest.py` | Parses Repomix packs and rejects files that look like secrets |
-| **Docs sync** | `docs_sync.py` | Keeps a collection in step with a Forgejo repository via webhook |
-| **Folder uploads** | `sync_core.py`, `files_ingest.py` | One set of file rules; batched uploads that build a sync run, with saved sources |
-| **Jobs** | `jobs.py` | In-memory registry of background work with a replayable log |
-| **Migrations** | `migrate.py`, `db/migrations/` | The schema, applied in order |
-| **MCP server** | `mcp_server.py` | A stdio tool server that calls the REST API |
-| **Admin tool** | `admin.py` | Manages accounts and visibility straight in the database |
-| **Dashboard** | `ui/` | A single static page |
+| **API** | `service/api.py`, `service/routes/` | REST routes, access rules, background jobs, serves the dashboard |
+| **Store** | `storage/store.py` | Every SQL statement; the only code that touches the database |
+| **Auth** | `service/auth.py` | Tokens, grants, the `Principal` |
+| **Chunker** | `core/chunker.py` | Cuts Markdown into heading-aware passages |
+| **Embedder** | `core/embedder.py` | Turns text into 384-number vectors on the CPU |
+| **Diff/sync** | `core/diff.py` | The one indexing step all sources share: skip unchanged, embed, replace |
+| **Crawler** | `ingest/crawler.py` | Fetches sites (static HTTP or headless Chromium) and converts them to Markdown |
+| **Repository ingester** | `ingest/repo_ingest.py` | Parses Repomix packs and rejects files that look like secrets |
+| **Docs sync** | `ingest/docs_sync.py` | Keeps a collection in step with a Forgejo repository via webhook |
+| **Folder uploads** | `ingest/sync_core.py`, `ingest/files_ingest.py` | One set of file rules; batched uploads that build a sync run, with saved sources |
+| **Jobs** | `service/jobs.py` | In-memory registry of background work with a replayable log |
+| **Migrations** | `storage/migrate.py`, `db/migrations/` | The schema, applied in order |
+| **MCP server** | `cli/mcp_server.py` | A stdio tool server that calls the REST API |
+| **Admin tool** | `cli/admin.py` | Manages accounts and visibility straight in the database |
+| **Dashboard** | `service/ui/` | A single static page |
 
 All four ways of getting content in (crawl, push, repository pack, docs sync) build a mapping `uri -> Document(title, text)` and
 hand it to the **same** function, `sync_collection`, so they share the chunking, embedding and change detection.

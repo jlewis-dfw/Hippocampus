@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from hippocampus import mcp_server
+from hippocampus.cli import mcp_server
 
 CALLS = []
 AUTH = []
