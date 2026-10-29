@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -54,16 +54,20 @@ def sync_collection(
     embedder: Embedder,
     *,
     prune: bool = True,
+    progress: Callable[[int, int], None] | None = None,
 ) -> SyncResult:
     """Bring ``collection`` in line with ``documents`` (uri -> content).
 
     Unchanged hashes are skipped; changed/new sources are chunked and embedded
     *before* the store is touched, so an embedding failure never purges old
     vectors. With ``prune`` set, sources absent from ``documents`` are deleted.
+    ``progress(done, total)`` is called as each document starts (with how many are complete) and once at the end.
     """
     known = store.source_hashes(collection)
     result = SyncResult()
-    for uri, doc in documents.items():
+    for done, (uri, doc) in enumerate(documents.items(), 1):
+        if progress:
+            progress(done - 1, len(documents))  # documents completed so far
         digest = sha256_text(doc.text)
         if known.get(uri) == digest:
             result.unchanged.append(uri)
@@ -76,6 +80,8 @@ def sync_collection(
             collection, uri, doc.title, digest, [EmbeddedChunk(c, v) for c, v in zip(chunks, vectors, strict=True)]
         )
         (result.changed if uri in known else result.added).append(uri)
+    if progress and documents:
+        progress(len(documents), len(documents))
     if prune:
         for uri in known.keys() - documents.keys():
             store.delete_source(collection, uri)

@@ -68,7 +68,7 @@ again** on a saved folder). Tests that touch a control must click its tab first;
 | Helpers | `$`, `el`, `banner`, `fmtDate`, `fmtNum` | `banner` shows errors under the header |
 | Token and identity | `getToken`, `setToken`, `authHeaders`, `loadWho` | `loadWho` calls `GET /v1/whoami`, sets the button text and shows or hides the admin-only panel |
 | `api(path, options)` | | `fetch` with `credentials: 'same-origin'` and `redirect: 'manual'`; adds the token header; turns a non-2xx answer into an `Error("<status>: <detail>")`; an opaque redirect (a login page from a proxy) becomes "Session expired" |
-| Status | `loadStatus` | Pills from `GET /v1/status`; refreshed every 15 seconds |
+| Status | `loadStatus` | Pills from `GET /v1/status`, which also shows or hides the Resync docs repo button (`docs_sync`); refreshed every 15 seconds |
 | Collections | `loadCollections`, `fillSelect`, `toggleVisibility`, `deleteCollection`, `showSources` | The visibility badge and the admin-only Restrict/Share button come from `me.admin` |
 | Jobs | `watchJob`, `setJob`, `logLine`, `startCrawl`, `resyncDocs` | See below |
 | Search | `openSearch`, `runSearch` | Posts to `/v1/search`; shows score, collection, title, URI, heading path and the passage |

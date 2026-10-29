@@ -56,6 +56,14 @@ class Stack:
         logs = self.compose("logs", "--tail", "40").stdout
         raise RuntimeError(f"stack did not become ready ({last})\n{logs}")
 
+    def psql(self, statement: str) -> str:
+        """Run SQL in this stack's own database (a throwaway one). Used to seed what a crawl of a real site would leave."""
+        res = self.compose("exec", "-T", "postgres", "psql", "-U", "hippocampus", "-d", "hippocampus", "-v", "ON_ERROR_STOP=1",
+                           "-tA", "-c", statement)
+        if res.returncode != 0:
+            raise RuntimeError(f"psql failed: {res.stderr or res.stdout}")
+        return res.stdout.strip()
+
     def admin(self, *args: str) -> str:
         res = self.compose("run", "--rm", "--no-deps", "-T", "api", "python", "-m", "hippocampus.cli.admin", *args)
         if res.returncode != 0:

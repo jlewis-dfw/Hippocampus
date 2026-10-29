@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..auth import Principal, is_private_slug
 from .deps import Deps, check_slug
-from .schemas import CollectionCreate, CollectionUpdate
+from .schemas import CollectionCreate, CollectionUpdate, SourcesRemove
 from .tags import COLLECTIONS
 
 
@@ -35,6 +35,14 @@ def build(d: Deps) -> APIRouter:
         if rows is None:
             raise HTTPException(404, f"collection {slug!r} not found")
         return {"collection": slug, "sources": rows}
+
+    @router.delete("/v1/collections/{slug}/sources")
+    def remove_sources(slug: str, req: SourcesRemove, p: Principal = Depends(current_principal)):
+        """Remove documents (and their chunks) from a collection. A crawled or synced one comes back on the next run unless excluded."""
+        check_slug(slug)
+        with store_factory() as store:
+            need_write(p, store, slug)
+            return {"collection": slug, "removed": store.delete_sources(slug, req.uris)}
 
     @router.post("/v1/collections", status_code=201)
     def create_collection(req: CollectionCreate, p: Principal = Depends(current_principal)):

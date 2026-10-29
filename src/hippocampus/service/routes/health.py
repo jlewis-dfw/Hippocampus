@@ -15,7 +15,9 @@ def build(d: Deps) -> APIRouter:
     router = APIRouter(tags=[HEALTH])
     store_factory = d.store_factory
     jobs = d.jobs
+    docs_sync_enabled = d.docs_sync is not None
     require_auth = d.require_auth
+    crawl_require_ack = d.crawl_require_ack
     current_principal = d.current_principal
     readable = d.readable
 
@@ -26,7 +28,7 @@ def build(d: Deps) -> APIRouter:
 
     @router.get("/v1/status")
     def status(p: Principal = Depends(current_principal)):
-        """Database round-trip time, running jobs, the embedding model, and totals for what the caller may read."""
+        """Database round-trip time, running jobs, the embedding model, whether docs sync is configured, and totals for what the caller may read."""
         t0 = time.perf_counter()
         with store_factory() as store:
             totals = store.totals([c["slug"] for c in readable(p, store)])
@@ -34,6 +36,8 @@ def build(d: Deps) -> APIRouter:
             "db_latency_ms": round((time.perf_counter() - t0) * 1000, 1),
             "active_jobs": jobs.active(),
             "embedder": {"model": MODEL_NAME, "dimensions": DIMENSIONS},
+            "docs_sync": docs_sync_enabled,
+            "crawl_require_ack": crawl_require_ack,
             **totals,
         }
 

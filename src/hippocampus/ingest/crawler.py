@@ -11,13 +11,14 @@ Fetched content is untrusted data. Nothing here interprets it as instructions.
 from __future__ import annotations
 
 import ipaddress
+import math
 import re
 import socket
 import time
 import urllib.robotparser
-from collections import deque
+from collections import Counter, deque
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from html.parser import HTMLParser
 from typing import Any, Protocol
 from urllib.parse import urldefrag, urljoin, urlparse
@@ -44,9 +45,13 @@ _VOID_TAGS = {"br", "hr", "img", "input", "meta", "link", "area", "base", "col",
 class _Extractor(HTMLParser):
     """Collects the page title, Markdown text and outgoing links in one pass."""
 
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, only_main: bool = False):
         super().__init__(convert_charrefs=True)
         self.base_url = base_url
+        self._only_main = only_main  # keep only what is inside <main> or role="main"; links are collected everywhere
+        self._stack: list[tuple[str, bool]] = []  # open (tag, is_main) so the end of a role="main" div is found
+        self._main_depth = 0
+        self.saw_main = False
         self.title = ""
         self.links: list[str] = []
         self._out: list[str] = []
@@ -58,8 +63,12 @@ class _Extractor(HTMLParser):
         self._link_start = 0
 
     # -- helpers
+    def _emitting(self) -> bool:
+        return not self._only_main or self._main_depth > 0
+
     def _emit(self, text: str) -> None:
-        self._out.append(text)
+        if self._emitting():
+            self._out.append(text)
 
     def _newlines(self, n: int = 2) -> None:
         joined = "".join(self._out)
@@ -72,6 +81,11 @@ class _Extractor(HTMLParser):
         a = dict(attrs)
         if tag == "a" and a.get("href"):
             self.links.append(a["href"])
+        if tag not in _VOID_TAGS:
+            is_main = tag == "main" or (a.get("role") or "").lower() == "main"
+            self._stack.append((tag, is_main))
+            self._main_depth += is_main
+            self.saw_main = self.saw_main or is_main
         if self._skip_depth:
             if tag not in _VOID_TAGS:
                 self._skip_depth += 1
@@ -111,7 +125,7 @@ class _Extractor(HTMLParser):
             self._emit("**")
         elif tag in ("em", "i"):
             self._emit("*")
-        elif tag == "a" and a.get("href"):
+        elif tag == "a" and a.get("href") and self._emitting():
             self._href = urljoin(self.base_url, a["href"])
             self._link_start = len(self._out)
             self._emit("[")
@@ -121,6 +135,12 @@ class _Extractor(HTMLParser):
             self._newlines()
 
     def handle_endtag(self, tag):
+        if tag not in _VOID_TAGS:  # close back to the matching open tag, as a browser does for unclosed ones
+            for i in range(len(self._stack) - 1, -1, -1):
+                if self._stack[i][0] == tag:
+                    self._main_depth -= sum(1 for _, is_main in self._stack[i:] if is_main)
+                    del self._stack[i:]
+                    break
         if self._skip_depth:
             if tag not in _VOID_TAGS:
                 self._skip_depth -= 1
@@ -183,14 +203,86 @@ class Page:
     title: str
     markdown: str
     links: list[str]
+    depth: int = 1  # the level it was found at in a crawl (the start page is 1)
+
+
+MAIN_MIN_CHARS = 200  # a <main> with less text than this is not trusted to be the whole article
 
 
 def parse_html(html: str, url: str) -> Page:
+    """Title, Markdown and links of a page. A page that marks its main content (<main> or role="main") is read from
+    there only, which leaves out menus, sidebars and footers built from plain divs; a tiny one is ignored."""
     ex = _Extractor(url)
     ex.feed(html)
     ex.close()
     title = re.sub(r"\s+", " ", ex.title).strip()
-    return Page(url=url, title=title, markdown=ex.markdown(), links=ex.links)
+    markdown = ex.markdown()
+    if ex.saw_main:
+        inner = _Extractor(url, only_main=True)
+        inner.feed(html)
+        inner.close()
+        if len(inner.markdown()) >= MAIN_MIN_CHARS:
+            markdown = inner.markdown()
+    return Page(url=url, title=title, markdown=markdown, links=ex.links)
+
+
+# --------------------------------------------------------------------------- site-wide repeated lines
+
+BOILERPLATE_MIN_PAGES = 10  # fewer pages than this and "most of them" proves nothing
+
+
+def _body_lines(markdown: str):
+    """Yield (line, kind) with kind one of "code" (fence lines and what they hold), "blank", "heading" or "text"."""
+    in_code = False
+    for raw in markdown.split("\n"):
+        stripped = raw.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+            yield raw, "code"
+        elif in_code:
+            yield raw, "code"
+        elif not stripped:
+            yield raw, "blank"
+        else:
+            yield raw, "heading" if stripped.startswith("#") else "text"
+
+
+def _drop_empty_headings(lines: list[tuple[str, str]]) -> list[str]:
+    """The lines whose heading is still followed by something: a heading with nothing under it, or only another
+    heading, is left over from a removed menu or footer."""
+    kept: list[str] = []
+    for i, (raw, kind) in enumerate(lines):
+        if kind == "heading":
+            following = next((k for _, k in lines[i + 1:] if k != "blank"), None)
+            if following in (None, "heading"):
+                continue
+        kept.append(raw)
+    return kept
+
+
+def strip_repeated_lines(pages: list[Page], threshold: float = 0.6,
+                         min_pages: int = BOILERPLATE_MIN_PAGES) -> tuple[list[Page], list[str]]:
+    """Remove the lines that appear on at least ``threshold`` of the pages (menus, footers, promos built from plain divs).
+
+    Code blocks are never touched, and a heading is only removed when it is left with nothing under it, since reference
+    pages share headings such as "Syntax". Returns the pages and the removed lines, most widespread first. Does nothing
+    under ``min_pages`` pages or at a threshold of 0.
+    """
+    if threshold <= 0 or len(pages) < min_pages:
+        return pages, []
+    need = max(2, math.ceil(threshold * len(pages)))
+    seen: Counter[str] = Counter()
+    for page in pages:
+        seen.update({raw.strip() for raw, kind in _body_lines(page.markdown) if kind == "text"})
+    common = {line for line, n in seen.items() if n >= need}
+    if not common:
+        return pages, []
+    out = []
+    for page in pages:
+        lines = [(raw, kind) for raw, kind in _body_lines(page.markdown) if not (kind == "text" and raw.strip() in common)]
+        text = re.sub(r"\n{3,}", "\n\n", "\n".join(_drop_empty_headings(lines))).strip()
+        out.append(replace(page, markdown=text))
+    return out, sorted(common, key=lambda line: -seen[line])
 
 
 # --------------------------------------------------------------------------- fetching
@@ -443,6 +535,7 @@ def crawl_pages(
         if not page.markdown:
             log(f"skip (empty) {url}")
             continue
+        page = replace(page, depth=level)
         pages.append(page)
         log(f"fetched {url} ({len(page.markdown)} chars, level {level})")
         if level >= opts.depth:
@@ -467,10 +560,11 @@ ENGINES = ("static", "browser")
 
 def make_crawler(store_factory, embedder, fetcher: Fetcher | None = None, *, max_pages: int = 200,
                  delay: float = 0.5, sleep: Callable[[float], None] = time.sleep,
-                 browser_factory: Callable[[], Fetcher] = BrowserFetcher):
+                 browser_factory: Callable[[], Fetcher] = BrowserFetcher, boilerplate_threshold: float = 0.6):
     """Return the ``crawler(job, request)`` callable that ``create_app`` expects.
 
     ``fetcher`` overrides the static engine; ``browser_factory`` builds a fresh browser fetcher per job.
+    ``boilerplate_threshold``: lines on at least this share of the crawled pages are removed before indexing (0 = off).
     """
 
     def crawler(job, req) -> dict:
@@ -484,12 +578,25 @@ def make_crawler(store_factory, embedder, fetcher: Fetcher | None = None, *, max
         finally:
             if hasattr(active, "close"):
                 active.close()
+        pages, common = strip_repeated_lines(pages, boilerplate_threshold)
+        if common:
+            shown = "; ".join(line[:50] for line in common[:3])
+            job.log(f"removed {len(common)} site-wide repeated lines (on {boilerplate_threshold:.0%}+ of the pages), "
+                    f"for example: {shown}")
+        emptied = [p for p in pages if not p.markdown]
+        if emptied:
+            job.log(f"skipped {len(emptied)} pages that had nothing but repeated lines")
+            pages = [p for p in pages if p.markdown]
         docs = {normalize(p.url): Document(p.title or None, p.markdown) for p in pages}
         job.log(f"embedding {len(docs)} pages")
+        def progress(done: int, total: int) -> None:
+            if done and (done % 10 == 0 or done == total):
+                job.log(f"embedded {done}/{total} pages")
+
         with store_factory() as store:
-            result = sync_collection(req.collection, docs, store, embedder, prune=False)
+            result = sync_collection(req.collection, docs, store, embedder, prune=False, progress=progress)
         job.log(f"done: {len(result.added)} added, {len(result.changed)} changed, {len(result.unchanged)} unchanged")
         return {"pages": len(docs), "added": len(result.added), "changed": len(result.changed),
-                "unchanged": len(result.unchanged)}
+                "unchanged": len(result.unchanged), "depths": {normalize(p.url): p.depth for p in pages}}
 
     return crawler

@@ -2,17 +2,19 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from ...core.diff import Document, sync_collection
-from ...ingest.crawler import CrawlRefused
+from ...ingest.crawler import CrawlRefused, normalize
 from ...ingest.repo_ingest import ingest_pack, parse_pack
 from ...ingest.sync_core import exclude_path_parts
 from ..auth import PRIVATE_URI_PREFIXES, Principal
 from .deps import Deps, check_slug
 from .schemas import CrawlRequest, IngestFileRequest, IngestRepoRequest, ProbeRequest
 from .tags import INGEST
+from .web_sources import start_crawl_job
 
 
 def build(d: Deps) -> APIRouter:
@@ -69,9 +71,16 @@ def build(d: Deps) -> APIRouter:
             raise HTTPException(501, "crawler not available (HIPPO-E03)")
         if any(p in req.url.lower() for p in exclude_path_parts()):
             raise HTTPException(403, "this source is excluded from ingestion")
+        if req.match_pattern is not None:
+            try:
+                re.compile(req.match_pattern)
+            except re.error as exc:
+                raise HTTPException(422, f"invalid match_pattern: {exc}") from exc
         with store_factory() as store:
             need_write(p, store, req.collection)
-        job = jobs.submit("crawl", lambda j: crawler(j, req), owner=p.name)
+            web_id = store.upsert_web_source(req.collection, normalize(req.url), req.depth, req.match_pattern or None,
+                                             req.engine, p.name)  # remembered, so the dashboard can show and re-run it
+        job = start_crawl_job(d, req, p, web_id)
         return {"job_id": job.id, "status": job.status}
 
     @router.post("/v1/crawl/probe")
@@ -89,8 +98,13 @@ def build(d: Deps) -> APIRouter:
             except re.error as exc:
                 raise HTTPException(422, f"invalid match_pattern: {exc}") from exc
         try:
-            return prober(req)
+            result = prober(req)
         except CrawlRefused as exc:
             raise HTTPException(422, str(exc)) from exc
+        host = urlparse(result["url"]).netloc.lower()
+        with store_factory() as store:  # only collections the caller may read, so a hidden one is not revealed
+            result["already_indexed"] = [h for h in store.web_sources_on_host(host)
+                                         if (vis := store.collection_visibility(h["collection"])) and p.can_read(h["collection"], vis)]
+        return result
 
     return router

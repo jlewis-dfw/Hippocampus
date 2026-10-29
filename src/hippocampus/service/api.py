@@ -58,6 +58,7 @@ def create_app(
     docs_sync: DocsSyncConfig | None = None,
     require_auth: bool = False,
     prober: Prober | None = None,
+    crawl_require_ack: bool = False,
 ) -> FastAPI:
     """``allowed_networks``: clients outside these CIDRs get 403 on /v1/*. None disables the check.
 
@@ -85,7 +86,7 @@ def create_app(
                 return JSONResponse({"detail": "client network not allowed"}, status_code=403)
             return await call_next(request)
 
-    deps = Deps(store_factory, embedder, jobs or JobRegistry(), crawler, docs_sync, require_auth, prober)
+    deps = Deps(store_factory, embedder, jobs or JobRegistry(), crawler, docs_sync, require_auth, prober, crawl_require_ack)
     for module in ROUTERS:
         app.include_router(module.build(deps))
 
@@ -134,10 +135,12 @@ def app_from_env() -> FastAPI:
             factory, embedder,
             max_pages=int(os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200")),
             delay=float(os.environ.get("HIPPO_CRAWL_DELAY", "0.5")),
+            boilerplate_threshold=float(os.environ.get("HIPPO_CRAWL_BOILERPLATE_THRESHOLD", "0.6")),
         ),
         allowed_networks=parse_networks(os.environ.get("HIPPO_ALLOWED_CIDRS", DEFAULT_ALLOWED_CIDRS)),
         docs_sync=_docs_sync_from_env(),
         require_auth=os.environ.get("HIPPO_REQUIRE_AUTH", "").lower() in ("1", "true", "yes"),
+        crawl_require_ack=os.environ.get("HIPPO_CRAWL_REQUIRE_ACK", "").lower() in ("1", "true", "yes"),
         prober=make_prober(
             max_pages=int(os.environ.get("HIPPO_CRAWL_MAX_PAGES", "200")),
             delay=float(os.environ.get("HIPPO_CRAWL_DELAY", "0.5")),

@@ -61,6 +61,24 @@ markdown, links)`.
 Whitespace is collapsed (outside `pre`), runs of blank lines shrink to one, and the result is trimmed. All `<a href>` values are
 collected, including those inside dropped elements, as the page's `links`. A page whose Markdown is empty is skipped.
 
+**Main content.** If the page marks its main content (`<main>` or `role="main"`), only that part is converted, which leaves out
+menus, sidebars and footers built from plain `div`s. A `<main>` with under 200 characters of text is not trusted, and the whole page
+is used instead. Links outside the main content are still collected, so the crawl still follows a site's navigation.
+
+## Site-wide repeated lines
+
+Many sites build their menus, footers and promos from plain `div`s with no marker. After the crawl and before indexing,
+`strip_repeated_lines(pages, threshold)` counts, for each line of text, on how many pages it appears, and removes the lines found on
+at least `threshold` of the pages (`HIPPO_CRAWL_BOILERPLATE_THRESHOLD`, default 0.6, `0` turns it off). It needs at least 10 pages,
+since "most of them" proves nothing on fewer. Code blocks are never touched, and a heading is only removed when it is left with
+nothing under it, so reference pages that share headings such as "Syntax" keep them. The job log says what happened, for example
+`removed 183 site-wide repeated lines (on 60%+ of the pages), for example: ...`, and a page left with no text is skipped.
+
+On 200 pages of w3schools.com/python this removed 93% of the stored text, and the menu, cookie, sign-in and promo text dropped from
+every page to a handful. It cannot remove what differs on each page: a promo that links to a different course on each page, or
+interactive-editor text that appears on only some pages. Lines are compared exactly, so a menu that marks the current page differently
+on each page survives.
+
 ## The crawl loop
 
 `crawl_pages(start_url, opts, fetcher, log, ...)` returns the pages in visit order. `CrawlOptions`:
@@ -137,7 +155,7 @@ reported but not followed (the request budget). It is served by `POST /v1/crawl/
 
 - No authentication to the target site, no cookies, no form submission, no PDF handling. The crawl does not read sitemaps (only the probe does).
 - One host per crawl; no politeness beyond the fixed delay and robots.txt (set `HIPPO_CRAWL_DELAY` higher for fragile sites).
-- Not a general scraper: it extracts readable text and links, and drops navigation and page furniture.
+- Not a general scraper: it extracts readable text and links, and drops navigation and page furniture (the `nav`-like tags, the `main` landmark and repeated lines described above; it has no ad list and no per-site rules).
 
 ## Tests
 

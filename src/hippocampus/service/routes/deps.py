@@ -39,6 +39,7 @@ class Deps:
     docs_sync: DocsSyncConfig | None = None
     require_auth: bool = False
     prober: Prober | None = None
+    crawl_require_ack: bool = False  # the dashboard asks for a tick before a crawl; it is a prompt, not a server-side block
 
     # --- access control (HIPPO-E06-F0) ---
 
