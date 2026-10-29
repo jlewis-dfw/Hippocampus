@@ -16,7 +16,8 @@ The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and 
 
 ## Health and status
 
-- `./hippocampus status` shows the containers and the status JSON.
+- `./hippocampus status` shows the containers and the status JSON. `scripts/health.py` (or `/health` in Claude Code) adds the database
+  round trip, collections with no chunks and error lines in the recent logs, and ends with a PASS, WARN or FAIL verdict. It only reads.
 - `GET /v1/status` returns the database round-trip time, the number of running jobs, the embedding model, `docs_sync` (whether
   the Forgejo docs sync is configured) and the totals for what the caller may read. It is the best single check.
 - The `api` container has a built-in health check (`python -m hippocampus.cli.healthcheck`, every 15 seconds) that requests the
@@ -57,7 +58,8 @@ into PostgreSQL first ([design-decisions.md](../Architecture/design-decisions.md
 ## Backups
 
 Everything lives in the PostgreSQL database (the `pgdata` volume). The embedding model is in the image, so it is not part of
-the data. Back up with a logical dump:
+the data. `scripts/backup.py backup` (or `/dbbackup` in Claude Code) writes a checked dump to the git-ignored `backups/` folder, and
+`scripts/backup.py restore-test` proves a dump restores into a throwaway database. By hand, a logical dump is:
 
 ```bash
 docker compose --env-file hippocampus.env exec -T postgres \
@@ -94,7 +96,8 @@ git pull
 The rebuilt image carries the new migrations; the `migrate` service applies any pending ones before the API starts. Migrations
 are written to be **additive** (new columns have defaults, nothing is dropped), so an older image keeps working against a newer
 schema if you need to roll back the code. Check the release notes or the `db/migrations` folder first, and take a backup before a
-big upgrade.
+big upgrade. `scripts/upgrade.py` shows the pending migrations and the latest backup; with `--apply` it takes a backup first,
+rebuilds and restarts (data stays), waits for the service and confirms every migration applied (`/upgrade` in Claude Code).
 
 The embedding model is fixed. Changing it would change the vector size and require re-embedding everything; it is not a
 setting.

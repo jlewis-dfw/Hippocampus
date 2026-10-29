@@ -152,6 +152,11 @@ reported. The same rules decide every file whichever route it arrives by:
 Include and exclude rules, the extension list and a `dry_run` preview are in the
 [endpoint reference](../Api/endpoints.md#post-v1ingestfiles).
 
+From a terminal, `scripts/index_folder.py <folder> --collection <slug> --plan` previews what the server would accept, and the same command
+without `--plan` uploads it in batches and removes indexed files that are gone from the folder. `scripts/index_repo.py <folder>
+--collection <slug>` makes the Repomix pack and sends it, and `scripts/index_docs.py --file note.md --collection <slug>` pushes one file.
+All take `--token-var NAME` (see `scripts/token_env.py list`); in Claude Code they are `/indexfolder`, `/indexrepo` and `/pushdoc`.
+
 ## Keeping a docs repository in sync
 
 An optional feature that keeps a collection in step with a **Forgejo** repository of Markdown files. It is off unless you

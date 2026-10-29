@@ -181,7 +181,7 @@ def main() -> int:
     if row:
         print(f"collection {a.collection}: {row['source_count']} sources, {row['chunk_count']} chunks")
     for q in a.query:
-        st, out = api(a.url, token, "POST", "/v1/search", {"query": q, "collection": a.collection, "top_k": 3})
+        st, out = api(a.url, token, "POST", "/v1/search", {"query": q, "collections": [a.collection], "top_k": 3})
         print(f"\nsearch: {q}")
         for hit in out.get("results", []) if st == 200 else []:
             print(f"  {hit.get('score', 0):.2f}  {hit.get('uri')}  {hit.get('header_path') or ''}")
