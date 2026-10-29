@@ -50,7 +50,8 @@ Work through these steps in order. If `$ARGUMENTS` is a URL, use it as the start
    - **Pattern:** propose the start path as the regex (for example `/docs/en/`), checked against the links you saw so it does not match nothing. Warn
      if the start page links with and without a trailing slash (the same page will be stored twice).
    - **Already indexed?** `GET /v1/collections` and, if a collection already holds this host, say so and suggest a re-crawl into it (unchanged
-     pages are skipped) instead of a new collection.
+     pages are skipped) instead of a new collection. The probe's `already_indexed` field lists the saved crawls on this host; `GET /v1/web-sources`
+     shows them all with their depth and pattern, so reuse those settings.
    - **Time:** estimate roughly pages x 0.5 s for fetching, plus a few minutes for embedding on the CPU.
 5. **Choose the settings** with `AskUserQuestion` (short questions, one call where possible). Put the probe's recommendation first, marked
    "(Recommended)", with the reason in the option text:
@@ -74,10 +75,12 @@ Work through these steps in order. If `$ARGUMENTS` is a URL, use it as the start
    show the error text and the likely cause from `docs/User_Guide/troubleshooting.md`; do not retry unasked.
 9. **Verify.** Report pages added / changed / unchanged from the job result, then confirm the collection with `GET /v1/collections` (sources and
    chunks). Spot-check the log for `skip (robots.txt)` and `refused` lines and mention them. Run two searches with the user's own questions
-   (or ones you propose from the site's topic) via `POST /v1/search` with `"collection"` set, and show the top results with source URL and score.
+   (or ones you propose from the site's topic) via `POST /v1/search` with `"collections": ["<slug>"]` set (a list; the singular `collection` is ignored and searches everything), and show the top results with source URL and score.
 10. **Recap** in a few lines: collection slug, pages indexed, how to search it (dashboard Search tab, the API, or MCP), and how to give an assistant
-   read-only access (`./hippocampus admin create-client --name <n>-reader --read <slug>`). Mention that a re-crawl skips unchanged pages but does
-   not remove pages that vanished from the site.
+   read-only access (`./hippocampus admin create-client --name <n>-reader --read <slug>`). Mention that every crawl is saved as a *saved crawl*
+   (start URL, depth, pattern, engine): it can be re-run from the dashboard collection view (**Save and re-crawl**) or with
+   `POST /v1/web-sources/<id>/crawl`. A re-crawl skips unchanged pages but does not remove pages that vanished from the site, and lowering the
+   depth does not remove pages already indexed: the collection view's **Remove deeper pages** does that, after a count and a confirmation.
 
 # Context
 
@@ -85,6 +88,10 @@ Work through these steps in order. If `$ARGUMENTS` is a URL, use it as the start
   in `docs/User_Guide/collections-and-access.md`, and a worked example in `docs/User_Guide/walkthrough.md`.
 - The crawler stays on the start host, honours `robots.txt` but **not** `Crawl-delay`, `noindex`, `X-Robots-Tag` or text-and-data-mining opt-outs, never
   logs in, refuses private addresses, reads HTML only (2 MB per page, 5 redirects), and stores the converted text, title and address, not the raw page.
+- It keeps only a page's `<main>` content when the page marks it, and on a crawl of 10 or more pages it drops lines that repeat on most pages (menus,
+  footers, promos; `HIPPO_CRAWL_BOILERPLATE_THRESHOLD`, default 0.6). The log says how many were removed. A tiny crawl keeps everything.
+- The dashboard's **Web** tab has a **Check site** button (the same probe) and **Use suggested settings**. With `HIPPO_CRAWL_REQUIRE_ACK=true` it
+  also needs a tick box ("I may copy this content") before it starts; the API and `scripts/crawl_site.py` are not affected.
 - The same page may be stored twice when a site links to it with and without a trailing slash; that is a known quirk, harmless to answers.
 - A job lives in memory only: it is lost if the service restarts, and only the account that started it (or an admin) can read its log.
 - `HIPPO_REQUIRE_AUTH=true` is the default in the local stack, so every write needs a token with a write grant.
@@ -98,8 +105,9 @@ Work through these steps in order. If `$ARGUMENTS` is a URL, use it as the start
 - Keep it small: depth 3 or less unless the user asks for more and understands the cost; always set a match pattern for a documentation site.
 - Handle the token as a secret: never print it, echo it, write it to any file except `token.env` through `scripts/token_env.py capture`, or put it in a
   command line you show the user; hand it to commands with `--token-var` or `scripts/token_env.py run` and keep it out of logs and summaries.
-- Never delete a collection, source or job, and never run `./hippocampus reset`, `compose down -v`, or SQL that changes data. If the user wants
-  to remove a crawl, show the dashboard **Delete** action or `DELETE /v1/collections/<slug>` and let them confirm.
+- Never delete a collection, source, saved crawl or job, never call `/v1/web-sources/<id>/prune` or `DELETE /v1/collections/<slug>/sources`
+  (even with `dry_run`), and never run `./hippocampus reset`, `compose down -v`, or SQL that changes data. If the user wants to remove a crawl or
+  pages, show the dashboard **Delete**, **Remove** or **Remove deeper pages** action and let them confirm.
 - Do not restart or rebuild the stack, edit `hippocampus.env`, or change the crawler settings (`HIPPO_CRAWL_DELAY`, `HIPPO_CRAWL_MAX_PAGES`) unasked.
 - Do not commit, push or change git state, and do not write the crawled content into the repository.
 - Report honestly: say how many pages were really indexed, say when a job ended in `error`, and say when a search returned weak results (scores

@@ -92,10 +92,25 @@ Rule of thumb: SQL lives in `storage/store.py`; access decisions in `service/aut
 
 ### Add a migration
 
-1. Create `db/migrations/NNNN_short_name.sql` with the next number. Make it additive (new columns with defaults, new tables, new indexes).
+1. Create the file with `scripts/new_migration.py short_name` (it takes the next number and writes a template). Make it additive (new columns with defaults, new tables, new indexes).
 2. Add anything the code newly depends on to the expected-schema list in `scripts/migrate_check.py`.
 3. Run `scripts/check.sh`: it applies every migration from zero in a throwaway database.
 4. Update [../Database/schema.md](../Database/schema.md) and the "described as of migration" line on the pages that carry it.
+
+### Scripts and slash commands
+
+Anything deterministic is a Python script in `scripts/`; the Claude Code commands in `.claude/commands/` (listed in [../../CLAUDE.md](../../CLAUDE.md)) call
+them and only decide, ask and explain. Scripts that talk to a running service share `scripts/hippo_client.py` (requests, token from `token.env`, job streaming).
+
+| Script | Used by | What it does |
+|---|---|---|
+| `backup.py` | `/dbbackup`, `/dbrestore`, `/upgrade` | `pg_dump` into `backups/`, list, verify, restore into a throwaway database |
+| `health.py` | `/health` | containers, service, database, content, recent log errors |
+| `upgrade.py` | `/upgrade` | pending migrations, backup, rebuild, check |
+| `index_folder.py`, `index_repo.py`, `index_docs.py` | `/indexfolder`, `/indexrepo`, `/pushdoc` | the ways to ingest from the command line |
+| `crawl_site.py`, `crawls.py` | `/crawl`, `/recrawl` | probe and crawl a site; list, re-run and preview saved crawls |
+| `inventory.py` | `/prune` | read-only report of empty, failed and stale content |
+| `new_migration.py`, `docs_check.py` | `/migration`, `/docsync` | next numbered migration; broken links, files, settings and routes in the docs |
 
 ### Add a setting
 

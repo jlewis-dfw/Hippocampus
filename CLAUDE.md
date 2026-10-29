@@ -14,8 +14,22 @@ Decisions and constraints that the code does not show (deployment scope, reposit
 | `/test` | Asks whether to run **unit**, **integration** or **all** tests, runs them and summarises the report |
 | `/crawl` | Checks a site's `robots.txt`, creates or picks a collection, crawls and indexes the site, watches the job and proves it with a search |
 | `/search` | Searches the memory for a question (MCP tool, or the REST API as a fallback) and answers from the results with sources |
+| `/indexfolder` | Previews, then indexes a local folder into a collection and keeps it in step (`scripts/index_folder.py`) |
+| `/indexrepo` | Indexes a Git repository or code folder through a Repomix pack with the secret filter (`scripts/index_repo.py`) |
+| `/pushdoc` | Pushes one Markdown file as a source and proves it with a search (`scripts/index_docs.py --file`) |
+| `/recrawl` | Re-runs a saved crawl with its saved settings; previews what a lower depth would remove (`scripts/crawls.py`) |
+| `/dbbackup` | Dumps the database to the git-ignored `backups/` folder and checks the dump (`scripts/backup.py`) |
+| `/dbrestore` | Proves a dump restores, in a throwaway database; shows the manual steps for a real restore |
+| `/health` | One-screen check of containers, service, database, content and recent log errors (`scripts/health.py`) |
+| `/upgrade` | Shows pending migrations, backs up, rebuilds and checks the stack came back (`scripts/upgrade.py`) |
+| `/accounts` | Lists, creates, rotates or revokes access accounts; tokens go to `token.env` and are never shown |
+| `/prune` | Read-only inventory that flags empty, failed and stale collections (`scripts/inventory.py`) |
+| `/migration` | Adds a numbered migration with its store, `MemStore`, schema-check, docs and test changes (`scripts/new_migration.py`) |
+| `/docsync` | Finds docs and commands that no longer match the code and fixes them (`scripts/docs_check.py`) |
+| `/precommit` | Runs the full checks, reviews the diff against the project rules and proposes a commit message; never commits |
 
-The commands live in `.claude/commands/` and are written as Role, Task, Context, Constraints.
+The commands live in `.claude/commands/` and are written as Role, Task, Context, Constraints. Anything deterministic in them is a Python script in
+`scripts/` (shared HTTP helpers in `scripts/hippo_client.py`); the command only decides, asks and explains.
 
 ## Everyday commands
 

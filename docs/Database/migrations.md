@@ -50,7 +50,7 @@ Because the bookkeeping table is the same, the tools can be mixed on one databas
 
 ## Adding one: the checklist
 
-1. Create `db/migrations/000N_what_it_does.sql` (next number).
+1. Create `db/migrations/000N_what_it_does.sql` (next number): `scripts/new_migration.py what_it_does` does it from a template.
 2. If the application now reads the new tables or columns, add them to `EXPECTED` in `scripts/migrate_check.py` so the check fails if a
    migration forgets them.
 3. Update the store (`store.py`) and the code that uses it, and the tests ([../Testing/README.md](../Testing/README.md)).

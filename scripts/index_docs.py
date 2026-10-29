@@ -5,6 +5,7 @@ documentation becomes searchable with the service it describes.
   scripts/index_docs.py                         docs/ into the collection "hippocampus-docs" at http://127.0.0.1:8090
   scripts/index_docs.py --plan                  list what would be indexed; changes nothing
   scripts/index_docs.py --dir notes --collection team-notes --restricted
+  scripts/index_docs.py --file notes/decision.md --collection team-notes     one file; its URI is --prefix plus the file name
 
 What it does: creates the collection if it does not exist (shared, or restricted with --restricted), then pushes every *.md file
 under --dir (recursively) with POST /v1/ingest/file. The source URI is "<prefix><path relative to --dir>", for example
@@ -16,7 +17,7 @@ per-source delete).
 The token (an admin token, or an account with a write grant on the collection) comes from HIPPO_TOKEN, or is typed hidden.
 It is never printed. Creating a restricted collection needs an admin token.
 
-Options: --url (or HIPPO_URL), --dir, --collection, --name, --prefix, --restricted, --plan.
+Options: --url (or HIPPO_URL), --dir, --file, --collection, --name, --prefix, --restricted, --plan.
 Exit status: 0 all files indexed, 1 some failed, 2 could not run.
 """
 from __future__ import annotations
@@ -63,6 +64,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default=os.environ.get("HIPPO_URL", "http://127.0.0.1:8090"))
     ap.add_argument("--dir", type=Path, default=Path(__file__).resolve().parent.parent / "docs")
+    ap.add_argument("--file", type=Path, default=None, help="index this one Markdown file instead of a folder")
     ap.add_argument("--collection", default="hippocampus-docs")
     ap.add_argument("--name", default=None, help="display name for a new collection")
     ap.add_argument("--prefix", default=None, help="source URI prefix (default: the folder name and a slash)")
@@ -73,11 +75,19 @@ def main() -> int:
     if not re.match(r"^[a-z0-9][a-z0-9-]{0,63}$", a.collection):
         print(f"invalid collection slug {a.collection!r} (lowercase letters, digits and dashes, up to 64)", file=sys.stderr)
         return 2
-    if not a.dir.is_dir():
-        print(f"{a.dir} is not a folder", file=sys.stderr)
-        return 2
-    prefix = a.prefix if a.prefix is not None else a.dir.name + "/"
-    files = sorted(p for p in a.dir.rglob("*.md") if p.is_file())
+    if a.file is not None:
+        if not a.file.is_file():
+            print(f"{a.file} is not a file", file=sys.stderr)
+            return 2
+        a.dir = a.file.resolve().parent
+        prefix = a.prefix if a.prefix is not None else ""
+        files = [a.file.resolve()]
+    else:
+        if not a.dir.is_dir():
+            print(f"{a.dir} is not a folder", file=sys.stderr)
+            return 2
+        prefix = a.prefix if a.prefix is not None else a.dir.name + "/"
+        files = sorted(p for p in a.dir.rglob("*.md") if p.is_file())
     if not files:
         print(f"no Markdown files under {a.dir}")
         return 0
