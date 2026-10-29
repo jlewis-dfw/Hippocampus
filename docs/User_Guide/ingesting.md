@@ -63,6 +63,9 @@ What the crawler does:
 - It walks **breadth first** and stays on the **start URL's host**. It never follows a link to another host.
 - It obeys **`robots.txt`** for its own user agent. A missing `robots.txt` means allowed.
 - It waits **0.5 seconds** between requests and stops after **200 pages** (`HIPPO_CRAWL_DELAY`, `HIPPO_CRAWL_MAX_PAGES`).
+- It reads only a page's main content when the page marks it (`<main>` or `role="main"`), and on a crawl of 10 or more pages it
+  does not index lines that repeat on most of the pages, such as site menus and footers (`HIPPO_CRAWL_BOILERPLATE_THRESHOLD`, default
+  0.6, `0` turns it off). Details: [crawler.md](../Architecture/crawler.md#site-wide-repeated-lines).
 - It fetches only **HTML** (`text/html`, `application/xhtml+xml`), reads at most **2 MB** per page, and follows at most
   **5 redirects**. Links to images, archives, media, fonts, stylesheets, scripts, JSON and XML files are skipped.
 - It converts HTML to Markdown, dropping `script`, `style`, `nav`, `footer`, `aside`, `form`, `svg`, `template` and `button`

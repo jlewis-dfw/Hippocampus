@@ -15,6 +15,8 @@ variables in whatever starts the service. Variables with a default can be left o
 | `HIPPO_ALLOWED_CIDRS` | `127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` | Which client addresses may call `/v1/*`; others get `403 client network not allowed`. See [below](#the-network-gate). |
 | `HIPPO_CRAWL_MAX_PAGES` | `200` | The most pages one crawl will fetch. |
 | `HIPPO_CRAWL_DELAY` | `0.5` | Seconds to wait between requests in a crawl. |
+| `HIPPO_CRAWL_BOILERPLATE_THRESHOLD` | `0.6` | A crawl of 10 or more pages does not index lines that repeat on at least this share of its pages (site menus, footers, promos). Headings and code blocks are never removed. `0` turns it off. |
+| `HIPPO_CRAWL_REQUIRE_ACK` | `false` | `true`: the dashboard's Web tab needs a tick on "I may copy this content" before it starts a crawl. `false`: it shows the same notice and never blocks. The API is not affected. |
 | `HIPPO_INSTALL_BROWSER` | `0` | `1` builds the image with Chromium so the crawler's `browser` engine works (about 400 MB more). Takes effect when the image is next built, which `./hippocampus up` does every time. |
 
 The launcher itself reads one more: `CONTAINER_ENGINE=docker|podman` forces the engine.

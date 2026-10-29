@@ -5,11 +5,13 @@ from hippocampus.ingest.crawler import (
     CrawlOptions,
     CrawlRefused,
     FetchResult,
+    Page,
     check_public_url,
     crawl_pages,
     make_crawler,
     normalize,
     parse_html,
+    strip_repeated_lines,
 )
 from hippocampus.service.jobs import Job
 
@@ -250,3 +252,121 @@ def test_browser_fetcher_renders_js_and_blocks_private_subrequests(monkeypatch):
     page = c.parse_html(res.text, res.url)
     assert "rendered by js" in page.markdown
     assert "LEAKED" not in res.text and page.title != "LEAKED"
+
+
+def test_crawl_logs_embedding_progress_every_ten_pages():
+    from contextlib import contextmanager
+
+    start = "https://93.184.216.34/"
+    pages = {start: "<main><h1>Home</h1>" + "".join(f"<a href='/p{i}'>p{i}</a>" for i in range(24)) + "</main>"}
+    pages.update({f"{start}p{i}": f"<main><h1>P{i}</h1><p>text {i}</p></main>" for i in range(24)})
+    store = MemStore()
+    store.create_collection("web", "web", None)
+
+    @contextmanager
+    def factory():
+        yield store
+
+    class Req:
+        url, collection, depth, match_pattern, engine = start, "web", 2, None, "static"
+
+    job = Job(id="j", kind="crawl")
+    make_crawler(factory, KeywordEmbedder(), FakeFetcher(pages), delay=0, sleep=lambda s: None)(job, Req())
+    lines = [e.split("] ", 1)[-1] for e in job.events if "embedded" in e and "/25 pages" in e]
+    assert lines == ["embedded 10/25 pages", "embedded 20/25 pages", "embedded 25/25 pages"]
+
+
+# --- main-content landmark and site-wide repeated lines (no libraries: the stdlib parser and counting)
+
+LONG = "A paragraph of real article text that is long enough to be trusted as the whole content of the page. " * 3
+
+
+def test_a_main_landmark_leaves_out_menus_built_from_plain_divs():
+    html = (f"<html><body><div class='menu'><a href='/x'>Site menu entry</a> Sign In</div>"
+            f"<main><h1>Guide</h1><p>{LONG}</p><a href='/inside'>inside link</a></main>"
+            f"<div class='footer'>Footer promo text</div></body></html>")
+    page = parse_html(html, "https://docs.example/")
+    assert "Guide" in page.markdown and "real article text" in page.markdown and "inside link" in page.markdown
+    assert "Site menu entry" not in page.markdown and "Sign In" not in page.markdown and "Footer promo" not in page.markdown
+    assert page.links == ["/x", "/inside"]  # links outside the main content are still followed by the crawl
+
+
+def test_role_main_on_a_div_counts_and_unclosed_tags_do_not_break_it():
+    html = (f"<body><div id='side'>Sidebar words</div><div role='main'><ul><li>one<li>two</ul><p>{LONG}</div>"
+            f"<div>After the main</div></body>")
+    md = parse_html(html, "https://docs.example/").markdown
+    assert "real article text" in md and "one" in md and "Sidebar words" not in md and "After the main" not in md
+
+
+def test_a_tiny_main_is_not_trusted_and_the_whole_page_is_used():
+    html = f"<body><div>Intro outside</div><main>tiny</main><p>{LONG}</p></body>"
+    md = parse_html(html, "https://docs.example/").markdown
+    assert "Intro outside" in md and "real article text" in md
+
+
+def _site(n, menu=("[Home](https://x/)", "[Sign In](https://x/in)"), extra=lambda i: "", heading_in_footer=False):
+    pages = []
+    for i in range(n):
+        body = "\n".join(menu) + f"\n\n# Page {i}\n\nUnique text about topic {i}.\n\n## Syntax\n\nUse it like this {i}.\n{extra(i)}"
+        if heading_in_footer:
+            body += "\n\n##### Get Certified\n\n[Courses](https://x/courses)"
+        pages.append(Page(f"https://x/p{i}", f"Page {i}", body, []))
+    return pages
+
+
+def test_strip_repeated_lines_removes_site_wide_lines_and_keeps_the_rest():
+    out, common = strip_repeated_lines(_site(12))
+    assert sorted(common) == ["[Home](https://x/)", "[Sign In](https://x/in)"]
+    assert "Home" not in out[0].markdown and "Sign In" not in out[0].markdown
+    assert "Unique text about topic 0" in out[0].markdown and "## Syntax" in out[0].markdown  # shared headings stay
+
+
+def test_strip_repeated_lines_leaves_code_blocks_alone():
+    out, common = strip_repeated_lines(_site(12, extra=lambda i: "\n```python\nprint(x)\n# a comment\n```\n"))
+    assert sorted(common) == ["[Home](https://x/)", "[Sign In](https://x/in)"]  # code lines are never counted
+    assert all("print(x)" in p.markdown and "# a comment" in p.markdown for p in out)
+
+
+def test_a_heading_left_with_nothing_under_it_goes_too():
+    out, _ = strip_repeated_lines(_site(12, heading_in_footer=True))
+    assert "Get Certified" not in out[0].markdown  # its only content was a removed link
+    assert "## Syntax" in out[0].markdown  # a heading with content is kept
+
+
+def test_strip_repeated_lines_needs_enough_pages_and_can_be_switched_off():
+    few = _site(9)
+    assert strip_repeated_lines(few) == (few, [])  # nine pages prove nothing
+    many = _site(12)
+    assert strip_repeated_lines(many, threshold=0) == (many, [])
+
+
+def test_a_line_on_less_than_the_threshold_of_pages_stays():
+    out, common = strip_repeated_lines(_site(20, extra=lambda i: "Shared tip" if i < 8 else ""))  # 8 of 20 = 40% < 60%
+    assert "Shared tip" not in common and "Shared tip" in out[0].markdown
+
+
+def test_crawl_removes_the_repeated_menu_before_indexing_and_says_so():
+    from contextlib import contextmanager
+
+    start = "https://93.184.216.34/"
+    menu = "<div><a href='/'>Home</a> <a href='/in'>Sign In</a></div>"
+    pages = {start: menu + "<p>Start page text here.</p>" + "".join(f"<a href='/p{i}'>p{i}</a>" for i in range(12))}
+    pages.update({f"{start}p{i}": menu + f"<p>Unique body number {i} goes here.</p>" for i in range(12)})
+    store = MemStore()
+    store.create_collection("web", "web", None)
+
+    @contextmanager
+    def factory():
+        yield store
+
+    class Req:
+        url, collection, depth, match_pattern, engine = start, "web", 2, None, "static"
+
+    job = Job(id="j", kind="crawl")
+    make_crawler(factory, KeywordEmbedder(), FakeFetcher(pages), delay=0, sleep=lambda s: None)(job, Req())
+    stored = store.collections["web"]
+    texts = [ec.chunk.content for v in stored.values() for ec in v[2]]
+    assert len(stored) == 13 and texts
+    assert not any("Sign In" in t or "Home" in t for t in texts)  # the menu was removed before embedding
+    assert any("Unique body number 3" in t for t in texts)
+    assert any("removed 1 site-wide repeated lines" in e for e in job.events)

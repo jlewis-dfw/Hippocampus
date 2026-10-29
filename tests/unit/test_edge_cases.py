@@ -247,3 +247,21 @@ def test_oversized_paragraph_is_split_on_words():
     text = "# H\n\n" + " ".join(f"word{i}" for i in range(300))
     chunks = chunker.chunk_markdown(text, target_tokens=40)
     assert len(chunks) > 3 and all(c.header_path == "H" for c in chunks)
+
+
+def test_sync_collection_reports_progress_for_skipped_and_indexed_documents():
+    from test_api import KeywordEmbedder, MemStore
+
+    from hippocampus.core.diff import Document, sync_collection
+
+    store = MemStore()
+    store.create_collection("c", "c", None)
+    docs = {f"d{i}.md": Document(f"D{i}", f"# D{i}\ntext {i}") for i in range(3)}
+    seen = []
+    sync_collection("c", docs, store, KeywordEmbedder(), progress=lambda done, total: seen.append((done, total)))
+    assert seen == [(0, 3), (1, 3), (2, 3), (3, 3)]  # completed so far, as each starts, then the end
+    seen.clear()
+    sync_collection("c", docs, store, KeywordEmbedder(), progress=lambda done, total: seen.append((done, total)))
+    assert seen[-1] == (3, 3)  # unchanged documents count too
+    sync_collection("c", {}, store, KeywordEmbedder(), progress=lambda *a: seen.append("never"))  # nothing to do: no call
+    assert "never" not in seen

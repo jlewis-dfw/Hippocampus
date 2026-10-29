@@ -44,7 +44,7 @@ td.uri { max-width: 340px; overflow-wrap: anywhere; }
 .badge.done, .badge.indexed { color: var(--ok); border-color: var(--ok); }
 .badge.error { color: var(--bad); border-color: var(--bad); }
 .log { background: #060911; border: 1px solid var(--border); border-radius: 8px; padding: 10px; height: 220px; overflow: auto; margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; }
-.banner { background: #3b1d1d; color: #fecaca; padding: 10px 16px; border-bottom: 1px solid var(--bad); }
+.banner { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 50; background: #3b1d1d; color: #fecaca; padding: 10px 16px; border: 1px solid var(--bad); border-radius: 8px; }  /* pinned: visible wherever the page is scrolled */
 .hit { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 10px; background: var(--bg); }
 .hit .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .hit .score { color: var(--ok); font-weight: 600; }
@@ -91,3 +91,19 @@ label.inline select { width: auto; }
 .apiframe { width: 100%; height: calc(100vh - 230px); min-height: 520px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
 #searchForm { grid-template-columns: 2fr 1fr; }
 @media (max-width: 700px) { #searchForm { grid-template-columns: 1fr; } }
+
+label.check { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--muted); }
+label.check input { width: auto; margin-top: 2px; }
+#siteCheck, .siteCheck { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 13px; }
+#siteCheck ul, .siteCheck ul { margin: 6px 0 0 18px; padding: 0; }
+#siteCheck .actions, .siteCheck .actions { margin-top: 8px; justify-content: flex-start; gap: 8px; }
+.webcard { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; display: grid; gap: 8px; }
+.webcard .actions { gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+#sourceTools { gap: 8px; margin: 12px 0 8px; flex-wrap: wrap; }
+#sourceTools input[type=search] { width: 260px; }
+#sourceTools select, #sourceFilter, #panel-collections .row select { width: auto; }
+table input[type=checkbox] { width: auto; }
+#addCrawl { margin: 12px 0; }
+#addCrawl summary { cursor: pointer; }

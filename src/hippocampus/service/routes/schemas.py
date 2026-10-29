@@ -116,3 +116,18 @@ class CrawlRequest(BaseModel):
     depth: int = Field(1, ge=1, le=5)
     match_pattern: str | None = None
     engine: Literal["static", "browser"] = "static"
+
+
+class SourcesRemove(BaseModel):
+    uris: list[str] = Field(min_length=1, max_length=500)
+
+
+class WebSourceUpdate(BaseModel):
+    depth: int | None = Field(None, ge=1, le=5)
+    match_pattern: str | None = None  # an empty string removes the pattern
+    engine: Literal["static", "browser"] | None = None
+
+
+class PruneRequest(BaseModel):
+    depth: int = Field(ge=1, le=5)  # pages found deeper than this are removed
+    dry_run: bool = True  # count only

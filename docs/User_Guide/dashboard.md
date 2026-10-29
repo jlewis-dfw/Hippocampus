@@ -93,6 +93,16 @@ crawler does and refuses.
 | **Engine** | `static` (plain HTTP, the default) or `browser` (headless Chromium, for sites that need JavaScript; only available if the image was built with `HIPPO_INSTALL_BROWSER=1`). |
 | **URL match pattern** | An optional regular expression; only links whose address matches are followed. For example `/docs/`. |
 
+**Check site** (optional, before you start) runs the read-only probe: at most four requests, with the crawler's own user agent. It
+reports what `robots.txt` allows (including `Crawl-delay` and `Content-Signal`), the start page's status and word count, whether
+the site needs the `browser` engine, the size from the sitemap with a time estimate, warnings (a redirect to another host,
+`noindex`, links stored twice) and any collection that already holds pages of the host. **Use suggested settings** fills in the
+depth, engine and pattern it recommends (the reason is shown) and picks the collection that already holds the host.
+
+A notice above the buttons reminds you that the copying and the site's terms of use are your responsibility. It never blocks the
+crawl, unless the operator sets `HIPPO_CRAWL_REQUIRE_ACK=true`, which adds a tick box to tick first
+(see [configuration.md](configuration.md)).
+
 Click **Start crawl**. The **Job** section appears with a status badge (`running`, `done`, `error`) and a live log, for
 example `fetched https://docs.example.com/ (4210 chars, level 1)` and, at the end, `done: 12 added, 0 changed, 0 unchanged`.
 
@@ -102,16 +112,39 @@ example `fetched https://docs.example.com/ (4210 chars, level 1)` and, at the en
 |---|---|
 | Slug, Name | The collection's identifier and its display name. |
 | Visibility | `shared` or `restricted`. |
+| Source | Where its documents came from, by address: **Web** (`http`/`https`), **Local** (`files://`, folder uploads), **Repo** (`repo://`) or **Other**. A collection can have several. The **Source** menu above the table filters by one. |
 | Sources, Chunks | How many documents and passages it holds. |
 | Created | When it was made. |
 
-Row actions: **Sources** (list its documents), **Search** (open the sandbox scoped to it), **Restrict** or **Share**
+Row actions: **Sources** (list its documents), click the row (or **Sources**) to open the collection view (see below), **Search** (open the sandbox scoped to it), **Restrict** or **Share**
 (admin only: change its visibility after a confirmation), and **Delete** (removes the collection and every chunk, after a
 confirmation). Collections whose slug has a reserved private prefix cannot be shared (see
 [../Api/authorization.md](../Api/authorization.md#reserved-private-names)). Deleting a restricted collection needs an
-admin token. **Refresh** reloads the table. **Resync docs repo** is always shown; it re-indexes a configured docs
-repository (see [ingesting.md](ingesting.md#keeping-a-docs-repository-in-sync)) and answers `501: docs sync not
-configured` when that feature is not set up.
+admin token. **Refresh** reloads the table. **Resync docs repo** is shown only when docs sync is configured (`docs_sync` is
+`true` in `GET /v1/status`); it re-indexes the docs repository (see
+[ingesting.md](ingesting.md#keeping-a-docs-repository-in-sync)). Without the configuration the button stays hidden and the API
+answers `501: docs sync not configured`.
+
+
+### The collection view: sources, depth, remove
+
+Click a collection's row (or **Sources**) to open it. A collection can mix origins, for example three websites and two folders, and the view lists them all.
+
+- **Sources table:** every document with its type, the crawl depth it was found at (web pages crawled since saved crawls existed),
+  status and chunks. Filter by type or by text in the address or title.
+- **Remove:** a **Remove** button on each row, or tick rows (the header box ticks everything shown) and press **Remove selected**.
+  Each asks first and removes the chunks too. A removed web page is fetched again by the next crawl that reaches it, and a removed
+  local file is indexed again by the next sync of its folder unless an exclude rule in the Local tab skips it; the view says so.
+- **Web crawls:** every crawl is remembered as a *saved crawl* (start URL, depth, pattern, engine), one block per start URL.
+  Change the depth, pattern or engine and press **Save and re-crawl**: new pages are added and unchanged ones are skipped.
+  Raising the depth only adds pages. **Lowering it does not remove pages already indexed**; press **Remove deeper pages**, which
+  counts them and asks first. A page that two crawls of the collection both reach belongs to the one that ran last, and only that crawl's
+  **Remove deeper pages** can remove it. Older pages have no recorded depth and are never removed this way (re-crawl once to record them).
+  **Forget settings** drops the saved crawl and keeps its pages.
+- **Search this collection** opens the Search tab scoped to it.
+
+The same is available over the API: `DELETE /v1/collections/{slug}/sources` (a list of addresses) and `/v1/web-sources` (see the
+*Web sources* group).
 
 ## Sources
 

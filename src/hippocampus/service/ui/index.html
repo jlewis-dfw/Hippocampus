@@ -30,12 +30,14 @@
       <div class="row">
         <h2>Collections</h2>
         <div class="spacer"></div>
-        <button id="resyncDocs">Resync docs repo</button>
+        <label class="muted" for="sourceFilter">Source</label>
+        <select id="sourceFilter"><option value="">All</option><option value="web">Web</option><option value="local">Local</option><option value="repo">Repo</option><option value="other">Other</option></select>
+        <button id="resyncDocs" hidden>Resync docs repo</button>
         <button id="refresh">Refresh</button>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
+          <thead><tr><th>Slug</th><th>Name</th><th>Visibility</th><th>Source</th><th class="num">Sources</th><th class="num">Chunks</th><th>Created</th><th class="right">Actions</th></tr></thead>
           <tbody id="collections"></tbody>
         </table>
       </div>
@@ -45,11 +47,44 @@
       <div class="row">
         <h2>Sources in <span id="sourcesTitle" class="mono"></span></h2>
         <div class="spacer"></div>
+        <button id="collectionSearch">Search this collection</button>
         <button id="closeSources">Close</button>
       </div>
+      <p class="muted" id="collectionSummary"></p>
+      <div id="webList"></div>
+      <details id="addCrawl">
+        <summary>Add a crawl to this collection</summary>
+        <p class="muted">Crawls a site into this collection and saves the settings here, so you can change the depth and re-crawl later.
+          Use it for a collection crawled before settings were saved: enter the same start URL. Only crawl sites you may copy.</p>
+        <form id="addCrawlForm" autocomplete="off">
+          <label class="wide">Start URL <input id="acUrl" type="url" required placeholder="https://docs.example.com/"></label>
+          <label>Depth
+            <select id="acDepth"><option value="1">1 (start page only)</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+          </label>
+          <label>Engine
+            <select id="acEngine"><option value="static" selected>static (httpx)</option><option value="browser">browser (Chromium, JS sites)</option></select>
+          </label>
+          <label class="wide">URL match pattern (regex, optional) <input id="acPattern" type="text" placeholder="/docs/"></label>
+          <p class="wide muted">You are copying someone else's content. The crawler reads robots.txt but not the site's terms of use,
+            and those are your responsibility.</p>
+          <div class="actions">
+            <button type="button" id="acCheckSite">Check site</button>
+            <button type="submit" class="primary">Crawl and save settings</button>
+          </div>
+        </form>
+        <div id="acSiteCheck" class="siteCheck" hidden></div>
+      </details>
+      <div class="row" id="sourceTools">
+        <select id="srcType" aria-label="Filter by source type"><option value="">All types</option><option value="web">Web</option><option value="local">Local</option><option value="repo">Repo</option><option value="other">Other</option></select>
+        <input id="srcFilter" type="search" placeholder="Filter by address or title" aria-label="Filter sources">
+        <span class="muted" id="srcCount"></span>
+        <div class="spacer"></div>
+        <button id="removeSelected" class="danger" disabled>Remove selected</button>
+      </div>
+      <p class="muted" id="removeNote" hidden></p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>URI</th><th>Title</th><th>Status</th><th class="num">Chunks</th><th>SHA-256</th><th>Indexed</th></tr></thead>
+          <thead><tr><th><input type="checkbox" id="srcAll" aria-label="Select all shown"></th><th>URI</th><th>Title</th><th>Type</th><th class="num">Depth</th><th>Status</th><th class="num">Chunks</th><th>Indexed</th><th class="right">Actions</th></tr></thead>
           <tbody id="sources"></tbody>
         </table>
       </div>
@@ -211,8 +246,16 @@
             </select>
           </label>
         </fieldset>
-        <div class="actions"><button type="submit" class="primary" id="crawlBtn">Start crawl</button></div>
+        <p class="wide muted" id="crawlNotice">You are copying someone else's content. The crawler reads robots.txt but not the site's
+          terms of use, and those are your responsibility.</p>
+        <label class="wide check" id="crawlAckRow" hidden><input id="crawlAck" type="checkbox">
+          I may copy this content.</label>
+        <div class="actions">
+          <button type="button" id="checkSite">Check site</button>
+          <button type="submit" class="primary" id="crawlBtn">Start crawl</button>
+        </div>
       </form>
+      <div id="siteCheck" hidden></div>
     </section>
     </div>
     <div id="panel-access" class="panel" role="tabpanel" aria-labelledby="tab-access" hidden>

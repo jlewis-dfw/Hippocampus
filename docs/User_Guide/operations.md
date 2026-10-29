@@ -17,8 +17,8 @@ The images are `hippocampus-api:local` (built from `deploy/api.Dockerfile`) and 
 ## Health and status
 
 - `./hippocampus status` shows the containers and the status JSON.
-- `GET /v1/status` returns the database round-trip time, the number of running jobs, the embedding model and the totals for
-  what the caller may read. It is the best single check.
+- `GET /v1/status` returns the database round-trip time, the number of running jobs, the embedding model, `docs_sync` (whether
+  the Forgejo docs sync is configured) and the totals for what the caller may read. It is the best single check.
 - The `api` container has a built-in health check (`python -m hippocampus.cli.healthcheck`, every 15 seconds) that requests the
   interactive API page (`/docs`) from inside the container. `docker compose ps` shows `healthy` when it passes.
 - `GET /openapi.json` is the machine-readable API description; `/docs` and `/redoc` are the interactive pages. (The interactive

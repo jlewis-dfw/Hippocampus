@@ -1,11 +1,21 @@
 """Postgres/pgvector store for the ``hippocampus`` schema (needs the ``db`` extra)."""
 from __future__ import annotations
 
+import re
+
 from ..core.diff import EmbeddedChunk
 
 
 def _vec(v: list[float]) -> str:
     return "[" + ",".join(repr(x) for x in v) + "]"
+
+
+def source_type(uri: str) -> str:
+    """Where a source came from, by its URI scheme; the SQL in `list_collections` must give the same answer."""
+    low = uri.lower()
+    if low.startswith(("http://", "https://")):
+        return "web"
+    return "local" if low.startswith("files://") else "repo" if low.startswith("repo://") else "other"
 
 
 class PgStore:
@@ -64,20 +74,36 @@ class PgStore:
                           (SELECT count(*) FROM hippocampus.sources s WHERE s.collection_id = k.id),
                           (SELECT count(*) FROM hippocampus.document_chunks c
                              JOIN hippocampus.sources s ON s.id = c.source_id WHERE s.collection_id = k.id),
-                          k.visibility
+                          k.visibility,
+                          ARRAY(SELECT DISTINCT CASE WHEN s.uri ~* '^https?://' THEN 'web'
+                                                     WHEN s.uri LIKE 'files://%' THEN 'local'
+                                                     WHEN s.uri LIKE 'repo://%' THEN 'repo'
+                                                     ELSE 'other' END
+                                FROM hippocampus.sources s WHERE s.collection_id = k.id ORDER BY 1)
                    FROM hippocampus.collections k ORDER BY k.slug"""
             )
             return [
                 {"slug": r[0], "name": r[1], "description": r[2], "created_at": r[3].isoformat(),
-                 "source_count": r[4], "chunk_count": r[5], "visibility": r[6]}
+                 "source_count": r[4], "chunk_count": r[5], "visibility": r[6], "source_types": list(r[7])}
                 for r in cur.fetchall()
             ]
+
+    def web_sources_on_host(self, host: str) -> list[dict]:
+        """Collections that already hold pages of this host: [{"collection", "sources"}]."""
+        with self._conn.cursor() as cur:
+            cur.execute(
+                """SELECT k.slug, count(*) FROM hippocampus.sources s JOIN hippocampus.collections k ON k.id = s.collection_id
+                   WHERE s.uri ~* %s GROUP BY k.slug ORDER BY k.slug""",
+                (r"^https?://" + re.escape(host) + r"(:[0-9]+)?/",),
+            )
+            return [{"collection": r[0], "sources": r[1]} for r in cur.fetchall()]
 
     def list_sources(self, slug: str, limit: int = 200) -> list[dict] | None:
         """Newest-indexed first; None if the collection does not exist."""
         with self._conn.cursor() as cur:
             cur.execute(
-                """SELECT s.uri, s.title, s.status, s.chunk_count, s.sha256_hash, s.error_message, s.last_indexed_at
+                """SELECT s.uri, s.title, s.status, s.chunk_count, s.sha256_hash, s.error_message, s.last_indexed_at,
+                          s.crawl_depth, s.web_source_id
                    FROM hippocampus.sources s JOIN hippocampus.collections k ON k.id = s.collection_id
                    WHERE k.slug = %s ORDER BY s.last_indexed_at DESC LIMIT %s""",
                 (slug, limit),
@@ -87,9 +113,17 @@ class PgStore:
                 return None
         return [
             {"uri": r[0], "title": r[1], "status": r[2], "chunk_count": r[3], "sha256": r[4][:12],
-             "error": r[5], "last_indexed_at": r[6].isoformat()}
+             "error": r[5], "last_indexed_at": r[6].isoformat(), "type": source_type(r[0]),
+             "crawl_depth": r[7], "web_source_id": str(r[8]) if r[8] else None}
             for r in rows
         ]
+
+    def delete_sources(self, slug: str, uris: list[str]) -> int:
+        """Delete these sources (and their chunks) from the collection; returns how many existed."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cid = self._collection_id(cur, slug)
+            cur.execute("DELETE FROM hippocampus.sources WHERE collection_id = %s AND uri = ANY(%s)", (cid, uris))
+            return cur.rowcount
 
     def create_collection(self, slug: str, name: str, description: str | None, visibility: str = "shared") -> bool:
         """Returns False if the slug already exists."""
@@ -268,6 +302,96 @@ class PgStore:
                 (status, Jsonb(summary), name),
             )
             return cur.rowcount == 1
+
+    # --- saved web sources ---
+
+    _WEB_COLS = """w.id, w.url, k.slug, w.depth, w.match_pattern, w.engine, w.created_by, w.created_at, w.updated_at,
+                   w.last_run_at, w.last_status, w.last_summary,
+                   (SELECT count(*) FROM hippocampus.sources s WHERE s.web_source_id = w.id),
+                   (SELECT max(s.crawl_depth) FROM hippocampus.sources s WHERE s.web_source_id = w.id)"""
+
+    @staticmethod
+    def _web_row(r) -> dict:
+        return {"id": str(r[0]), "url": r[1], "collection": r[2], "depth": r[3], "match_pattern": r[4], "engine": r[5],
+                "created_by": r[6], "created_at": r[7].isoformat(), "updated_at": r[8].isoformat(),
+                "last_run_at": r[9].isoformat() if r[9] else None, "last_status": r[10], "last_summary": r[11],
+                "pages": r[12], "deepest": r[13]}
+
+    def list_web_sources(self) -> list[dict]:
+        with self._conn.cursor() as cur:
+            cur.execute(f"""SELECT {self._WEB_COLS} FROM hippocampus.web_sources w
+                            JOIN hippocampus.collections k ON k.id = w.collection_id ORDER BY k.slug, w.url""")
+            return [self._web_row(r) for r in cur.fetchall()]
+
+    def get_web_source(self, web_id: str) -> dict | None:
+        with self._conn.cursor() as cur:
+            cur.execute(f"""SELECT {self._WEB_COLS} FROM hippocampus.web_sources w
+                            JOIN hippocampus.collections k ON k.id = w.collection_id WHERE w.id = %s""", (web_id,))
+            row = cur.fetchone()
+        return self._web_row(row) if row else None
+
+    def upsert_web_source(self, collection: str, url: str, depth: int, match_pattern: str | None, engine: str,
+                          created_by: str) -> str:
+        """Save (or update the settings of) the web source for this collection and start URL; returns its id."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cid = self._collection_id(cur, collection)
+            cur.execute(
+                """INSERT INTO hippocampus.web_sources (collection_id, url, depth, match_pattern, engine, created_by)
+                   VALUES (%s, %s, %s, %s, %s, %s)
+                   ON CONFLICT (collection_id, url) DO UPDATE
+                   SET depth = EXCLUDED.depth, match_pattern = EXCLUDED.match_pattern, engine = EXCLUDED.engine,
+                       updated_at = NOW()
+                   RETURNING id""",
+                (cid, url, depth, match_pattern, engine, created_by),
+            )
+            return str(cur.fetchone()[0])
+
+    def update_web_source(self, web_id: str, depth: int | None, match_pattern: str | None, engine: str | None,
+                          clear_pattern: bool = False) -> bool:
+        """Only the given fields change (``clear_pattern`` removes the pattern). False if there is no such source."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute(
+                """UPDATE hippocampus.web_sources
+                   SET depth = COALESCE(%s, depth), engine = COALESCE(%s, engine),
+                       match_pattern = CASE WHEN %s THEN NULL ELSE COALESCE(%s, match_pattern) END, updated_at = NOW()
+                   WHERE id = %s""",
+                (depth, engine, clear_pattern, match_pattern, web_id),
+            )
+            return cur.rowcount == 1
+
+    def delete_web_source(self, web_id: str) -> bool:
+        """Forget the saved settings; the pages it indexed stay."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute("DELETE FROM hippocampus.web_sources WHERE id = %s", (web_id,))
+            return cur.rowcount == 1
+
+    def record_web_run(self, web_id: str, status: str, summary: dict) -> bool:
+        from psycopg.types.json import Jsonb
+
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute(
+                """UPDATE hippocampus.web_sources SET last_run_at = NOW(), last_status = %s, last_summary = %s
+                   WHERE id = %s""", (status, Jsonb(summary), web_id))
+            return cur.rowcount == 1
+
+    def tag_web_pages(self, collection: str, web_id: str, depths: dict[str, int]) -> None:
+        """Remember which web source found each page and at what depth (pages the crawl skipped as unchanged too)."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cid = self._collection_id(cur, collection)
+            cur.executemany(
+                "UPDATE hippocampus.sources SET web_source_id = %s, crawl_depth = %s WHERE collection_id = %s AND uri = %s",
+                [(web_id, depth, cid, uri) for uri, depth in depths.items()],
+            )
+
+    def prune_web_source(self, web_id: str, depth: int, dry_run: bool = False) -> int:
+        """Delete (or, with ``dry_run``, count) the pages this web source found deeper than ``depth``."""
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            if dry_run:
+                cur.execute("SELECT count(*) FROM hippocampus.sources WHERE web_source_id = %s AND crawl_depth > %s",
+                            (web_id, depth))
+                return cur.fetchone()[0]
+            cur.execute("DELETE FROM hippocampus.sources WHERE web_source_id = %s AND crawl_depth > %s", (web_id, depth))
+            return cur.rowcount
 
     def delete_collection(self, slug: str) -> bool:
         with self._conn.transaction(), self._conn.cursor() as cur:

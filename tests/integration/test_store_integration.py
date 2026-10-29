@@ -209,6 +209,49 @@ def test_sync_source_lifecycle(conn_and_slug):
         conn.execute("DELETE FROM hippocampus.collections WHERE slug = %s", (other,))
 
 
+def test_source_types_and_web_sources(conn_and_slug):
+    from hippocampus.storage.store import PgStore, source_type
+
+    conn, slug = conn_and_slug
+    store, emb = PgStore(conn), FakeEmbedder()
+    host = f"{slug}.example"
+    docs = {f"https://{host}/": Document("Home", "# H\nhome"), f"https://{host}/a": Document("A", "# A\na"),
+            f"https://{host}/a/b": Document("B", "# B\nb"), "files://notes/x.md": Document("X", "# X\nx"),
+            "repo://r/y.py": Document("Y", "# Y\ny"), "loose-note": Document("Z", "# Z\nz")}
+    sync_collection(slug, docs, store, emb, prune=False)
+
+    listed = next(c for c in store.list_collections() if c["slug"] == slug)
+    assert listed["source_types"] == ["local", "other", "repo", "web"]
+    assert all(source_type(u) in listed["source_types"] for u in docs)  # SQL and Python classify alike
+    assert store.web_sources_on_host(host) == [{"collection": slug, "sources": 3}]
+    assert store.web_sources_on_host(host.replace(".", "x")) == []  # the dot is not a wildcard
+
+    web_id = store.upsert_web_source(slug, f"https://{host}/", 3, None, "static", "tester")
+    assert store.upsert_web_source(slug, f"https://{host}/", 2, "/a", "static", "tester") == web_id  # same url: one row
+    store.tag_web_pages(slug, web_id, {f"https://{host}/": 1, f"https://{host}/a": 2, f"https://{host}/a/b": 3})
+    web = store.get_web_source(web_id)
+    assert (web["depth"], web["match_pattern"], web["pages"], web["deepest"]) == (2, "/a", 3, 3)
+
+    assert store.update_web_source(web_id, 4, None, None, clear_pattern=True)
+    assert store.get_web_source(web_id)["match_pattern"] is None
+    store.record_web_run(web_id, "ok", {"pages": 3})
+    assert store.get_web_source(web_id)["last_status"] == "ok"
+
+    assert store.prune_web_source(web_id, 2, dry_run=True) == 1 and _source_count(conn, slug) == 6
+    assert store.prune_web_source(web_id, 2) == 1 and _source_count(conn, slug) == 5
+    rows = {r["uri"]: r for r in store.list_sources(slug)}
+    assert rows[f"https://{host}/a"]["crawl_depth"] == 2 and rows["files://notes/x.md"]["type"] == "local"
+    assert store.delete_sources(slug, ["files://notes/x.md", "missing"]) == 1 and _source_count(conn, slug) == 4
+    assert store.delete_web_source(web_id) and _source_count(conn, slug) == 4  # forgetting keeps the pages
+    assert store.get_web_source(web_id) is None
+
+
+def _source_count(conn, slug):
+    return conn.execute(
+        "SELECT count(*) FROM hippocampus.sources s JOIN hippocampus.collections k ON k.id = s.collection_id "
+        "WHERE k.slug = %s", (slug,)).fetchone()[0]
+
+
 def test_pool_second_caller_waits_and_a_third_times_out():
     import threading
     import time

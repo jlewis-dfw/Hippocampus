@@ -109,8 +109,9 @@ def test_root_redirects_to_the_dashboard(browser, stack):
 def test_collection_row_shows_counts_and_lists_sources(dash, library):
     d = dash()
     row = d.row("collections", library)
-    expect(row.locator(".badge")).to_have_text("shared")
-    expect(row.locator("td").nth(3)).to_have_text("2")  # sources
+    expect(row.locator(".badge.shared")).to_have_text("shared")
+    expect(row.locator("td").nth(3)).to_have_text("Other")  # pg.md and cats.md are not web, local or repo
+    expect(row.locator("td").nth(4)).to_have_text("2")  # sources
     row.get_by_role("button", name="Sources").click()
     expect(d.page.locator("#sourcesTitle")).to_have_text(library)
     expect(d.row("sources", "pg.md")).to_contain_text("Backups")
@@ -345,11 +346,11 @@ def test_admin_restricts_shares_and_deletes_a_collection(dash, stack, admin, adm
     row = d.row("collections", slug)
 
     row.get_by_role("button", name="Restrict").click()
-    expect(row.locator(".badge")).to_have_text("restricted")
+    expect(row.locator(".badge.shared, .badge.restricted")).to_have_text("restricted")
     assert slug not in [c["slug"] for c in anon.get("/v1/collections").json()["collections"]]
 
     row.get_by_role("button", name="Share").click()
-    expect(row.locator(".badge")).to_have_text("shared")
+    expect(row.locator(".badge.shared, .badge.restricted")).to_have_text("shared")
     assert slug in [c["slug"] for c in anon.get("/v1/collections").json()["collections"]]
 
     row.get_by_role("button", name="Delete").click()
@@ -373,3 +374,281 @@ def test_admin_only_controls_are_hidden_from_other_clients(dash, admin, library)
     expect(d.page.locator("#who")).to_have_text(created["name"])
     expect(d.page.locator("#clientsBox")).to_be_hidden()
     expect(d.row("collections", library).get_by_role("button", name="Restrict")).to_have_count(0)
+
+
+# --- the collection view: every source, filter, remove
+
+@pytest.fixture
+def mixed(admin):
+    """A collection holding web pages, a local file and a pushed note."""
+    slug = _slug("ui-mixed")
+    assert admin.post("/v1/collections", json={"slug": slug, "name": "Mixed"}).status_code == 201
+    for uri, title in (("https://docs.example/a", "Web A"), ("https://docs.example/b", "Web B"),
+                       ("files://notes/todo.md", "Local todo"), ("loose-note", "Loose")):
+        r = admin.post("/v1/ingest/file", json={"collection": slug, "uri": uri, "title": title, "text": f"# {title}\n\nbody of {title}"})
+        assert r.status_code == 200
+    return slug
+
+
+def test_collections_show_and_filter_by_source_type(dash, admin_token, library, mixed):
+    d = dash(admin_token)
+    row = d.row("collections", mixed)
+    for label in ("Web", "Local", "Other"):
+        expect(row.locator("td").nth(3).get_by_text(label, exact=True)).to_be_visible()
+    d.page.select_option("#sourceFilter", "web")
+    expect(d.row("collections", mixed)).to_be_visible()
+    expect(d.row("collections", library)).to_have_count(0)  # holds no web pages
+    d.page.select_option("#sourceFilter", "")
+    expect(d.row("collections", library)).to_be_visible()
+
+
+def test_clicking_a_collection_lists_every_source_and_filters_them(dash, admin_token, mixed):
+    d = dash(admin_token)
+    d.row("collections", mixed).locator("td").first.click()  # the row itself, not a button
+    expect(d.page.locator("#sourcesTitle")).to_have_text(mixed)
+    expect(d.page.locator("#sources tr")).to_have_count(4)
+    d.page.select_option("#srcType", "web")
+    expect(d.page.locator("#sources tr")).to_have_count(2)
+    d.page.select_option("#srcType", "")
+    d.page.fill("#srcFilter", "todo")
+    expect(d.page.locator("#sources tr")).to_have_count(1)
+    expect(d.row("sources", "files://notes/todo.md")).to_be_visible()
+    expect(d.page.locator("#removeNote")).to_contain_text("Local tab")
+
+
+def test_remove_one_and_remove_selected_sources(dash, admin_token, admin, mixed):
+    d = dash(admin_token)
+    d.accept_dialogs()
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    d.row("sources", "loose-note").get_by_role("button", name="Remove").click()
+    expect(d.page.locator("#sources tr")).to_have_count(3)
+    d.page.select_option("#srcType", "web")
+    d.page.check("#srcAll")
+    expect(d.page.locator("#removeSelected")).to_have_text("Remove selected (2)")
+    d.page.locator("#removeSelected").click()
+    d.page.select_option("#srcType", "")
+    expect(d.page.locator("#sources tr")).to_have_count(1)
+    expect(d.row("sources", "files://notes/todo.md")).to_be_visible()
+    uris = [s["uri"] for s in admin.get(f"/v1/collections/{mixed}/sources").json()["sources"]]
+    assert uris == ["files://notes/todo.md"]
+    expect(d.row("collections", mixed).locator("td").nth(4)).to_have_text("1")  # the totals follow
+    assert d.errors == []
+
+
+def test_a_web_collection_without_saved_settings_offers_the_add_crawl_form(dash, admin_token, mixed):
+    d = dash(admin_token)
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    expect(d.page.locator("#addCrawl")).to_have_attribute("open", "")  # web pages but no saved crawl: shown open
+    expect(d.page.locator("#acUrl")).to_have_value("https://docs.example/a")  # a guess from its own pages
+    expect(d.page.locator("#acPattern")).to_have_value("")  # the pages sit at the site root: no pattern to suggest
+
+
+PROBE = {
+    "url": "https://docs.example/docs/",
+    "robots": {"found": True, "allowed": True, "crawl_delay": 5, "content_signal": None, "sitemaps": []},
+    "start_page": {"fetched": True, "status": 200, "words": 420, "same_host_links": 31},
+    "sitemap": {"found": True, "index": False, "urls": 80, "matching": 60},
+    "suggest": {"engine": "static", "depth": 3, "depth_basis": "sitemap URL depth", "match_pattern": "/docs/",
+                "pages_estimate": 60, "fetch_seconds": 30, "max_pages": 200},
+    "warnings": ["robots.txt asks for a 5 s Crawl-delay"],
+    "already_indexed": [],
+}
+
+
+def _mock_probe(d, **changes):
+    """Answer the probe from the page's own fetch: the test stack cannot reach a real site."""
+    import json
+
+    d.page.route("**/v1/crawl/probe", lambda route: route.fulfill(
+        status=200, content_type="application/json", body=json.dumps({**PROBE, **changes})))
+
+
+def test_check_site_on_the_web_tab_reports_and_fills_the_form(dash, library):
+    d = dash()
+    _mock_probe(d, already_indexed=[{"collection": library, "sources": 2}])
+    d.page.get_by_role("tab", name="Web").click()
+    d.page.fill("#url", "https://docs.example/docs/")
+    d.page.locator("#checkSite").click()
+    box = d.page.locator("#siteCheck")
+    expect(box).to_contain_text("allows this path")
+    expect(box).to_contain_text("about 60 pages")
+    expect(box).to_contain_text("5 s Crawl-delay")
+    expect(box).to_contain_text(f"Already indexed in: {library}")
+    box.get_by_role("button", name="Use suggested settings").click()
+    expect(d.page.locator("#depth")).to_have_value("3")
+    expect(d.page.locator("#pattern")).to_have_value("/docs/")
+
+
+def test_check_site_in_the_collection_view_fills_its_own_form(dash, admin_token, mixed):
+    d = dash(admin_token)
+    _mock_probe(d)
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    d.page.fill("#acUrl", "https://docs.example/docs/")
+    d.page.locator("#acCheckSite").click()
+    box = d.page.locator("#acSiteCheck")
+    expect(box).to_contain_text("about 60 pages")
+    expect(d.page.locator("#siteCheck")).to_be_hidden()  # the Web tab's result is separate
+    box.get_by_role("button", name="Use suggested settings").click()
+    expect(d.page.locator("#acDepth")).to_have_value("3")
+    expect(d.page.locator("#acPattern")).to_have_value("/docs/")
+    assert d.errors == []
+
+
+# --- saved crawls in the collection view (seeded in the database: the stack will not crawl a private or fake site)
+
+@pytest.fixture
+def crawled(admin, stack):
+    """What a depth-3 crawl of https://docs.example/ leaves: three pages with depths, and the saved crawl."""
+    slug = _slug("ui-crawled")
+    assert admin.post("/v1/collections", json={"slug": slug, "name": "Crawled"}).status_code == 201
+    pages = {"https://docs.example/": 1, "https://docs.example/a": 2, "https://docs.example/a/b": 3}
+    for uri in pages:
+        r = admin.post("/v1/ingest/file", json={"collection": slug, "uri": uri, "title": uri, "text": f"# {uri}\n\ntext of {uri}"})
+        assert r.status_code == 200
+    web_id = stack.psql(
+        "INSERT INTO hippocampus.web_sources (collection_id, url, depth, engine, created_by, last_run_at, last_status, last_summary) "
+        f"SELECT id, 'https://docs.example/', 3, 'static', 'e2e', NOW(), 'ok', '{{\"pages\": 3}}' FROM hippocampus.collections "
+        f"WHERE slug = '{slug}' RETURNING id").splitlines()[0]
+    for uri, depth in pages.items():
+        stack.psql(f"UPDATE hippocampus.sources SET web_source_id = '{web_id}', crawl_depth = {depth} "
+                   f"WHERE uri = '{uri}' AND collection_id = (SELECT id FROM hippocampus.collections WHERE slug = '{slug}')")
+    return slug, web_id
+
+
+def _mine(admin, slug):
+    """The saved crawls of one collection (the stack is shared with the other tests)."""
+    return [w for w in admin.get("/v1/web-sources").json()["web_sources"] if w["collection"] == slug]
+
+
+def test_saved_crawl_shows_depths_and_its_settings(dash, admin_token, crawled):
+    slug, _ = crawled
+    d = dash(admin_token)
+    d.row("collections", slug).get_by_role("button", name="Sources").click()
+    card = d.page.locator("#webList .webcard")
+    expect(card).to_contain_text("https://docs.example/")
+    expect(card).to_contain_text("3 pages with a recorded depth, deepest at level 3")
+    expect(card).to_contain_text("last crawl")
+    expect(card.locator("select").first).to_have_value("3")
+    for uri, depth in (("https://docs.example/a/b", "3"), ("https://docs.example/a", "2")):
+        expect(d.page.locator(f'#sources tr:has(td.uri:text-is("{uri}"))').locator("td").nth(4)).to_have_text(depth)
+    expect(d.page.locator("#addCrawl")).not_to_have_attribute("open", "")  # a saved crawl exists: the form stays closed
+
+
+def test_lowering_the_depth_keeps_pages_until_remove_deeper_pages(dash, admin_token, admin, crawled):
+    slug, web_id = crawled
+    d = dash(admin_token)
+    d.accept_dialogs()
+    d.row("collections", slug).get_by_role("button", name="Sources").click()
+    card = d.page.locator("#webList .webcard")
+    card.locator("select").first.select_option("2")
+    with d.page.expect_response(lambda r: r.request.method == "PATCH" and "/v1/web-sources/" in r.url):
+        card.get_by_role("button", name="Save settings").click()
+    expect(d.page.locator("#webList .webcard select").first).to_have_value("2")
+    assert _mine(admin, slug)[0]["depth"] == 2
+    expect(d.page.locator("#sources tr")).to_have_count(3)  # saving a lower depth removes nothing
+    d.page.locator("#webList .webcard").get_by_role("button", name="Remove deeper pages").click()
+    expect(d.page.locator("#sources tr")).to_have_count(2)
+    assert sorted(s["uri"] for s in admin.get(f"/v1/collections/{slug}/sources").json()["sources"]) == [
+        "https://docs.example/", "https://docs.example/a"]
+    d.page.locator("#webList .webcard").get_by_role("button", name="Forget settings").click()
+    expect(d.page.locator("#webList .webcard")).to_have_count(0)
+    expect(d.page.locator("#sources tr")).to_have_count(2)  # the pages stay
+    assert _mine(admin, slug) == []
+
+
+def test_save_and_recrawl_starts_a_job_and_records_the_failure(dash, admin_token, admin, crawled):
+    slug, _ = crawled
+    d = dash(admin_token)
+    d.row("collections", slug).get_by_role("button", name="Sources").click()
+    d.page.locator("#webList .webcard").get_by_role("button", name="Save and re-crawl").click()
+    expect(d.page.locator("#jobStatus")).to_have_text("error")  # docs.example does not resolve to a public address here
+    expect(d.page.locator("#jobMeta")).to_contain_text(f"re-crawl https://docs.example/ -> {slug}")
+    expect(d.page.locator("#webList .webcard")).to_contain_text("error")  # the view refreshed with the outcome
+    assert _mine(admin, slug)[0]["last_status"] == "error"
+
+
+def test_add_a_crawl_submit_saves_it_and_the_view_refreshes(dash, admin_token, mixed):
+    d = dash(admin_token)
+    d.accept_dialogs()
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    expect(d.page.locator("#webList .webcard")).to_have_count(0)
+    d.page.fill("#acUrl", "http://127.0.0.1:9/")  # a private address: the guard must refuse it
+    d.page.locator("#addCrawlForm").get_by_role("button", name="Crawl and save settings").click()
+    expect(d.page.locator("#jobStatus")).to_have_text("error")
+    expect(d.page.locator("#log")).to_contain_text("non-public")
+    card = d.page.locator("#webList .webcard")
+    expect(card).to_contain_text("http://127.0.0.1:9/")  # saved when the crawl was started
+    expect(card).to_contain_text("error")
+
+
+# --- HIPPO_CRAWL_REQUIRE_ACK, and the layout
+
+def _require_ack(d):
+    """Make the page see the server setting turned on (the e2e stack runs with it off)."""
+    import json
+
+    def handler(route):
+        body = route.fetch().json()
+        route.fulfill(status=200, content_type="application/json", body=json.dumps({**body, "crawl_require_ack": True}))
+
+    d.page.route("**/v1/status", handler)
+    d.page.reload()
+    expect(d.page.locator("#pills")).to_contain_text("DB ok")
+
+
+def test_the_tick_is_only_asked_for_when_configured(dash, admin_token, mixed):
+    d = dash(admin_token)
+    d.page.get_by_role("tab", name="Web").click()
+    expect(d.page.locator("#crawlNotice")).to_be_visible()
+    expect(d.page.locator("#crawlAckRow")).to_be_hidden()  # off by default: the notice never blocks
+    _require_ack(d)
+    d.page.get_by_role("tab", name="Web").click()
+    expect(d.page.locator("#crawlAckRow")).to_be_visible()
+    d.page.select_option("#collection", mixed)
+    d.page.fill("#url", "http://127.0.0.1:9/")
+    d.page.locator("#crawlBtn").click()  # unticked: the browser refuses to submit
+    expect(d.page.locator("#jobSection")).to_be_hidden()
+    d.page.check("#crawlAck")
+    d.page.locator("#crawlBtn").click()
+    expect(d.page.locator("#jobStatus")).to_have_text("error")
+
+
+def test_collection_view_asks_before_a_crawl_when_the_tick_is_required(dash, admin_token, mixed):
+    d = dash(admin_token)
+    _require_ack(d)
+    asked = []
+    d.page.on("dialog", lambda dialog: (asked.append(dialog.message), dialog.dismiss()))
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    d.page.fill("#acUrl", "http://127.0.0.1:9/")
+    d.page.locator("#addCrawlForm").get_by_role("button", name="Crawl and save settings").click()
+    assert asked and "right to copy" in asked[0]
+    expect(d.page.locator("#jobSection")).to_be_hidden()  # declined: nothing started
+
+
+def test_filter_menus_are_not_stretched_across_the_page(dash, admin_token, mixed):
+    d = dash(admin_token)
+    assert d.page.locator("#sourceFilter").bounding_box()["width"] < 300
+    d.row("collections", mixed).get_by_role("button", name="Sources").click()
+    expect(d.page.locator("#srcType")).to_be_visible()
+    for selector in ("#srcType", "#srcFilter"):
+        assert d.page.locator(selector).bounding_box()["width"] < 400, selector
+
+
+def test_a_failed_site_check_is_shown_next_to_the_button(dash, library):
+    d = dash()  # anonymous: the probe needs a token and answers 403
+    d.page.get_by_role("tab", name="Web").click()
+    d.page.fill("#url", "https://docs.example/docs/")
+    d.page.locator("#checkSite").click()
+    box = d.page.locator("#siteCheck")
+    expect(box).to_be_visible()
+    expect(box).to_contain_text("Site check failed")
+    expect(box).to_contain_text("403")
+
+
+def test_an_error_banner_stays_in_view_when_the_page_is_scrolled(dash, library):
+    d = dash()
+    d.page.set_viewport_size({"width": 1280, "height": 500})
+    d.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    d.page.evaluate("document.getElementById('banner').textContent = 'boom'; document.getElementById('banner').hidden = false")
+    box = d.page.locator("#banner").bounding_box()
+    assert 0 <= box["y"] and box["y"] + box["height"] <= 500  # inside the window, not above it

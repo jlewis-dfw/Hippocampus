@@ -25,7 +25,9 @@ from hippocampus.storage.migrate import apply_all
 # What the application code relies on; extend it when a migration adds something the code reads.
 EXPECTED = {
     "collections": {"id", "slug", "name", "description", "created_at", "visibility"},
-    "sources": {"id", "collection_id", "uri", "sha256_hash", "chunk_count", "status", "last_indexed_at"},
+    "sources": {"id", "collection_id", "uri", "sha256_hash", "chunk_count", "status", "last_indexed_at", "crawl_depth",
+                "web_source_id"},
+    "web_sources": {"id", "collection_id", "url", "depth", "match_pattern", "engine", "last_status", "last_summary"},
     "document_chunks": {"id", "source_id", "chunk_index", "header_path", "content", "embedding"},
     "api_clients": {"id", "name", "token_sha256", "read_grants", "write_grants", "is_admin", "revoked_at"},
 }

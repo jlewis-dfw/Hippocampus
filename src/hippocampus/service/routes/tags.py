@@ -2,6 +2,7 @@
 HEALTH, SEARCH, COLLECTIONS = "Status", "Search", "Collections"
 ACCESS, INGEST, UPLOADS = "Access", "Ingest", "Folder uploads"
 SOURCES, DOCS, JOBS = "Saved sources", "Docs sync", "Jobs"
+WEB = "Web sources"
 
 METADATA = [
     {"name": HEALTH, "description": "Who the caller is, and the health and totals of the service."},
@@ -16,6 +17,8 @@ METADATA = [
     {"name": UPLOADS, "description": "Folder uploads in batches. Batches that share a `session` make one run; the final "
                                      "batch removes files that were not sent."},
     {"name": SOURCES, "description": "Saved folders: their rules and which collection each part goes to."},
+    {"name": WEB, "description": "Saved crawl settings (start URL, depth, pattern, engine) per collection: change the depth, "
+                                 "re-crawl, or remove the pages found deeper than a depth."},
     {"name": DOCS, "description": "Keeps a collection in step with a Forgejo docs repository: the push webhook "
                                   "(authenticated by signature) and a manual full resync."},
     {"name": JOBS, "description": "Status and the live log of background jobs. A job is visible to its owner and to admins."},
